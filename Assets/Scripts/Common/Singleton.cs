@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
+public class Singleton<T> : SubscriberMonoBehaviour where T : MonoBehaviour
 {
     protected Singleton() { }
 

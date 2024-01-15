@@ -1,3 +1,4 @@
+using Events;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -62,6 +63,17 @@ public class PlayerMovement : MonoBehaviour
         rb.velocity = velocity;
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("KillFloor"))
+        {
+            Debug.Log("KillFloor trigger entered");
+            GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
+            transform.position = startingPosition;
+            DistanceCovered = 0f;
+        }
+    }
+
     private void OnGUI()
     {
         var style = new GUIStyle(GUI.skin.label)
@@ -69,6 +81,7 @@ public class PlayerMovement : MonoBehaviour
             fontSize = 48,
             fontStyle = FontStyle.Bold,
         };
-        GUI.Label(new Rect(40, 40, 600, 60), $"Distance Covered: {DistanceCovered:F1} units", style);
+        GUI.Label(new Rect(40, 40, 600, 60), $"Distance covered: {DistanceCovered:F1}", style);
+        //GUI.Label(new Rect(40, 100, 600, 60), $"High score: {GameManager.Instance.HighScore:F1}", style);
     }
 }
