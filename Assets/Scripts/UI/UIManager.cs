@@ -7,11 +7,9 @@ public class UIManager : Singleton<UIManager>
     protected override EventType[] EventTypes => new[] { EventType.DataUpdated, };
     private GameManager gameManager;
 
-    [SerializeField]
-    private TMP_Text distanceText;
-
-    [SerializeField]
-    private TMP_Text highScoreText;
+    [SerializeField] private TMP_Text distanceText;
+    [SerializeField] private TMP_Text highScoreText;
+    [SerializeField] private TMP_Text speedText;
 
     private void Start()
     {
@@ -22,6 +20,7 @@ public class UIManager : Singleton<UIManager>
     private void Update()
     {
         distanceText.text = $"Distance covered: {PlayerMovement.DistanceCovered:F1}";
+        speedText.text = $"Speed: {PlayerMovement.CurrentSpeed:F1}";
     }
 
     protected override void OnDataUpdated()

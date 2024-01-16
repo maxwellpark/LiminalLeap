@@ -10,18 +10,18 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
 
-    private float currentSpeed;
     private float jumpStartTime;
     private bool holdingJump;
     private Vector3 startingPosition;
     private Rigidbody rb;
+    public static float CurrentSpeed { get; private set; }
     public static float DistanceCovered { get; private set; }
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         startingPosition = transform.position;
-        currentSpeed = startingSpeed;
+        CurrentSpeed = startingSpeed;
     }
 
     private void Update()
@@ -47,7 +47,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         DistanceCovered = Vector3.Distance(transform.position, startingPosition);
-        currentSpeed += Time.deltaTime;
+        CurrentSpeed += Time.deltaTime;
     }
 
     private void Jump(float force)
@@ -59,7 +59,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.5f, groundLayer);
-        var velocity = new Vector3(rb.velocity.x, rb.velocity.y, currentSpeed);
+        var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
         rb.velocity = velocity;
     }
 
@@ -71,6 +71,16 @@ public class PlayerMovement : MonoBehaviour
             GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
             transform.position = startingPosition;
             DistanceCovered = 0f;
+        }
+
+        if (other.TryGetComponent<ITriggerable>(out var triggerable))
+        {
+            var result = triggerable.Trigger();
+
+            if (triggerable is SpeedTriggerable)
+            {
+                CurrentSpeed += result;
+            }
         }
     }
 }
