@@ -24,6 +24,14 @@ public abstract class SubscriberMonoBehaviour : MonoBehaviour
         {
             GameManager.EventService.Add<OnDeathEvent>(OnDeath);
         }
+        if (EventTypes.Contains(EventType.Spawn))
+        {
+            GameManager.EventService.Add<OnSpawnEvent>(OnSpawn);
+        }
+        if (EventTypes.Contains(EventType.DataUpdated))
+        {
+            GameManager.EventService.Add<OnDataUpdatedEvent>(OnDataUpdated);
+        }
     }
 
     private void Unsubcribe()
@@ -32,9 +40,27 @@ public abstract class SubscriberMonoBehaviour : MonoBehaviour
         {
             GameManager.EventService.Remove<OnDeathEvent>(OnDeath);
         }
+        if (EventTypes.Contains(EventType.Spawn))
+        {
+            GameManager.EventService.Remove<OnSpawnEvent>(OnSpawn);
+        }
+        if (EventTypes.Contains(EventType.DataUpdated))
+        {
+            GameManager.EventService.Remove<OnDataUpdatedEvent>(OnDataUpdated);
+        }
     }
 
     protected virtual void OnDeath(OnDeathEvent evt)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected virtual void OnSpawn()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected virtual void OnDataUpdated()
     {
         throw new NotImplementedException();
     }

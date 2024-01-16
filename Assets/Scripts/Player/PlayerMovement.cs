@@ -15,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
     private bool holdingJump;
     private Vector3 startingPosition;
     private Rigidbody rb;
-    public float DistanceCovered { get; private set; }
+    public static float DistanceCovered { get; private set; }
 
     private void Start()
     {
@@ -72,16 +72,5 @@ public class PlayerMovement : MonoBehaviour
             transform.position = startingPosition;
             DistanceCovered = 0f;
         }
-    }
-
-    private void OnGUI()
-    {
-        var style = new GUIStyle(GUI.skin.label)
-        {
-            fontSize = 48,
-            fontStyle = FontStyle.Bold,
-        };
-        GUI.Label(new Rect(40, 40, 600, 60), $"Distance covered: {DistanceCovered:F1}", style);
-        //GUI.Label(new Rect(40, 100, 600, 60), $"High score: {GameManager.Instance.HighScore:F1}", style);
     }
 }

@@ -9,4 +9,14 @@
             DistanceCovered = distance;
         }
     }
+
+    public class OnSpawnEvent : IEvent
+    {
+        public EventType Type => EventType.Spawn;
+    }
+
+    public class OnDataUpdatedEvent : IEvent
+    {
+        public EventType Type => EventType.DataUpdated;
+    }
 }

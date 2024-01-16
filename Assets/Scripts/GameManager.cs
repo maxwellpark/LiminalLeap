@@ -24,6 +24,7 @@ public class GameManager : Singleton<GameManager>
         {
             data.HighScore = evt.DistanceCovered;
             Debug.Log("New high score: " + data.HighScore);
+            EventService.Dispatch<OnDataUpdatedEvent>();
         }
     }
 }

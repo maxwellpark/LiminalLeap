@@ -8,5 +8,7 @@ namespace Events
     public enum EventType
     {
         Death,
+        Spawn,
+        DataUpdated,
     }
 }
