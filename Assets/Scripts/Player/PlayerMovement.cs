@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody rb;
     public static float CurrentSpeed { get; private set; }
     public static float DistanceCovered { get; private set; }
+    public static Vector3 Position { get; private set; }
 
     private void Start()
     {
@@ -46,7 +47,8 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        DistanceCovered = Vector3.Distance(transform.position, startingPosition);
+        Position = transform.position;
+        DistanceCovered = Vector3.Distance(Position, startingPosition);
         CurrentSpeed += Time.deltaTime;
     }
 
