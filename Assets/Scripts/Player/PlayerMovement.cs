@@ -51,13 +51,17 @@ public class PlayerMovement : MonoBehaviour
         }
 
         var closestPiece = trackManager.GetClosestPiece(transform.position);
-        var newPosition = Vector3.MoveTowards(transform.position, closestPiece.GetEndPosition(), CurrentSpeed * Time.deltaTime);
-        var newRotation = Quaternion.RotateTowards(transform.rotation, closestPiece.transform.rotation, rotationSpeed * Time.deltaTime);
-        transform.SetPositionAndRotation(newPosition, newRotation);
 
-        if (transform.position.ApproximatelyEquals(closestPiece.GetEndPosition()))
+        if (closestPiece != null)
         {
-            closestPiece.Passed = true;
+            var newPosition = Vector3.MoveTowards(transform.position, closestPiece.GetEndPosition(), CurrentSpeed * Time.deltaTime);
+            var newRotation = Quaternion.RotateTowards(transform.rotation, closestPiece.transform.rotation, rotationSpeed * Time.deltaTime);
+            transform.SetPositionAndRotation(newPosition, newRotation);
+
+            if (transform.position.ApproximatelyEquals(closestPiece.GetEndPosition()))
+            {
+                closestPiece.Passed = true;
+            }
         }
 
         Position = transform.position;
