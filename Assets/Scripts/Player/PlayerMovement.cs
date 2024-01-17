@@ -7,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float maxJumpForce = 20f;
     [SerializeField] private float maxJumpHoldDuration = 0.2f;
     [SerializeField] private float startingSpeed = 5f;
+    [SerializeField] private float rotationSpeed = 5f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
 
@@ -17,10 +18,12 @@ public class PlayerMovement : MonoBehaviour
     public static float CurrentSpeed { get; private set; }
     public static float DistanceCovered { get; private set; }
     public static Vector3 Position { get; private set; }
+    private static TrackManager trackManager;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        trackManager = TrackManager.GetInstance();
         startingPosition = transform.position;
         CurrentSpeed = startingSpeed;
     }
@@ -47,6 +50,16 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        var closestPiece = trackManager.GetClosestPiece(transform.position);
+        var newPosition = Vector3.MoveTowards(transform.position, closestPiece.GetEndPosition(), CurrentSpeed * Time.deltaTime);
+        var newRotation = Quaternion.RotateTowards(transform.rotation, closestPiece.transform.rotation, rotationSpeed * Time.deltaTime);
+        transform.SetPositionAndRotation(newPosition, newRotation);
+
+        if (transform.position.ApproximatelyEquals(closestPiece.GetEndPosition()))
+        {
+            closestPiece.Passed = true;
+        }
+
         Position = transform.position;
         DistanceCovered = Vector3.Distance(Position, startingPosition);
         CurrentSpeed += Time.deltaTime;
@@ -61,8 +74,8 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.5f, groundLayer);
-        var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
-        rb.velocity = velocity;
+        //var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
+        //rb.velocity = velocity;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -71,7 +84,7 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.Log("KillFloor trigger entered");
             GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
-            transform.position = startingPosition;
+            transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
             DistanceCovered = 0f;
         }
 
