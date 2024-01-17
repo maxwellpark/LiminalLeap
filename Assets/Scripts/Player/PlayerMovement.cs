@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float minJumpForce = 10f;
-    [SerializeField] private float maxJumpForce = 20f;
-    [SerializeField] private float maxJumpHoldDuration = 0.2f;
+    [SerializeField] public float minJumpForce = 10f;
+    [SerializeField] public float maxJumpForce = 20f;
+    [SerializeField] public float maxJumpHoldDuration = 0.2f;
     [SerializeField] private float startingSpeed = 5f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
