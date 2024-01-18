@@ -7,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float maxJumpForce = 20f;
     [SerializeField] private float maxJumpHoldDuration = 0.2f;
     [SerializeField] private float startingSpeed = 5f;
+    [SerializeField] private float mininumSpeed = 2f;
     [SerializeField] private float rotationSpeed = 5f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
@@ -98,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (triggerable is SpeedTriggerable)
             {
-                CurrentSpeed += result;
+                CurrentSpeed = Mathf.Max(CurrentSpeed + result, mininumSpeed);
             }
         }
     }
