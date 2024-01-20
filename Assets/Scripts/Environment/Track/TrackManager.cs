@@ -3,17 +3,30 @@ using UnityEngine;
 
 public class TrackManager : Singleton<TrackManager>
 {
-    private TrackPiece[] trackPieces;
+    [SerializeField] private Track startingTrack;
+    private Track currentTrack;
+    private Track[] tracks;
 
     protected override void Awake()
     {
         base.Awake();
-        trackPieces = FindObjectsOfType<TrackPiece>();
+        tracks = FindObjectsOfType<Track>();
+        SwitchTrack(startingTrack);
+    }
+
+    public void SwitchTrack(Track track)
+    {
+        if (currentTrack != null)
+        {
+            currentTrack.Active = false;
+        }
+        track.Active = true;
+        currentTrack = track;
     }
 
     public TrackPiece GetClosestPiece(Vector3 position)
     {
-        return trackPieces
+        return currentTrack.Pieces
             .Where(t => !t.Passed)
             .OrderBy(p => Vector3.Distance(position, p.GetEndPosition()))
             .FirstOrDefault();

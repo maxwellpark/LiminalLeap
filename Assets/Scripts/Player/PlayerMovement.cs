@@ -55,6 +55,8 @@ public class PlayerMovement : MonoBehaviour
 
         if (closestPiece != null)
         {
+            Debug.DrawLine(transform.position, closestPiece.GetEndPosition(), Color.magenta);
+
             var newPosition = Vector3.MoveTowards(transform.position, closestPiece.GetEndPosition(), CurrentSpeed * Time.deltaTime);
             var newRotation = Quaternion.RotateTowards(transform.rotation, closestPiece.transform.rotation, rotationSpeed * Time.deltaTime);
             transform.SetPositionAndRotation(newPosition, newRotation);

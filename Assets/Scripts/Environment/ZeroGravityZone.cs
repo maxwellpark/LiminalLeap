@@ -1,17 +1,13 @@
 using UnityEngine;
 
-public class ZeroGravityZone : MonoBehaviour
+public class ZeroGravityZone : DistanceActivatable
 {
     [SerializeField] private float strength = 10f;
     [SerializeField] private LayerMask layers;
-    [SerializeField] private float activationDistance;
 
     private void OnTriggerStay(Collider other)
     {
-        var distanceFromPlayer = Vector3.Distance(transform.position, PlayerMovement.Position);
-        //Debug.Log("distanceFromPlayer = " + distanceFromPlayer);
-
-        if (distanceFromPlayer > activationDistance)
+        if (!InRange)
         {
             return;
         }
