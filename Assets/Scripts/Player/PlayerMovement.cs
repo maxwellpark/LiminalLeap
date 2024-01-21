@@ -8,7 +8,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float maxJumpHoldDuration = 0.2f;
     [SerializeField] private float startingSpeed = 5f;
     [SerializeField] private float mininumSpeed = 2f;
-    [SerializeField] private float rotationSpeed = 5f;
+    [SerializeField] private float mouseRotationSpeed = 10f;
+    [SerializeField] private float strafeSpeed = 5f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
 
@@ -58,7 +59,7 @@ public class PlayerMovement : MonoBehaviour
             Debug.DrawLine(transform.position, closestPiece.GetEndPosition(), Color.magenta);
 
             var newPosition = Vector3.MoveTowards(transform.position, closestPiece.GetEndPosition(), CurrentSpeed * Time.deltaTime);
-            var newRotation = Quaternion.RotateTowards(transform.rotation, closestPiece.transform.rotation, rotationSpeed * Time.deltaTime);
+            var newRotation = Quaternion.RotateTowards(transform.rotation, closestPiece.transform.rotation, mouseRotationSpeed * Time.deltaTime);
             transform.SetPositionAndRotation(newPosition, newRotation);
 
             if (transform.position.ApproximatelyEquals(closestPiece.GetEndPosition()))
@@ -67,9 +68,23 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        var mouseX = Input.GetAxis("Mouse X");
+        var xMovement = mouseX * Time.deltaTime * strafeSpeed * transform.right;
+        transform.position += xMovement;
+
+        //var mouseY = Input.GetAxis("Mouse Y");
+
+        //transform.Rotate(mouseX * mouseRotationSpeed * Time.deltaTime * Vector3.up);
+        //Camera.main.transform.Rotate(mouseRotationSpeed * Time.deltaTime * mouseY * Vector3.left);
+
         Position = transform.position;
         DistanceCovered = Vector3.Distance(Position, startingPosition);
         CurrentSpeed += Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            KillPlayer();
+        }
     }
 
     private void Jump(float force)
@@ -89,10 +104,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.CompareTag("KillFloor"))
         {
-            Debug.Log("KillFloor trigger entered");
-            GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
-            transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
-            DistanceCovered = 0f;
+            KillPlayer();
         }
 
         if (other.TryGetComponent<ITriggerable>(out var triggerable))
@@ -104,5 +116,13 @@ public class PlayerMovement : MonoBehaviour
                 CurrentSpeed = Mathf.Max(CurrentSpeed + result, mininumSpeed);
             }
         }
+    }
+
+    private void KillPlayer()
+    {
+        Debug.Log("KillFloor trigger entered");
+        GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
+        transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
+        DistanceCovered = 0f;
     }
 }

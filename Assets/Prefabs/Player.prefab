@@ -168,7 +168,8 @@ MonoBehaviour:
   maxJumpHoldDuration: 0.15
   startingSpeed: 5
   mininumSpeed: 2
-  rotationSpeed: 5
+  mouseRotationSpeed: 20
+  strafeSpeed: 5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
