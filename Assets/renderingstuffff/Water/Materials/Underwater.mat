@@ -81,11 +81,11 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _Visibility: 28
+    - _Visibility: 122
     - _WaterLevel: 0
-    - _WaveScale: 1
+    - _WaveScale: 0.01
     - _WinSpeed: 112.3
-    - _WindSpeed: 0
+    - _WindSpeed: 0.01
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

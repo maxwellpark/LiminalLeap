@@ -42,18 +42,18 @@ Material:
     m_Ints: []
     m_Floats:
     - _Aberration: 0.002
-    - _AberrationAmount: 0.03
+    - _AberrationAmount: 0
     - _Bumpiness: 0.06
     - _Choppy: 0.8
     - _ReflBump: 0.04
-    - _ReflDistortionAmount: 0.03
+    - _ReflDistortionAmount: 2.89
     - _RefrBump: 0.03
-    - _RefrDistortionAmount: 0.04
-    - _ScatterAmount: 3.5
-    - _Visibility: 28
+    - _RefrDistortionAmount: 2.38
+    - _ScatterAmount: 1
+    - _Visibility: 122
     - _WaterLevel: 0
-    - _WaveScale: 1
-    - _WindSpeed: 0
+    - _WaveScale: 0.01
+    - _WindSpeed: 0.01
     m_Colors:
     - _ScatterColor: {r: 0, g: 1, b: 0.95, a: 1}
     - _WindDirection: {r: -0.5, g: -0.8, b: 0, a: 0}
