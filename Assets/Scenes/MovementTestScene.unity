@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -175,6 +175,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4993739808729046089, guid: 32a5b796a18f1c44c92420fd68a835f8, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c5972f2d102fd345b36dd65f825fa67, type: 2}
     - target: {fileID: 8928003809820372840, guid: 32a5b796a18f1c44c92420fd68a835f8, type: 3}
       propertyPath: m_Name
       value: Ground (1)
@@ -529,6 +533,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4568768786377816560, guid: 5aa45f276cbbed4429e6ed5730a7603f, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c5972f2d102fd345b36dd65f825fa67, type: 2}
     - target: {fileID: 7396671330818506654, guid: 5aa45f276cbbed4429e6ed5730a7603f, type: 3}
       propertyPath: m_LocalScale.z
       value: 5
@@ -713,6 +721,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4568768786377816560, guid: 5aa45f276cbbed4429e6ed5730a7603f, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c5972f2d102fd345b36dd65f825fa67, type: 2}
     - target: {fileID: 7396671330818506654, guid: 5aa45f276cbbed4429e6ed5730a7603f, type: 3}
       propertyPath: m_LocalScale.z
       value: 5
@@ -995,6 +1007,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4993739808729046089, guid: 32a5b796a18f1c44c92420fd68a835f8, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c5972f2d102fd345b36dd65f825fa67, type: 2}
     - target: {fileID: 8928003809820372840, guid: 32a5b796a18f1c44c92420fd68a835f8, type: 3}
       propertyPath: m_Name
       value: Ground (1)
@@ -1170,6 +1186,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4993739808729046089, guid: 32a5b796a18f1c44c92420fd68a835f8, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c5972f2d102fd345b36dd65f825fa67, type: 2}
     - target: {fileID: 8928003809820372840, guid: 32a5b796a18f1c44c92420fd68a835f8, type: 3}
       propertyPath: m_Name
       value: Ground (2)
@@ -1846,6 +1866,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4568768786377816560, guid: 5aa45f276cbbed4429e6ed5730a7603f, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 2c5972f2d102fd345b36dd65f825fa67, type: 2}
     - target: {fileID: 7396671330818506654, guid: 5aa45f276cbbed4429e6ed5730a7603f, type: 3}
       propertyPath: m_LocalScale.z
       value: 5
