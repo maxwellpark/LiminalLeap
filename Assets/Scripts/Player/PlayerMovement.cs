@@ -8,14 +8,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float maxJumpHoldDuration = 0.2f;
     [SerializeField] private float startingSpeed = 5f;
     [SerializeField] private float minSpeed = 2f;
-    //[SerializeField] private float mouseRotationSpeed = 10f;
-    //[SerializeField] private float strafeSpeed = 5f;
     [SerializeField] private float speedIncreasePerJump = 0.5f;
     [SerializeField] private float speedDecreaseRate = 1f;
     [SerializeField] private float speedDecreaseDelay = 2f;
     [SerializeField] private float jumpBufferWindow = 0.25f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
+    [SerializeField] private float mouseSensitivity = 100f;
+    [SerializeField] private float maxLookAngle = 60f;
 
     private float jumpStartTime;
     private bool holdingJump;
@@ -28,6 +28,9 @@ public class PlayerMovement : MonoBehaviour
     private float lastJumpTime;
     private bool bufferedJump;
     private float bufferedJumpTime;
+    private float verticalLookRotation;
+    private float horizontalLookRotation;
+    private Transform playerCamera;
 
     private void Start()
     {
@@ -35,9 +38,26 @@ public class PlayerMovement : MonoBehaviour
         startingPosition = transform.position;
         CurrentSpeed = startingSpeed;
         lastJumpTime = Time.time;
+        playerCamera = Camera.main.transform;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     private void Update()
+    {
+        HandleJumpInput();
+        HandleMovement();
+        HandleMouseLook();
+
+        Position = transform.position;
+        DistanceCovered = Vector3.Distance(Position, startingPosition);
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            KillPlayer();
+        }
+    }
+
+    private void HandleJumpInput()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -57,7 +77,7 @@ public class PlayerMovement : MonoBehaviour
         {
             var jumpHoldDuration = Time.time - jumpStartTime;
 
-            if (Input.GetKeyUp(KeyCode.Space)/* || jumpHoldDuration > maxJumpHoldDuration*/)
+            if (Input.GetKeyUp(KeyCode.Space))
             {
                 var jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, jumpHoldDuration / maxJumpHoldDuration);
 
@@ -72,7 +92,6 @@ public class PlayerMovement : MonoBehaviour
 
         if (bufferedJump && isGrounded && (Time.time - bufferedJumpTime <= jumpBufferWindow))
         {
-            // Jump start time includes buffer start time 
             jumpStartTime = Time.time - bufferedJumpTime;
             holdingJump = true;
             bufferedJump = false;
@@ -82,19 +101,27 @@ public class PlayerMovement : MonoBehaviour
         {
             CurrentSpeed = Mathf.Max(minSpeed, CurrentSpeed * Mathf.Exp(-speedDecreaseRate * Time.deltaTime));
         }
+    }
 
-        // Mouse strafing 
-        //var mouseX = Input.GetAxis("Mouse X");
-        //var xMovement = mouseX * Time.deltaTime * strafeSpeed * transform.right;
-        //transform.position += xMovement;
+    private void HandleMovement()
+    {
+        var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
+        rb.velocity = velocity;
+    }
 
-        Position = transform.position;
-        DistanceCovered = Vector3.Distance(Position, startingPosition);
+    private void HandleMouseLook()
+    {
+        var mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        var mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            KillPlayer();
-        }
+        verticalLookRotation -= mouseY;
+        verticalLookRotation = Mathf.Clamp(verticalLookRotation, -maxLookAngle, maxLookAngle);
+
+        horizontalLookRotation += mouseX;
+        horizontalLookRotation = Mathf.Clamp(horizontalLookRotation, -maxLookAngle, maxLookAngle);
+
+        playerCamera.localRotation = Quaternion.Euler(verticalLookRotation, horizontalLookRotation, 0f);
+        transform.localRotation = Quaternion.Euler(0f, horizontalLookRotation, 0f);
     }
 
     private void Jump(float force)
@@ -106,8 +133,6 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.5f, groundLayer);
-        var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
-        rb.velocity = velocity;
     }
 
     private void OnTriggerEnter(Collider other)
