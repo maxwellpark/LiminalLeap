@@ -3,13 +3,16 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float minJumpForce = 10f;
-    [SerializeField] private float maxJumpForce = 20f;
+    [SerializeField] private float minJumpForce = 2f;
+    [SerializeField] private float maxJumpForce = 5f;
     [SerializeField] private float maxJumpHoldDuration = 0.2f;
     [SerializeField] private float startingSpeed = 5f;
-    [SerializeField] private float mininumSpeed = 2f;
-    [SerializeField] private float mouseRotationSpeed = 10f;
-    [SerializeField] private float strafeSpeed = 5f;
+    [SerializeField] private float minSpeed = 2f;
+    //[SerializeField] private float mouseRotationSpeed = 10f;
+    //[SerializeField] private float strafeSpeed = 5f;
+    [SerializeField] private float speedIncreasePerJump = 0.5f;
+    [SerializeField] private float speedDecreaseRate = 1f;
+    [SerializeField] private float speedDecreaseDelay = 2f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
 
@@ -20,14 +23,15 @@ public class PlayerMovement : MonoBehaviour
     public static float CurrentSpeed { get; private set; }
     public static float DistanceCovered { get; private set; }
     public static Vector3 Position { get; private set; }
-    private static TrackManager trackManager;
+
+    private float lastJumpTime;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        trackManager = TrackManager.GetInstance();
         startingPosition = transform.position;
         CurrentSpeed = startingSpeed;
+        lastJumpTime = Time.time;
     }
 
     private void Update()
@@ -49,37 +53,26 @@ public class PlayerMovement : MonoBehaviour
                 Jump(jumpForce);
                 holdingJump = false;
                 jumpStartTime = 0f;
+
+                CurrentSpeed += speedIncreasePerJump;
+                lastJumpTime = Time.time;
             }
         }
 
-        var closestPiece = trackManager.GetClosestPiece(transform.position);
-
-        if (closestPiece != null)
+        if (Time.time - lastJumpTime > speedDecreaseDelay)
         {
-            Debug.DrawLine(transform.position, closestPiece.GetEndPosition(), Color.magenta);
-
-            var newPosition = Vector3.MoveTowards(transform.position, closestPiece.GetEndPosition(), CurrentSpeed * Time.deltaTime);
-            var newRotation = Quaternion.RotateTowards(transform.rotation, closestPiece.transform.rotation, mouseRotationSpeed * Time.deltaTime);
-            transform.SetPositionAndRotation(newPosition, newRotation);
-
-            if (transform.position.ApproximatelyEquals(closestPiece.GetEndPosition()))
-            {
-                closestPiece.Passed = true;
-            }
+            CurrentSpeed = Mathf.Max(minSpeed, CurrentSpeed * Mathf.Exp(-speedDecreaseRate * Time.deltaTime));
         }
 
-        var mouseX = Input.GetAxis("Mouse X");
-        var xMovement = mouseX * Time.deltaTime * strafeSpeed * transform.right;
-        transform.position += xMovement;
+        // Mouse strafing 
+        //var mouseX = Input.GetAxis("Mouse X");
+        //var xMovement = mouseX * Time.deltaTime * strafeSpeed * transform.right;
+        //transform.position += xMovement;
 
-        //var mouseY = Input.GetAxis("Mouse Y");
-
-        //transform.Rotate(mouseX * mouseRotationSpeed * Time.deltaTime * Vector3.up);
-        //Camera.main.transform.Rotate(mouseRotationSpeed * Time.deltaTime * mouseY * Vector3.left);
+        //transform.position += new Vector3(transform.position.x, transform.position.y, transform.position.z + Time.deltaTime * CurrentSpeed);
 
         Position = transform.position;
         DistanceCovered = Vector3.Distance(Position, startingPosition);
-        CurrentSpeed += Time.deltaTime;
 
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -96,8 +89,8 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.5f, groundLayer);
-        //var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
-        //rb.velocity = velocity;
+        var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
+        rb.velocity = velocity;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -113,7 +106,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (triggerable is SpeedTriggerable)
             {
-                CurrentSpeed = Mathf.Max(CurrentSpeed + result, mininumSpeed);
+                CurrentSpeed = Mathf.Max(CurrentSpeed + result, minSpeed);
             }
         }
     }
@@ -124,5 +117,7 @@ public class PlayerMovement : MonoBehaviour
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
         DistanceCovered = 0f;
+        CurrentSpeed = startingSpeed;
+        lastJumpTime = Time.time;
     }
 }

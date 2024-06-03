@@ -115,7 +115,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4306228144573270022}
   - component: {fileID: 7041194460728404224}
-  - component: {fileID: 5735335570493744349}
+  - component: {fileID: 4591709012347994410}
   - component: {fileID: 2978423774975894183}
   - component: {fileID: 1520283968534297476}
   - component: {fileID: 7820442179627506839}
@@ -151,7 +151,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8782291631241442010}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &5735335570493744349
+--- !u!114 &4591709012347994410
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -160,16 +160,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 8782291631241442010}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ffbdfc2b7c733424e81ce97f8e2d6ac9, type: 3}
+  m_Script: {fileID: 11500000, guid: 5ffb54a97eebf7a40a529d3eb68642e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minJumpForce: 10
-  maxJumpForce: 25
-  maxJumpHoldDuration: 0.15
+  minJumpForce: 2
+  maxJumpForce: 5
+  maxJumpHoldDuration: 0.2
   startingSpeed: 5
-  mininumSpeed: 2
-  mouseRotationSpeed: 20
-  strafeSpeed: 5
+  minSpeed: 0
+  speedIncreasePerJump: 0.5
+  speedDecreaseRate: 1
+  speedDecreaseDelay: 2
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -245,7 +246,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8782291631241442010}
   serializedVersion: 4
-  m_Mass: 5
+  m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
