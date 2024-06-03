@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float speedIncreasePerJump = 0.5f;
     [SerializeField] private float speedDecreaseRate = 1f;
     [SerializeField] private float speedDecreaseDelay = 2f;
-    [SerializeField] private float jumpBufferWindow = 0.1f;
+    [SerializeField] private float jumpBufferWindow = 0.25f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
 
@@ -87,8 +87,6 @@ public class PlayerMovement : MonoBehaviour
         //var mouseX = Input.GetAxis("Mouse X");
         //var xMovement = mouseX * Time.deltaTime * strafeSpeed * transform.right;
         //transform.position += xMovement;
-
-        //transform.position += new Vector3(transform.position.x, transform.position.y, transform.position.z + Time.deltaTime * CurrentSpeed);
 
         Position = transform.position;
         DistanceCovered = Vector3.Distance(Position, startingPosition);
