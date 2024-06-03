@@ -29,7 +29,6 @@ public class PlayerMovement : MonoBehaviour
     private bool bufferedJump;
     private float bufferedJumpTime;
     private float verticalLookRotation;
-    private float horizontalLookRotation;
     private Transform playerCamera;
 
     private void Start()
@@ -105,7 +104,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
-        var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
+        var direction = playerCamera.forward;
+        direction.y = 0;
+        direction.Normalize();
+
+        var velocity = direction * CurrentSpeed;
+        velocity.y = rb.velocity.y;
         rb.velocity = velocity;
     }
 
@@ -117,11 +121,8 @@ public class PlayerMovement : MonoBehaviour
         verticalLookRotation -= mouseY;
         verticalLookRotation = Mathf.Clamp(verticalLookRotation, -maxLookAngle, maxLookAngle);
 
-        horizontalLookRotation += mouseX;
-        horizontalLookRotation = Mathf.Clamp(horizontalLookRotation, -maxLookAngle, maxLookAngle);
-
-        playerCamera.localRotation = Quaternion.Euler(verticalLookRotation, horizontalLookRotation, 0f);
-        transform.localRotation = Quaternion.Euler(0f, horizontalLookRotation, 0f);
+        playerCamera.localRotation = Quaternion.Euler(verticalLookRotation, 0f, 0f);
+        transform.Rotate(Vector3.up * mouseX);
     }
 
     private void Jump(float force)
