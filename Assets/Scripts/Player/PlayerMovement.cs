@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float speedIncreasePerJump = 0.5f;
     [SerializeField] private float speedDecreaseRate = 1f;
     [SerializeField] private float speedDecreaseDelay = 2f;
+    [SerializeField] private float jumpBufferWindow = 0.1f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private bool isGrounded;
 
@@ -25,6 +26,8 @@ public class PlayerMovement : MonoBehaviour
     public static Vector3 Position { get; private set; }
 
     private float lastJumpTime;
+    private bool bufferedJump;
+    private float bufferedJumpTime;
 
     private void Start()
     {
@@ -36,17 +39,25 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            jumpStartTime = Time.time;
-            holdingJump = true;
+            if (isGrounded)
+            {
+                jumpStartTime = Time.time;
+                holdingJump = true;
+            }
+            else
+            {
+                bufferedJump = true;
+                bufferedJumpTime = Time.time;
+            }
         }
 
         if (holdingJump)
         {
             var jumpHoldDuration = Time.time - jumpStartTime;
 
-            if (Input.GetKeyUp(KeyCode.Space) || jumpHoldDuration > maxJumpHoldDuration)
+            if (Input.GetKeyUp(KeyCode.Space)/* || jumpHoldDuration > maxJumpHoldDuration*/)
             {
                 var jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, jumpHoldDuration / maxJumpHoldDuration);
 
@@ -57,6 +68,14 @@ public class PlayerMovement : MonoBehaviour
                 CurrentSpeed += speedIncreasePerJump;
                 lastJumpTime = Time.time;
             }
+        }
+
+        if (bufferedJump && isGrounded && (Time.time - bufferedJumpTime <= jumpBufferWindow))
+        {
+            // Jump start time includes buffer start time 
+            jumpStartTime = Time.time - bufferedJumpTime;
+            holdingJump = true;
+            bufferedJump = false;
         }
 
         if (Time.time - lastJumpTime > speedDecreaseDelay)
