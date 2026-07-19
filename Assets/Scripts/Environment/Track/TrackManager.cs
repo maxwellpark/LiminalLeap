@@ -1,9 +1,12 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class TrackManager : Singleton<TrackManager>
 {
     [SerializeField] private Track startingTrack;
+    // When set, pieces come from the procedural generator instead of hand-placed Tracks.
+    [SerializeField] private ProceduralTrackGenerator generator;
     private Track currentTrack;
     private Track[] tracks;
 
@@ -11,7 +14,10 @@ public class TrackManager : Singleton<TrackManager>
     {
         base.Awake();
         tracks = FindObjectsOfType<Track>();
-        SwitchTrack(startingTrack);
+        if (startingTrack != null)
+        {
+            SwitchTrack(startingTrack);
+        }
     }
 
     public void SwitchTrack(Track track)
@@ -26,7 +32,11 @@ public class TrackManager : Singleton<TrackManager>
 
     public TrackPiece GetClosestPiece(Vector3 position)
     {
-        return currentTrack.Pieces
+        IEnumerable<TrackPiece> pieces = generator != null
+            ? generator.ActivePieces
+            : currentTrack != null ? currentTrack.Pieces : System.Array.Empty<TrackPiece>();
+
+        return pieces
             .Where(t => !t.Passed)
             .OrderBy(p => Vector3.Distance(position, p.GetEndPosition()))
             .FirstOrDefault();
