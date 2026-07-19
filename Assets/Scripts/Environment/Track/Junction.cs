@@ -3,7 +3,6 @@ using UnityEngine;
 public class Junction : DistanceActivatable
 {
     [SerializeField] private Track[] tracks;
-    private readonly KeyCode[] keyCodes = new[] { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
     private GUIStyle style;
 
     private void Update()
@@ -13,14 +12,26 @@ public class Junction : DistanceActivatable
             return;
         }
 
-        for (int i = 0; i < tracks.Length; i++)
+        // Steer into the branch (Left/Right, Up for a middle path) instead of a number-key
+        // menu, so the player keeps their eyes on the run.
+        int choice = -1;
+        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
         {
-            if (Input.GetKeyDown(keyCodes[i]))
-            {
-                var tm = TrackManager.GetInstance();
-                tm.SwitchTrack(tracks[i]);
-                Destroy(gameObject);
-            }
+            choice = 0;
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+        {
+            choice = tracks.Length - 1;
+        }
+        else if (tracks.Length >= 3 && (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)))
+        {
+            choice = 1;
+        }
+
+        if (choice >= 0 && choice < tracks.Length)
+        {
+            TrackManager.GetInstance().SwitchTrack(tracks[choice]);
+            Destroy(gameObject);
         }
     }
 
@@ -38,17 +49,9 @@ public class Junction : DistanceActivatable
             alignment = TextAnchor.UpperLeft
         };
 
-        var text = "Junction options: ";
-
-        for (int i = 0; i < tracks.Length; i++)
-        {
-            text += keyCodes[i].ToString();
-
-            if (i < tracks.Length - 1)
-            {
-                text += ", ";
-            }
-        }
-        GUI.Label(new Rect(40, 200, 300, 100), text, style);
+        var text = tracks.Length >= 3
+            ? "Steer:  A/left    W/straight    D/right"
+            : "Steer:  A/left    D/right";
+        GUI.Label(new Rect(40, 200, 700, 100), text, style);
     }
 }
