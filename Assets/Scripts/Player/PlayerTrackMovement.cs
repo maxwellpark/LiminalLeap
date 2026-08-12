@@ -1,85 +1,92 @@
 using Events;
 using UnityEngine;
 
+// On-rails flow runner. The player follows the track kinematically (no physics forces),
+// so nothing fights the movement. Feel: instant jump on press (variable height, jump
+// buffer), smooth clamped strafe with a camera bank, speed ramps to a cap, and FOV
+// widens with speed so fast feels fast.
+//
+// Unverified: written outside the editor. Tune the [SerializeField] values in play mode.
+// The Rigidbody is forced kinematic in Start so triggers still fire without physics jank.
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerTrackMovement : MonoBehaviour
 {
-    [SerializeField] private float minJumpForce = 10f;
-    [SerializeField] private float maxJumpForce = 20f;
-    [SerializeField] private float maxJumpHoldDuration = 0.2f;
-    [SerializeField] private float startingSpeed = 5f;
-    [SerializeField] private float minpeed = 2f;
-    [SerializeField] private float mouseRotationSpeed = 10f;
-    [SerializeField] private float strafeSpeed = 5f;
-    [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private bool isGrounded;
+    [Header("Speed")]
+    [SerializeField] private float startingSpeed = 8f;
+    [SerializeField] private float minSpeed = 4f;
+    [SerializeField] private float maxSpeed = 22f;
+    [SerializeField] private float acceleration = 1.4f;   // ramp toward maxSpeed, units/s^2
+    [SerializeField] private float turnSpeed = 200f;      // deg/s the heading follows the track
 
-    private float jumpStartTime;
-    private bool holdingJump;
-    private Vector3 startingPosition;
-    private Rigidbody rb;
+    [Header("Strafe")]
+    [SerializeField] private float strafeSpeed = 8f;
+    [SerializeField] private float strafeLimit = 3f;      // half the usable track width
+    [SerializeField] private float strafeTiltDegrees = 8f;
+
+    [Header("Jump")]
+    [SerializeField] private float jumpHeight = 2.2f;
+    [SerializeField] private float jumpUpTime = 0.32f;    // time to apex on a full jump
+    [SerializeField] private float jumpBuffer = 0.15f;    // press slightly early, still fires on land
+    [SerializeField, Range(0.1f, 1f)] private float shortHopCut = 0.45f; // release early = shorter hop
+
+    [Header("Feel")]
+    [SerializeField] private float baseFov = 60f;
+    [SerializeField] private float maxFovBoost = 18f;
+
     public static float CurrentSpeed { get; private set; }
     public static float DistanceCovered { get; private set; }
     public static Vector3 Position { get; private set; }
+
     private static TrackManager trackManager;
+    private Rigidbody rb;
+    private Camera camComponent;
+    private Vector3 startingPosition;
+    private Vector3 basePos;         // position on the track centre, before offsets
+    private Quaternion trackRot;     // clean heading, kept separate from the display bank
+
+    private float strafeOffset;
+    private float tilt;
+    private float jumpOffset;
+    private float jumpVy;
+    private bool airborne;
+    private float bufferedJumpAt = -999f;
+
+    private float Gravity => (2f * jumpHeight) / (jumpUpTime * jumpUpTime);
+    private float InitialJumpVy => Gravity * jumpUpTime;
+    private float SpeedT => Mathf.InverseLerp(startingSpeed, maxSpeed, CurrentSpeed);
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        rb.isKinematic = true; // we drive the transform; keep triggers, drop the physics fight
         trackManager = TrackManager.GetInstance();
         startingPosition = transform.position;
+        basePos = transform.position;
+        trackRot = transform.rotation;
         CurrentSpeed = startingSpeed;
+
+        if (Camera.main != null)
+        {
+            camComponent = Camera.main;
+        }
     }
 
     private void Update()
     {
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
-        {
-            jumpStartTime = Time.time;
-            holdingJump = true;
-        }
+        var dt = Time.deltaTime;
 
-        if (holdingJump)
-        {
-            var jumpHoldDuration = Time.time - jumpStartTime;
+        HandleJump(dt);
+        AdvanceAlongTrack(dt);
+        HandleStrafe(dt);
 
-            if (Input.GetKeyUp(KeyCode.Space) || jumpHoldDuration > maxJumpHoldDuration)
-            {
-                var jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, jumpHoldDuration / maxJumpHoldDuration);
+        transform.SetPositionAndRotation(
+            basePos + (trackRot * Vector3.right) * strafeOffset + Vector3.up * jumpOffset,
+            trackRot * Quaternion.Euler(0f, 0f, -tilt));
 
-                Jump(jumpForce);
-                holdingJump = false;
-                jumpStartTime = 0f;
-            }
-        }
-
-        var closestPiece = trackManager.GetClosestPiece(transform.position);
-
-        if (closestPiece != null)
-        {
-            Debug.DrawLine(transform.position, closestPiece.GetEndPosition(), Color.magenta);
-
-            var newPosition = Vector3.MoveTowards(transform.position, closestPiece.GetEndPosition(), CurrentSpeed * Time.deltaTime);
-            var newRotation = Quaternion.RotateTowards(transform.rotation, closestPiece.transform.rotation, mouseRotationSpeed * Time.deltaTime);
-            transform.SetPositionAndRotation(newPosition, newRotation);
-
-            if (transform.position.ApproximatelyEquals(closestPiece.GetEndPosition()))
-            {
-                closestPiece.Passed = true;
-            }
-        }
-
-        var mouseX = Input.GetAxis("Mouse X");
-        var xMovement = mouseX * Time.deltaTime * strafeSpeed * transform.right;
-        transform.position += xMovement;
-
-        //var mouseY = Input.GetAxis("Mouse Y");
-
-        //transform.Rotate(mouseX * mouseRotationSpeed * Time.deltaTime * Vector3.up);
-        //Camera.main.transform.Rotate(mouseRotationSpeed * Time.deltaTime * mouseY * Vector3.left);
+        ApplyFeel(dt);
 
         Position = transform.position;
-        DistanceCovered = Vector3.Distance(Position, startingPosition);
-        CurrentSpeed += Time.deltaTime;
+        DistanceCovered += CurrentSpeed * dt;
 
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -87,17 +94,72 @@ public class PlayerTrackMovement : MonoBehaviour
         }
     }
 
-    private void Jump(float force)
+    private void HandleJump(float dt)
     {
-        Debug.Log("Jumping with force: " + force);
-        rb.AddForce(Vector3.up * force, ForceMode.Impulse);
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            bufferedJumpAt = Time.time;
+        }
+
+        // Instant jump on press (or a buffered press) while grounded.
+        if (!airborne && Time.time - bufferedJumpAt <= jumpBuffer)
+        {
+            airborne = true;
+            jumpVy = InitialJumpVy;
+            bufferedJumpAt = -999f;
+        }
+
+        // Release early for a short hop.
+        if (Input.GetKeyUp(KeyCode.Space) && airborne && jumpVy > 0f)
+        {
+            jumpVy *= shortHopCut;
+        }
+
+        if (airborne)
+        {
+            jumpVy -= Gravity * dt;
+            jumpOffset += jumpVy * dt;
+            if (jumpOffset <= 0f)
+            {
+                jumpOffset = 0f;
+                jumpVy = 0f;
+                airborne = false;
+            }
+        }
     }
 
-    private void FixedUpdate()
+    private void AdvanceAlongTrack(float dt)
     {
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.5f, groundLayer);
-        //var velocity = new Vector3(rb.velocity.x, rb.velocity.y, CurrentSpeed);
-        //rb.velocity = velocity;
+        CurrentSpeed = Mathf.Clamp(Mathf.MoveTowards(CurrentSpeed, maxSpeed, acceleration * dt), minSpeed, maxSpeed);
+
+        var piece = trackManager.GetClosestPiece(basePos);
+        if (piece == null)
+        {
+            return;
+        }
+
+        basePos = Vector3.MoveTowards(basePos, piece.GetEndPosition(), CurrentSpeed * dt);
+        trackRot = Quaternion.RotateTowards(trackRot, piece.transform.rotation, turnSpeed * dt);
+
+        if (basePos.ApproximatelyEquals(piece.GetEndPosition()))
+        {
+            piece.Passed = true;
+        }
+    }
+
+    private void HandleStrafe(float dt)
+    {
+        var input = Input.GetAxisRaw("Horizontal"); // A/D + arrows, decoupled from look
+        strafeOffset = Mathf.Clamp(strafeOffset + input * strafeSpeed * dt, -strafeLimit, strafeLimit);
+        tilt = Mathf.Lerp(tilt, input * strafeTiltDegrees, 10f * dt);
+    }
+
+    private void ApplyFeel(float dt)
+    {
+        if (camComponent != null)
+        {
+            camComponent.fieldOfView = Mathf.Lerp(camComponent.fieldOfView, baseFov + maxFovBoost * SpeedT, 5f * dt);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -110,19 +172,24 @@ public class PlayerTrackMovement : MonoBehaviour
         if (other.TryGetComponent<ITriggerable>(out var triggerable))
         {
             var result = triggerable.Trigger();
-
             if (triggerable is SpeedTriggerable)
             {
-                CurrentSpeed = Mathf.Max(CurrentSpeed + result, minpeed);
+                CurrentSpeed = Mathf.Clamp(CurrentSpeed + result, minSpeed, maxSpeed);
             }
         }
     }
 
     private void KillPlayer()
     {
-        Debug.Log("KillFloor trigger entered");
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
-        transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
+        basePos = startingPosition;
+        trackRot = Quaternion.identity;
+        strafeOffset = 0f;
+        jumpOffset = 0f;
+        jumpVy = 0f;
+        airborne = false;
         DistanceCovered = 0f;
+        CurrentSpeed = startingSpeed;
+        transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
     }
 }
