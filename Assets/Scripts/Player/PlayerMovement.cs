@@ -109,8 +109,8 @@ public class PlayerMovement : MonoBehaviour
         direction.Normalize();
 
         var velocity = direction * CurrentSpeed;
-        velocity.y = rb.velocity.y;
-        rb.velocity = velocity;
+        velocity.y = rb.linearVelocity.y;
+        rb.linearVelocity = velocity;
     }
 
     private void HandleMouseLook()

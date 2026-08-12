@@ -13,7 +13,8 @@ public class TrackManager : Singleton<TrackManager>
     protected override void Awake()
     {
         base.Awake();
-        tracks = FindObjectsOfType<Track>();
+        // sort mode None: tracks is never read in order
+        tracks = FindObjectsByType<Track>(FindObjectsSortMode.None);
         if (startingTrack != null)
         {
             SwitchTrack(startingTrack);
