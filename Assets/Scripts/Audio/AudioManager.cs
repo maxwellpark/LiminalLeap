@@ -14,9 +14,17 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField, Range(0f, 1f)] private float windFloor = 0.25f; // audible when stood still
     [SerializeField] private float windPitchAtSpeed = 0.35f;
 
+    [Header("Pickup combo")]
+    [SerializeField] private float comboWindow = 1.6f;  // gap that resets the run of pickups
+    [SerializeField] private int comboSteps = 8;        // pitch stops climbing after this
+    [SerializeField] private float semitonesPerStep = 1f;
+
     private IAudioLibrary library;
     private AudioSource sfx;
+    private AudioSource pickup;   // its own source: PlayOneShot uses the source pitch
     private AudioSource wind;
+    private int combo;
+    private float lastPickupAt = -999f;
 
     public override void Init()
     {
@@ -26,6 +34,9 @@ public class AudioManager : Singleton<AudioManager>
 
         sfx = gameObject.AddComponent<AudioSource>();
         sfx.playOnAwake = false;
+
+        pickup = gameObject.AddComponent<AudioSource>();
+        pickup.playOnAwake = false;
 
         wind = gameObject.AddComponent<AudioSource>();
         wind.clip = library.Get(Sound.Wind);
@@ -42,6 +53,28 @@ public class AudioManager : Singleton<AudioManager>
         }
     }
 
+    // Returns how many pickups deep the run is, so the toast can say so too.
+    public int PlayPickup()
+    {
+        combo = Time.time - lastPickupAt > comboWindow ? 1 : Mathf.Min(combo + 1, comboSteps);
+        lastPickupAt = Time.time;
+
+        if (pickup != null)
+        {
+            pickup.pitch = Mathf.Pow(2f, (combo - 1) * semitonesPerStep / 12f);
+            pickup.PlayOneShot(library.Get(Sound.Pickup), sfxVolume);
+        }
+
+        return combo;
+    }
+
+    protected override void OnDeath(OnDeathEvent evt)
+    {
+        combo = 0;
+        lastPickupAt = -999f;
+        Play(Sound.Death);
+    }
+
     private void Update()
     {
         if (wind == null)
@@ -49,15 +82,10 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        var t = Mathf.Clamp01(PlayerTrackMovement.CurrentSpeed / 32f);
+        var t = PlayerTrackMovement.SpeedFraction;
         var target = windVolume * Mathf.Lerp(windFloor, 1f, t);
         wind.volume = Mathf.Lerp(wind.volume, target, 2f * Time.deltaTime);
         wind.pitch = 1f + windPitchAtSpeed * t;
-    }
-
-    protected override void OnDeath(OnDeathEvent evt)
-    {
-        Play(Sound.Death);
     }
 
     // Nothing is audible without one, and the scene currently has none.

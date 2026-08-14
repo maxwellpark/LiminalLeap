@@ -188,7 +188,13 @@ public static class TestSceneGenerator
         pickup.transform.localScale = Vector3.one * PickupDiameter;
         pickup.GetComponent<Collider>().isTrigger = true;
 
-        SetPrivate(pickup.AddComponent<SpeedTriggerable>(), "speedToAdd", 2f);
+        var trig = pickup.AddComponent<SpeedTriggerable>();
+        var so = new SerializedObject(trig);
+        so.FindProperty("speedToAdd").floatValue = 2f;
+        so.FindProperty("shakeCamera").boolValue = true;
+        so.FindProperty("shakeSettings").FindPropertyRelative("Amplitude").floatValue = 0.06f;
+        so.FindProperty("shakeSettings").FindPropertyRelative("Duration").floatValue = 0.12f;
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static int ArgInt(string[] args, string flag, int fallback)

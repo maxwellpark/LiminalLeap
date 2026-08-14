@@ -23,8 +23,12 @@ public class SpeedTriggerable : MonoBehaviour, ITriggerable, IRunResettable
         }
 
         SetCollected(true);
-        AudioManager.GetInstance().Play(Sound.Pickup);
-        ToastManager.GetInstance().Show($"+{speedToAdd:F0} speed");
+
+        var combo = AudioManager.GetInstance().PlayPickup();
+        ToastManager.GetInstance().Show(combo > 1
+            ? $"+{speedToAdd:F0} speed   x{combo}"
+            : $"+{speedToAdd:F0} speed");
+
         return speedToAdd;
     }
 
