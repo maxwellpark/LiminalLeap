@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Events;
 using TMPro;
 using UnityEngine;
@@ -11,11 +10,9 @@ public class ToastManager : Singleton<ToastManager>
     protected override EventType[] EventTypes => new[] { EventType.Death };
 
     [SerializeField] private TMP_Text label;
-    [SerializeField] private float holdSeconds = 1.6f;
-    [SerializeField] private float fadeSeconds = 0.45f;
-    [SerializeField] private int maxQueued = 3;
+    [SerializeField] private float holdSeconds = 0.9f;
+    [SerializeField] private float fadeSeconds = 0.35f;
 
-    private readonly Queue<string> pending = new();
     private float elapsed;
     private bool showing;
 
@@ -29,15 +26,17 @@ public class ToastManager : Singleton<ToastManager>
         SetAlpha(0f);
     }
 
+    // Replaces whatever is showing rather than queueing. At speed, pickups arrive faster
+    // than a toast can play out, and the queue was silently dropping over half of them.
     public void Show(string message)
     {
-        // A backlog of stale toasts is worse than dropping some.
-        if (pending.Count >= maxQueued)
+        if (label != null)
         {
-            pending.Dequeue();
+            label.text = message;
         }
 
-        pending.Enqueue(message);
+        elapsed = 0f;
+        showing = true;
     }
 
     private void Update()
@@ -49,14 +48,7 @@ public class ToastManager : Singleton<ToastManager>
 
         if (!showing)
         {
-            if (pending.Count == 0)
-            {
-                return;
-            }
-
-            label.text = pending.Dequeue();
-            elapsed = 0f;
-            showing = true;
+            return;
         }
 
         elapsed += Time.deltaTime;

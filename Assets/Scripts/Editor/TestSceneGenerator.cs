@@ -10,6 +10,11 @@ public static class TestSceneGenerator
 {
     private const string OutputDir = "Assets/Scenes/Generated";
 
+    // The player's trigger box is 1 unit centred on the track surface, so it only reaches
+    // y +0.5. Pickups at y=1 with a 0.4 radius missed by 0.1 and were catchable only mid-jump.
+    private const float PickupHeight = 0.5f;
+    private const float PickupDiameter = 1f;
+
     public class Settings
     {
         public int Seed = 1;
@@ -90,7 +95,7 @@ public static class TestSceneGenerator
             if (rng.NextDouble() < settings.PickupChance)
             {
                 var lane = (float)(rng.NextDouble() * 6d - 3d);
-                AddPickup(root.transform, piece.transform.TransformPoint(new Vector3(lane, 1f, settings.PieceLength * 0.5f)));
+                AddPickup(root.transform, piece.transform.TransformPoint(new Vector3(lane, PickupHeight, settings.PieceLength * 0.5f)));
             }
 
             position = anchor.position;
@@ -124,7 +129,9 @@ public static class TestSceneGenerator
         var player = InstantiatePrefab("Assets/Prefabs/Player.prefab");
         if (player != null)
         {
-            player.transform.position = new Vector3(0f, 1f, 0f);
+            // On the track line: basePos starts here and converges onto the anchors,
+            // so spawning higher just makes the player sink for the first piece.
+            player.transform.position = Vector3.zero;
         }
 
         RemoveStrayCameras(player);
@@ -178,7 +185,7 @@ public static class TestSceneGenerator
         pickup.name = "SpeedPickup";
         pickup.transform.SetParent(parent);
         pickup.transform.position = position;
-        pickup.transform.localScale = Vector3.one * 0.8f;
+        pickup.transform.localScale = Vector3.one * PickupDiameter;
         pickup.GetComponent<Collider>().isTrigger = true;
 
         SetPrivate(pickup.AddComponent<SpeedTriggerable>(), "speedToAdd", 2f);
