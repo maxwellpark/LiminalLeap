@@ -109,7 +109,7 @@ public static class TestSceneGenerator
     {
         InstantiatePrefab("Assets/Prefabs/Singletons/GameManager.prefab");
         InstantiatePrefab("Assets/Prefabs/Singletons/UIManager.prefab");
-        InstantiatePrefab("Assets/Prefabs/Singletons/CameraManager.prefab");
+        var cameraManager = InstantiatePrefab("Assets/Prefabs/Singletons/CameraManager.prefab");
 
         var trackManager = InstantiatePrefab("Assets/Prefabs/Singletons/TrackManager.prefab");
         if (trackManager != null)
@@ -125,6 +125,38 @@ public static class TestSceneGenerator
         if (player != null)
         {
             player.transform.position = new Vector3(0f, 1f, 0f);
+        }
+
+        RemoveStrayCameras(player);
+
+        // CameraShake lives on the Player prefab, so it can only be wired once both exist.
+        if (cameraManager != null && player != null)
+        {
+            var shake = player.GetComponentInChildren<CameraShake>(true);
+            if (shake != null)
+            {
+                SetPrivate(cameraManager.GetComponent<CameraManager>(), "cameraShake", shake);
+            }
+        }
+    }
+
+    // The Player prefab brings its own MainCamera-tagged camera, so the one the default
+    // scene template drops at the origin just fights it for Camera.main and never moves.
+    private static void RemoveStrayCameras(GameObject player)
+    {
+        var playerCameras = player != null
+            ? player.GetComponentsInChildren<Camera>(true)
+            : Array.Empty<Camera>();
+
+        foreach (var cam in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (Array.IndexOf(playerCameras, cam) >= 0)
+            {
+                continue;
+            }
+
+            Debug.Log("Removing stray camera: " + cam.gameObject.name);
+            UnityEngine.Object.DestroyImmediate(cam.gameObject);
         }
     }
 
