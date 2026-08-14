@@ -82,7 +82,6 @@ public class PlayerTrackMovement : MonoBehaviour
         ApplyFeel(dt);
 
         Position = transform.position;
-        DistanceCovered += CurrentSpeed * dt;
 
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -124,15 +123,18 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void AdvanceAlongTrack(float dt)
     {
-        CurrentSpeed = Mathf.Clamp(Mathf.MoveTowards(CurrentSpeed, maxSpeed, acceleration * dt), minSpeed, maxSpeed);
-
+        // nothing to run along, so don't ramp speed or bank distance either
         var piece = trackManager.GetClosestPiece(basePos);
         if (piece == null)
         {
             return;
         }
 
+        CurrentSpeed = Mathf.Clamp(Mathf.MoveTowards(CurrentSpeed, maxSpeed, acceleration * dt), minSpeed, maxSpeed);
+
+        var before = basePos;
         basePos = Vector3.MoveTowards(basePos, piece.GetEndPosition(), CurrentSpeed * dt);
+        DistanceCovered += (basePos - before).magnitude;
         trackRot = Quaternion.RotateTowards(trackRot, piece.transform.rotation, turnSpeed * dt);
 
         if (basePos.ApproximatelyEquals(piece.GetEndPosition()))
