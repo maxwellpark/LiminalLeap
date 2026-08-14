@@ -19,8 +19,9 @@ public class UIManager : Singleton<UIManager>
 
     private void Update()
     {
-        distanceText.text = $"Distance covered: {PlayerTrackMovement.DistanceCovered:F1}";
-        speedText.text = $"Speed: {PlayerTrackMovement.CurrentSpeed:F1}";
+        // SetText with args formats into TMP's own buffer, string interpolation allocates every frame
+        distanceText.SetText("Distance covered: {0:1}", PlayerTrackMovement.DistanceCovered);
+        speedText.SetText("Speed: {0:1}", PlayerTrackMovement.CurrentSpeed);
     }
 
     protected override void OnDataUpdated()
