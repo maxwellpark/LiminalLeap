@@ -29,6 +29,11 @@ public class PlayerTrackMovement : MonoBehaviour
     [SerializeField] private float maxFovBoost = 24f;
 
     [Header("Juice")]
+    [SerializeField] private float pickupFovKick = 7f;
+    [SerializeField] private float fovKickDecay = 4f;
+    [SerializeField] private CameraShakeSettings deathShake = new() { Amplitude = 0.35f, Duration = 0.5f };
+    [SerializeField] private float deathTimeScale = 0.25f;
+    [SerializeField] private float deathPause = 0.75f;
     [SerializeField] private float bobHeight = 0.07f;
     [SerializeField] private float bobStridesPerSecond = 3.4f; // at full speed
     [SerializeField] private float bobRollDegrees = 0.9f;
@@ -53,6 +58,9 @@ public class PlayerTrackMovement : MonoBehaviour
     private float bobRoll;
     private float dip;
     private float travelledThisFrame;
+    private float fovBase;
+    private float fovKick;
+    private bool dying;
     private float jumpOffset;
     private float jumpVy;
     private bool airborne;
@@ -80,6 +88,11 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void Update()
     {
+        if (dying)
+        {
+            return;
+        }
+
         var dt = Time.deltaTime;
 
         HandleJump(dt);
@@ -200,10 +213,16 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void ApplyFeel(float dt)
     {
-        if (camComponent != null)
+        if (camComponent == null)
         {
-            camComponent.fieldOfView = Mathf.Lerp(camComponent.fieldOfView, baseFov + maxFovBoost * SpeedT, 5f * dt);
+            return;
         }
+
+        // Base and kick tracked separately: lerping the camera's own value would eat
+        // last frame's kick and the punch would never read.
+        fovBase = Mathf.Lerp(fovBase, baseFov + maxFovBoost * SpeedT, 5f * dt);
+        fovKick = Mathf.Lerp(fovKick, 0f, fovKickDecay * dt);
+        camComponent.fieldOfView = fovBase + fovKick;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -219,13 +238,50 @@ public class PlayerTrackMovement : MonoBehaviour
             if (triggerable is SpeedTriggerable)
             {
                 CurrentSpeed = Mathf.Clamp(CurrentSpeed + result, minSpeed, maxSpeed);
+                fovKick = pickupFovKick;
             }
         }
     }
 
     private void KillPlayer()
     {
+        if (!dying)
+        {
+            StartCoroutine(DeathSequence());
+        }
+    }
+
+    // Shake, slow down, wipe to black, then reset behind the wipe so the respawn
+    // isn't a teleport in your face.
+    private System.Collections.IEnumerator DeathSequence()
+    {
+        dying = true;
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
+        CameraManager.GetInstance().Shake(deathShake);
+        ScreenFade.GetInstance().To(1f, deathPause * 0.8f);
+        Time.timeScale = deathTimeScale;
+
+        // Realtime, or the pause would stretch by however much we slowed the game.
+        yield return new WaitForSecondsRealtime(deathPause);
+
+        Time.timeScale = 1f;
+        ResetRun();
+        ScreenFade.GetInstance().To(0f, 0.35f);
+        dying = false;
+    }
+
+    // Nothing should be able to leave the game in slow motion.
+    private void OnDisable()
+    {
+        if (dying)
+        {
+            Time.timeScale = 1f;
+            dying = false;
+        }
+    }
+
+    private void ResetRun()
+    {
         trackManager.ResetRun();
         basePos = startingPosition;
         trackRot = Quaternion.identity;
