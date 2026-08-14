@@ -78,3 +78,6 @@ crashlytics-build.properties
 
 # New-format VS solution (Unity 6)
 *.slnx
+
+# Generated play-test scenes, reproducible from a seed
+/[Aa]ssets/[Ss]cenes/[Gg]enerated/
