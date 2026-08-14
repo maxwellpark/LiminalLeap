@@ -28,6 +28,11 @@ public class PlayerTrackMovement : MonoBehaviour
     [SerializeField] private float baseFov = 60f;
     [SerializeField] private float maxFovBoost = 24f;
 
+    [Header("Score")]
+    [SerializeField] private float speedMultiplierBonus = 1.5f; // extra multiplier at full speed
+    [SerializeField] private float nearMissDecayPerSecond = 0.25f;
+    [SerializeField] private float maxNearMissBonus = 3f;
+
     [Header("Juice")]
     [SerializeField] private float pickupFovKick = 7f;
     [SerializeField] private float fovKickDecay = 4f;
@@ -45,6 +50,11 @@ public class PlayerTrackMovement : MonoBehaviour
 
     // 0 at starting speed, 1 at the cap. Saves everything else hardcoding maxSpeed.
     public static float SpeedFraction { get; private set; }
+
+    public static float Score { get; private set; }
+    public static float Multiplier { get; private set; } = 1f;
+
+    private float nearMissBonus;
 
     private static TrackManager trackManager;
     private Rigidbody rb;
@@ -179,6 +189,11 @@ public class PlayerTrackMovement : MonoBehaviour
         basePos = Vector3.MoveTowards(basePos, piece.GetEndPosition(), CurrentSpeed * dt);
         travelledThisFrame = (basePos - before).magnitude;
         DistanceCovered += travelledThisFrame;
+
+        // Pushing pace and skimming hazards both pay, so risk is worth taking.
+        nearMissBonus = Mathf.Max(0f, nearMissBonus - nearMissDecayPerSecond * dt);
+        Multiplier = 1f + speedMultiplierBonus * SpeedT + nearMissBonus;
+        Score += travelledThisFrame * Multiplier;
         trackRot = Quaternion.RotateTowards(trackRot, piece.transform.rotation, turnSpeed * dt);
 
         if (basePos.ApproximatelyEquals(piece.GetEndPosition()))
@@ -239,9 +254,10 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("KillFloor"))
+        if (other.CompareTag("KillFloor") || other.GetComponent<Hazard>() != null)
         {
             KillPlayer();
+            return;
         }
 
         if (other.TryGetComponent<ITriggerable>(out var triggerable))
@@ -253,6 +269,12 @@ public class PlayerTrackMovement : MonoBehaviour
                 fovKick = pickupFovKick;
             }
         }
+    }
+
+    public void RegisterNearMiss(float reward)
+    {
+        nearMissBonus = Mathf.Min(nearMissBonus + reward, maxNearMissBonus);
+        ToastManager.GetInstance().Show($"Near miss   x{Multiplier:F1}");
     }
 
     private void KillPlayer()
@@ -302,6 +324,9 @@ public class PlayerTrackMovement : MonoBehaviour
         jumpVy = 0f;
         airborne = false;
         DistanceCovered = 0f;
+        Score = 0f;
+        nearMissBonus = 0f;
+        Multiplier = 1f;
         CurrentSpeed = startingSpeed;
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
     }
