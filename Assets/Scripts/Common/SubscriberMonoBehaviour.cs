@@ -1,12 +1,15 @@
 using Events;
 using System;
-using System.Linq;
 using UnityEngine;
 using EventType = Events.EventType;
 
 public abstract class SubscriberMonoBehaviour : MonoBehaviour
 {
     protected virtual EventType[] EventTypes { get; } = new EventType[0];
+
+    // Overrides usually build the array inline, so read it once rather than per lookup.
+    private EventType[] types;
+    private EventType[] Types => types ??= EventTypes;
 
     protected virtual void OnEnable()
     {
@@ -18,17 +21,22 @@ public abstract class SubscriberMonoBehaviour : MonoBehaviour
         Unsubcribe();
     }
 
+    private bool Handles(EventType type)
+    {
+        return Array.IndexOf(Types, type) >= 0;
+    }
+
     private void Subscribe()
     {
-        if (EventTypes.Contains(EventType.Death))
+        if (Handles(EventType.Death))
         {
             GameManager.EventService.Add<OnDeathEvent>(OnDeath);
         }
-        if (EventTypes.Contains(EventType.Spawn))
+        if (Handles(EventType.Spawn))
         {
             GameManager.EventService.Add<OnSpawnEvent>(OnSpawn);
         }
-        if (EventTypes.Contains(EventType.DataUpdated))
+        if (Handles(EventType.DataUpdated))
         {
             GameManager.EventService.Add<OnDataUpdatedEvent>(OnDataUpdated);
         }
@@ -36,15 +44,15 @@ public abstract class SubscriberMonoBehaviour : MonoBehaviour
 
     private void Unsubcribe()
     {
-        if (EventTypes.Contains(EventType.Death))
+        if (Handles(EventType.Death))
         {
             GameManager.EventService.Remove<OnDeathEvent>(OnDeath);
         }
-        if (EventTypes.Contains(EventType.Spawn))
+        if (Handles(EventType.Spawn))
         {
             GameManager.EventService.Remove<OnSpawnEvent>(OnSpawn);
         }
-        if (EventTypes.Contains(EventType.DataUpdated))
+        if (Handles(EventType.DataUpdated))
         {
             GameManager.EventService.Remove<OnDataUpdatedEvent>(OnDataUpdated);
         }
