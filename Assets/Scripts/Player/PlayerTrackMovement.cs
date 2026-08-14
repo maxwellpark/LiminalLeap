@@ -131,7 +131,7 @@ public class PlayerTrackMovement : MonoBehaviour
         Position = transform.position;
         SpeedFraction = SpeedT;
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (InputRouter.Source.RestartPressed)
         {
             KillPlayer();
         }
@@ -139,7 +139,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void HandleJump(float dt)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (InputRouter.Source.JumpPressed)
         {
             bufferedJumpAt = Time.time;
         }
@@ -152,7 +152,7 @@ public class PlayerTrackMovement : MonoBehaviour
             AudioManager.GetInstance().Play(Sound.Jump);
         }
 
-        if (Input.GetKeyUp(KeyCode.Space) && airborne && jumpVy > 0f)
+        if (InputRouter.Source.JumpReleased && airborne && jumpVy > 0f)
         {
             jumpVy *= shortHopCut;
         }
@@ -204,7 +204,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void HandleStrafe(float dt)
     {
-        var input = Input.GetAxisRaw("Horizontal"); // A/D + arrows, decoupled from look
+        var input = InputRouter.Source.Horizontal; // A/D + arrows, decoupled from look
         strafeVel = Mathf.MoveTowards(strafeVel, input * strafeSpeed, strafeAccel * dt);
         strafeOffset = Mathf.Clamp(strafeOffset + strafeVel * dt, -strafeLimit, strafeLimit);
 
