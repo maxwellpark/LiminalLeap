@@ -101,6 +101,7 @@ public class PlayerTrackMovement : MonoBehaviour
             airborne = true;
             jumpVy = InitialJumpVy;
             bufferedJumpAt = -999f;
+            AudioManager.GetInstance().Play(Sound.Jump);
         }
 
         if (Input.GetKeyUp(KeyCode.Space) && airborne && jumpVy > 0f)
@@ -117,6 +118,7 @@ public class PlayerTrackMovement : MonoBehaviour
                 jumpOffset = 0f;
                 jumpVy = 0f;
                 airborne = false;
+                AudioManager.GetInstance().Play(Sound.Land);
             }
         }
     }

@@ -25,6 +25,7 @@ public class SpeedTriggerable : MonoBehaviour, ITriggerable
             rend.enabled = false;
         }
 
+        AudioManager.GetInstance().Play(Sound.Pickup);
         return speedToAdd;
     }
 }
