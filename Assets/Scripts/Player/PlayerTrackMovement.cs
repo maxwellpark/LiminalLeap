@@ -105,6 +105,7 @@ public class PlayerTrackMovement : MonoBehaviour
         ToastManager.GetInstance();
         ScreenFade.GetInstance();
         SpeedVignette.GetInstance();
+        MoodLighting.GetInstance();
     }
 
     private void Update()
