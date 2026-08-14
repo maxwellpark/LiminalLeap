@@ -2,7 +2,7 @@ using UnityEngine;
 
 // Steer to commit: you take whichever branch you're strafed into when you cross the split.
 // The transform's position and forward define that split plane, its right defines the lanes.
-public class Junction : DistanceActivatable
+public class Junction : DistanceActivatable, IRunResettable
 {
     [SerializeField] private Track[] tracks;
     [SerializeField] private float laneDeadzone = 1f; // width of the middle lane, 3+ branches only

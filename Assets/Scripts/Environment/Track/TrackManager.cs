@@ -43,9 +43,13 @@ public class TrackManager : Singleton<TrackManager>
             }
         }
 
-        foreach (var junction in FindObjectsByType<Junction>(FindObjectsSortMode.None))
+        // includes inactive, or a pickup that hid itself never comes back
+        foreach (var mb in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            junction.ResetForNewRun();
+            if (mb is IRunResettable resettable)
+            {
+                resettable.ResetForNewRun();
+            }
         }
 
         if (startingTrack != null)
