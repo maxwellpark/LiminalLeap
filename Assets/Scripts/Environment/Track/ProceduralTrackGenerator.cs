@@ -1,12 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Endless track by chaining piece prefabs ahead of the player and pooling the ones left
-// behind, so you author a handful of piece prefabs instead of hand-placing a level.
-// Assign a few TrackPiece prefabs and the player transform, tune the window. Straight
-// pieces chain cleanly; turn/curve pieces want an end anchor (see follow-up notes).
-//
-// Unverified: written outside the editor. TrackManager reads ActivePieces when assigned.
+// Chains piece prefabs ahead of the player and pools the ones behind.
+// Straights only for now, curves need an end anchor (#3).
 public class ProceduralTrackGenerator : MonoBehaviour
 {
     [SerializeField] private TrackPiece[] piecePrefabs;

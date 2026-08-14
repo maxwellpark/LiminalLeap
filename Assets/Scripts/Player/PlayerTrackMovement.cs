@@ -1,13 +1,7 @@
 using Events;
 using UnityEngine;
 
-// On-rails flow runner. The player follows the track kinematically (no physics forces),
-// so nothing fights the movement. Feel: instant jump on press (variable height, jump
-// buffer), smooth clamped strafe with a camera bank, speed ramps to a cap, and FOV
-// widens with speed so fast feels fast.
-//
-// Unverified: written outside the editor. Tune the [SerializeField] values in play mode.
-// The Rigidbody is forced kinematic in Start so triggers still fire without physics jank.
+// On-rails runner. Kinematic along the track so movement and the jump arc can't fight.
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerTrackMovement : MonoBehaviour
 {
@@ -20,6 +14,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     [Header("Strafe")]
     [SerializeField] private float strafeSpeed = 8f;
+    [SerializeField] private float strafeAccel = 60f;     // units/s^2, ramp in and out
     [SerializeField] private float strafeLimit = 3f;      // half the usable track width
     [SerializeField] private float strafeTiltDegrees = 8f;
 
@@ -45,6 +40,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private Quaternion trackRot;     // clean heading, kept separate from the display bank
 
     private float strafeOffset;
+    private float strafeVel;
     private float tilt;
     private float jumpOffset;
     private float jumpVy;
@@ -101,7 +97,6 @@ public class PlayerTrackMovement : MonoBehaviour
             bufferedJumpAt = Time.time;
         }
 
-        // Instant jump on press (or a buffered press) while grounded.
         if (!airborne && Time.time - bufferedJumpAt <= jumpBuffer)
         {
             airborne = true;
@@ -109,7 +104,6 @@ public class PlayerTrackMovement : MonoBehaviour
             bufferedJumpAt = -999f;
         }
 
-        // Release early for a short hop.
         if (Input.GetKeyUp(KeyCode.Space) && airborne && jumpVy > 0f)
         {
             jumpVy *= shortHopCut;
@@ -150,8 +144,18 @@ public class PlayerTrackMovement : MonoBehaviour
     private void HandleStrafe(float dt)
     {
         var input = Input.GetAxisRaw("Horizontal"); // A/D + arrows, decoupled from look
-        strafeOffset = Mathf.Clamp(strafeOffset + input * strafeSpeed * dt, -strafeLimit, strafeLimit);
-        tilt = Mathf.Lerp(tilt, input * strafeTiltDegrees, 10f * dt);
+        strafeVel = Mathf.MoveTowards(strafeVel, input * strafeSpeed, strafeAccel * dt);
+        strafeOffset = Mathf.Clamp(strafeOffset + strafeVel * dt, -strafeLimit, strafeLimit);
+
+        // stop the velocity winding up while pinned against a rail
+        if (Mathf.Abs(strafeOffset) >= strafeLimit)
+        {
+            strafeVel = 0f;
+        }
+
+        // bank off actual movement, not raw input, so it eases with the strafe
+        var lean = strafeSpeed > 0f ? strafeVel / strafeSpeed : 0f;
+        tilt = Mathf.Lerp(tilt, lean * strafeTiltDegrees, 10f * dt);
     }
 
     private void ApplyFeel(float dt)

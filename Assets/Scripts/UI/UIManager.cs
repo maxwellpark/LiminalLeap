@@ -19,8 +19,8 @@ public class UIManager : Singleton<UIManager>
 
     private void Update()
     {
-        distanceText.text = $"Distance covered: {PlayerMovement.DistanceCovered:F1}";
-        speedText.text = $"Speed: {PlayerMovement.CurrentSpeed:F1}";
+        distanceText.text = $"Distance covered: {PlayerTrackMovement.DistanceCovered:F1}";
+        speedText.text = $"Speed: {PlayerTrackMovement.CurrentSpeed:F1}";
     }
 
     protected override void OnDataUpdated()
