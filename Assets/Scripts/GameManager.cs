@@ -16,6 +16,14 @@ public class GameManager : Singleton<GameManager>
     protected override void Awake()
     {
         base.Awake(); // sets the singleton instance and runs the duplicate guard
+
+        // Losing the asset reference shouldn't be an instant null ref, and a scene
+        // built at runtime has no asset to point at.
+        if (data == null)
+        {
+            data = ScriptableObject.CreateInstance<GameData>();
+        }
+
         data.ResetToDefaults();
     }
 
