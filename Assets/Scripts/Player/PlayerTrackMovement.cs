@@ -43,6 +43,9 @@ public class PlayerTrackMovement : MonoBehaviour
     public static float DistanceCovered { get; private set; }
     public static Vector3 Position { get; private set; }
 
+    // 0 at starting speed, 1 at the cap. Saves everything else hardcoding maxSpeed.
+    public static float SpeedFraction { get; private set; }
+
     private static TrackManager trackManager;
     private Rigidbody rb;
     private Camera camComponent;
@@ -83,7 +86,15 @@ public class PlayerTrackMovement : MonoBehaviour
         if (Camera.main != null)
         {
             camComponent = Camera.main;
+            fovBase = camComponent.fieldOfView;
         }
+
+        // Self-provisioning managers need someone to ask first. Doing it here also
+        // builds their canvases up front rather than hitching on the first death.
+        AudioManager.GetInstance();
+        ToastManager.GetInstance();
+        ScreenFade.GetInstance();
+        SpeedVignette.GetInstance();
     }
 
     private void Update()
@@ -108,6 +119,7 @@ public class PlayerTrackMovement : MonoBehaviour
         ApplyFeel(dt);
 
         Position = transform.position;
+        SpeedFraction = SpeedT;
 
         if (Input.GetKeyDown(KeyCode.R))
         {

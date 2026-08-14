@@ -82,7 +82,7 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        var t = Mathf.Clamp01(PlayerTrackMovement.CurrentSpeed / 32f);
+        var t = PlayerTrackMovement.SpeedFraction;
         var target = windVolume * Mathf.Lerp(windFloor, 1f, t);
         wind.volume = Mathf.Lerp(wind.volume, target, 2f * Time.deltaTime);
         wind.pitch = 1f + windPitchAtSpeed * t;
