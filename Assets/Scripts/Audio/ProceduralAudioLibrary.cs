@@ -55,12 +55,23 @@ public class ProceduralAudioLibrary : IAudioLibrary
 
             case Sound.Wind:
             {
-                // low rumble under filtered noise, looped, so speed has something to ride
-                var air = Synth.Noise(2.2f, 29, 0.06f);
-                var rumble = Synth.Sweep(70f, 70f, 2.2f, 0f);
-                var buf = Synth.Mix(air, 0.9f, rumble, 0.15f);
-                Synth.Normalise(buf, 0.55f);
-                return Synth.MakeSeamless(buf, Synth.Samples(0.25f));
+                // Long loop so the repeat isn't obvious, heavy filtering so it's air not hiss,
+                // and two LFOs at odd rates so it drifts instead of sitting flat.
+                const float length = 7.3f;
+
+                var air = Synth.Noise(length, 29, 0.012f);
+                Synth.Modulate(air, 0.07f, 0.55f, 0f);
+
+                var gust = Synth.Noise(length, 71, 0.05f);
+                Synth.Modulate(gust, 0.031f, 0.8f, 2.1f);
+
+                var drone = Synth.Sweep(48f, 48f, length, 0f);
+                var detune = Synth.Sweep(48.7f, 48.7f, length, 0f);
+
+                var buf = Synth.Mix(air, 1f, gust, 0.35f);
+                buf = Synth.Mix(buf, 1f, Synth.Mix(drone, 0.5f, detune, 0.5f), 0.22f);
+                Synth.Normalise(buf, 0.5f);
+                return Synth.MakeSeamless(buf, Synth.Samples(0.6f));
             }
 
             default:

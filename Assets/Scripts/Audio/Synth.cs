@@ -43,6 +43,17 @@ public static class Synth
         return buf;
     }
 
+    // Slow amplitude drift. Static noise reads as tape hiss; movement reads as air.
+    public static void Modulate(float[] buf, float rateHz, float depth, float phase)
+    {
+        for (var i = 0; i < buf.Length; i++)
+        {
+            var t = (float)i / SampleRate;
+            var lfo = (float)Math.Sin(2d * Math.PI * rateHz * t + phase);
+            buf[i] *= 1f - depth + depth * (lfo * 0.5f + 0.5f);
+        }
+    }
+
     public static void Decay(float[] buf, float amount)
     {
         for (var i = 0; i < buf.Length; i++)
