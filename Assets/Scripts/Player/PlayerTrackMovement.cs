@@ -106,6 +106,7 @@ public class PlayerTrackMovement : MonoBehaviour
         ScreenFade.GetInstance();
         SpeedVignette.GetInstance();
         MoodLighting.GetInstance();
+        DebugOverlay.GetInstance();
     }
 
     private void Update()
