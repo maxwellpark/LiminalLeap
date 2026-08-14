@@ -21,6 +21,17 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
     private void Start()
     {
+        ResetRun();
+    }
+
+    public void ResetRun()
+    {
+        for (var i = 0; i < active.Count; i++)
+        {
+            Recycle(active[i]);
+        }
+        active.Clear();
+
         nextEnd = startPosition;
         nextForward = startForward.sqrMagnitude > 0f ? startForward.normalized : Vector3.forward;
         for (var i = 0; i < piecesAhead; i++)

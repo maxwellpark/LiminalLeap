@@ -19,6 +19,41 @@ public class TrackManager : Singleton<TrackManager>
         }
     }
 
+    // Death only reset the player, so a second run inherited passed pieces and the old branch.
+    public void ResetRun()
+    {
+        if (generator != null)
+        {
+            generator.ResetRun();
+        }
+        else
+        {
+            foreach (var track in FindObjectsByType<Track>(FindObjectsSortMode.None))
+            {
+                var pieces = track.Pieces;
+                if (pieces == null)
+                {
+                    continue;
+                }
+
+                for (var i = 0; i < pieces.Length; i++)
+                {
+                    pieces[i].Passed = false;
+                }
+            }
+        }
+
+        foreach (var junction in FindObjectsByType<Junction>(FindObjectsSortMode.None))
+        {
+            junction.ResetForNewRun();
+        }
+
+        if (startingTrack != null)
+        {
+            SwitchTrack(startingTrack);
+        }
+    }
+
     public void SwitchTrack(Track track)
     {
         if (currentTrack != null)
