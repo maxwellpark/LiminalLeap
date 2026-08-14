@@ -8,7 +8,7 @@ public class PlayerTrackMovement : MonoBehaviour
     [Header("Speed")]
     [SerializeField] private float startingSpeed = 8f;
     [SerializeField] private float minSpeed = 4f;
-    [SerializeField] private float maxSpeed = 22f;
+    [SerializeField] private float maxSpeed = 32f;
     [SerializeField] private float acceleration = 1.4f;   // ramp toward maxSpeed, units/s^2
     [SerializeField] private float turnSpeed = 200f;      // deg/s the heading follows the track
 
@@ -26,7 +26,13 @@ public class PlayerTrackMovement : MonoBehaviour
 
     [Header("Feel")]
     [SerializeField] private float baseFov = 60f;
-    [SerializeField] private float maxFovBoost = 18f;
+    [SerializeField] private float maxFovBoost = 24f;
+
+    [Header("Juice")]
+    [SerializeField] private float bobHeight = 0.07f;
+    [SerializeField] private float bobStridesPerSecond = 3.4f; // at full speed
+    [SerializeField] private float bobRollDegrees = 0.9f;
+    [SerializeField] private float landingDip = 0.12f;
 
     public static float CurrentSpeed { get; private set; }
     public static float DistanceCovered { get; private set; }
@@ -42,6 +48,11 @@ public class PlayerTrackMovement : MonoBehaviour
     private float strafeOffset;
     private float strafeVel;
     private float tilt;
+    private float bobPhase;
+    private float bobOffset;
+    private float bobRoll;
+    private float dip;
+    private float travelledThisFrame;
     private float jumpOffset;
     private float jumpVy;
     private bool airborne;
@@ -75,9 +86,11 @@ public class PlayerTrackMovement : MonoBehaviour
         AdvanceAlongTrack(dt);
         HandleStrafe(dt);
 
+        HandleBob(dt);
+
         transform.SetPositionAndRotation(
-            basePos + (trackRot * Vector3.right) * strafeOffset + Vector3.up * jumpOffset,
-            trackRot * Quaternion.Euler(0f, 0f, -tilt));
+            basePos + (trackRot * Vector3.right) * strafeOffset + Vector3.up * (jumpOffset + bobOffset - dip),
+            trackRot * Quaternion.Euler(0f, 0f, -tilt + bobRoll));
 
         ApplyFeel(dt);
 
@@ -118,6 +131,7 @@ public class PlayerTrackMovement : MonoBehaviour
                 jumpOffset = 0f;
                 jumpVy = 0f;
                 airborne = false;
+                dip = landingDip;
                 AudioManager.GetInstance().Play(Sound.Land);
             }
         }
@@ -126,6 +140,8 @@ public class PlayerTrackMovement : MonoBehaviour
     private void AdvanceAlongTrack(float dt)
     {
         // nothing to run along, so don't ramp speed or bank distance either
+        travelledThisFrame = 0f;
+
         var piece = trackManager.GetClosestPiece(basePos);
         if (piece == null)
         {
@@ -136,7 +152,8 @@ public class PlayerTrackMovement : MonoBehaviour
 
         var before = basePos;
         basePos = Vector3.MoveTowards(basePos, piece.GetEndPosition(), CurrentSpeed * dt);
-        DistanceCovered += (basePos - before).magnitude;
+        travelledThisFrame = (basePos - before).magnitude;
+        DistanceCovered += travelledThisFrame;
         trackRot = Quaternion.RotateTowards(trackRot, piece.transform.rotation, turnSpeed * dt);
 
         if (basePos.ApproximatelyEquals(piece.GetEndPosition()))
@@ -160,6 +177,25 @@ public class PlayerTrackMovement : MonoBehaviour
         // bank off actual movement, not raw input, so it eases with the strafe
         var lean = strafeSpeed > 0f ? strafeVel / strafeSpeed : 0f;
         tilt = Mathf.Lerp(tilt, lean * strafeTiltDegrees, 10f * dt);
+    }
+
+    // Bob is what sells running. Driven off travelled distance, not time, so it
+    // stays in step with the speed and stops dead when the track runs out.
+    private void HandleBob(float dt)
+    {
+        if (airborne)
+        {
+            bobOffset = Mathf.Lerp(bobOffset, 0f, 12f * dt);
+            bobRoll = Mathf.Lerp(bobRoll, 0f, 12f * dt);
+        }
+        else
+        {
+            bobPhase += travelledThisFrame * bobStridesPerSecond;
+            bobOffset = -Mathf.Abs(Mathf.Sin(bobPhase)) * bobHeight * SpeedT;
+            bobRoll = Mathf.Cos(bobPhase * 0.5f) * bobRollDegrees * SpeedT;
+        }
+
+        dip = Mathf.Lerp(dip, 0f, 8f * dt);
     }
 
     private void ApplyFeel(float dt)

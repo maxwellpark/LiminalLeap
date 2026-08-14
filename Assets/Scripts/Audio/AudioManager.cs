@@ -10,8 +10,9 @@ public class AudioManager : Singleton<AudioManager>
 
     [SerializeField] private AuthoredAudioLibrary authored;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 0.7f;
-    [SerializeField, Range(0f, 1f)] private float windVolume = 0.35f;
-    [SerializeField] private float windPitchAtSpeed = 0.6f; // extra pitch at full speed
+    [SerializeField, Range(0f, 1f)] private float windVolume = 0.14f;
+    [SerializeField, Range(0f, 1f)] private float windFloor = 0.25f; // audible when stood still
+    [SerializeField] private float windPitchAtSpeed = 0.35f;
 
     private IAudioLibrary library;
     private AudioSource sfx;
@@ -48,8 +49,9 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        var t = Mathf.Clamp01(PlayerTrackMovement.CurrentSpeed / 22f);
-        wind.volume = Mathf.Lerp(wind.volume, windVolume * t, 3f * Time.deltaTime);
+        var t = Mathf.Clamp01(PlayerTrackMovement.CurrentSpeed / 32f);
+        var target = windVolume * Mathf.Lerp(windFloor, 1f, t);
+        wind.volume = Mathf.Lerp(wind.volume, target, 2f * Time.deltaTime);
         wind.pitch = 1f + windPitchAtSpeed * t;
     }
 
