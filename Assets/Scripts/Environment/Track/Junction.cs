@@ -24,13 +24,25 @@ public class Junction : DistanceActivatable, IRunResettable
 
         resolved = true;
         var lateral = Vector3.Dot(toPlayer, transform.right);
-        TrackManager.GetInstance().SwitchTrack(tracks[ChooseBranch(lateral, tracks.Length, laneDeadzone)]);
+        var choice = ChooseBranch(lateral, tracks.Length, laneDeadzone);
+        TrackManager.GetInstance().SwitchTrack(tracks[choice]);
+        ToastManager.GetInstance().Show(BranchName(choice));
     }
 
     // Kept alive across runs so the fork can be taken again after a death.
     public void ResetForNewRun()
     {
         resolved = false;
+    }
+
+    private string BranchName(int choice)
+    {
+        if (choice == 0)
+        {
+            return "Left";
+        }
+
+        return choice == tracks.Length - 1 ? "Right" : "Straight";
     }
 
     public static int ChooseBranch(float lateral, int branchCount, float deadzone)
