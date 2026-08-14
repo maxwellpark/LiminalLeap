@@ -81,3 +81,4 @@ crashlytics-build.properties
 
 # Generated play-test scenes, reproducible from a seed
 /[Aa]ssets/[Ss]cenes/[Gg]enerated/
+/[Aa]ssets/[Ss]cenes/[Gg]enerated.meta
