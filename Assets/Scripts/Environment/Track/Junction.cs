@@ -12,8 +12,7 @@ public class Junction : DistanceActivatable
             return;
         }
 
-        // Steer into the branch (Left/Right, Up for a middle path) instead of a number-key
-        // menu, so the player keeps their eyes on the run.
+        // Steering, not a number-key menu, so the player keeps their eyes up.
         int choice = -1;
         if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
         {

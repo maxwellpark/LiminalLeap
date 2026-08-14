@@ -1,9 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-// Small editor convenience: drop a procedural track generator into the scene from the
-// menu, then assign the piece prefabs + player in the inspector. Saves the manual
-// hand-placing of a whole track.
+// Drops a generator in. Piece prefabs and player still need assigning in the inspector.
 public static class TrackGeneratorMenu
 {
     [MenuItem("Liminal Leap/Add Procedural Track Generator")]
