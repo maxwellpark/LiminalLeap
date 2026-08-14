@@ -1,56 +1,44 @@
 using UnityEngine;
 
+// Steer to commit: you take whichever branch you're strafed into when you cross the split.
+// The transform's position and forward define that split plane, its right defines the lanes.
 public class Junction : DistanceActivatable
 {
     [SerializeField] private Track[] tracks;
-    private GUIStyle style;
+    [SerializeField] private float laneDeadzone = 1f; // width of the middle lane, 3+ branches only
+
+    private bool resolved;
 
     private void Update()
     {
-        if (!InRange)
+        if (resolved || tracks == null || tracks.Length == 0 || !InRange)
         {
             return;
         }
 
-        // Steering, not a number-key menu, so the player keeps their eyes up.
-        int choice = -1;
-        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+        var toPlayer = PlayerTrackMovement.Position - transform.position;
+        if (Vector3.Dot(toPlayer, transform.forward) < 0f)
         {
-            choice = 0;
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
-        {
-            choice = tracks.Length - 1;
-        }
-        else if (tracks.Length >= 3 && (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)))
-        {
-            choice = 1;
+            return;
         }
 
-        if (choice >= 0 && choice < tracks.Length)
-        {
-            TrackManager.GetInstance().SwitchTrack(tracks[choice]);
-            Destroy(gameObject);
-        }
+        resolved = true;
+        TrackManager.GetInstance().SwitchTrack(tracks[ChooseBranch(Vector3.Dot(toPlayer, transform.right))]);
+        Destroy(gameObject);
     }
 
-    private void OnGUI()
+    private int ChooseBranch(float lateral)
     {
-        if (!InRange)
+        if (tracks.Length < 3)
         {
-            return;
+            return lateral < 0f ? 0 : tracks.Length - 1;
         }
 
-        style ??= new GUIStyle(GUI.skin.label)
+        if (lateral < -laneDeadzone)
         {
-            fontSize = 32,
-            fontStyle = FontStyle.Bold,
-            alignment = TextAnchor.UpperLeft
-        };
+            return 0;
+        }
 
-        var text = tracks.Length >= 3
-            ? "Steer:  A/left    W/straight    D/right"
-            : "Steer:  A/left    D/right";
-        GUI.Label(new Rect(40, 200, 700, 100), text, style);
+        return lateral > laneDeadzone ? tracks.Length - 1 : 1;
     }
 }
