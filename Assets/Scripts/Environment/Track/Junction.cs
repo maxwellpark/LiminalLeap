@@ -23,22 +23,28 @@ public class Junction : DistanceActivatable
         }
 
         resolved = true;
-        TrackManager.GetInstance().SwitchTrack(tracks[ChooseBranch(Vector3.Dot(toPlayer, transform.right))]);
-        Destroy(gameObject);
+        var lateral = Vector3.Dot(toPlayer, transform.right);
+        TrackManager.GetInstance().SwitchTrack(tracks[ChooseBranch(lateral, tracks.Length, laneDeadzone)]);
     }
 
-    private int ChooseBranch(float lateral)
+    // Kept alive across runs so the fork can be taken again after a death.
+    public void ResetForNewRun()
     {
-        if (tracks.Length < 3)
+        resolved = false;
+    }
+
+    public static int ChooseBranch(float lateral, int branchCount, float deadzone)
+    {
+        if (branchCount < 3)
         {
-            return lateral < 0f ? 0 : tracks.Length - 1;
+            return lateral < 0f ? 0 : branchCount - 1;
         }
 
-        if (lateral < -laneDeadzone)
+        if (lateral < -deadzone)
         {
             return 0;
         }
 
-        return lateral > laneDeadzone ? tracks.Length - 1 : 1;
+        return lateral > deadzone ? branchCount - 1 : 1;
     }
 }

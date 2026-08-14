@@ -188,6 +188,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private void KillPlayer()
     {
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
+        trackManager.ResetRun();
         basePos = startingPosition;
         trackRot = Quaternion.identity;
         strafeOffset = 0f;
