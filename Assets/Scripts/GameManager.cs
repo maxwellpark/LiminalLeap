@@ -15,6 +15,7 @@ public class GameManager : Singleton<GameManager>
 
     protected override void Awake()
     {
+        base.Awake(); // sets the singleton instance and runs the duplicate guard
         data.ResetToDefaults();
     }
 
@@ -23,7 +24,7 @@ public class GameManager : Singleton<GameManager>
         if (evt.DistanceCovered > data.HighScore)
         {
             data.HighScore = evt.DistanceCovered;
-            Debug.Log("New high score: " + data.HighScore);
+            ToastManager.GetInstance().Show($"New high score  {data.HighScore:F0}m");
             EventService.Dispatch<OnDataUpdatedEvent>();
         }
     }

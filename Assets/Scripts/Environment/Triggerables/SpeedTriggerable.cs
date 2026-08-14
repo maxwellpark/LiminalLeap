@@ -24,6 +24,7 @@ public class SpeedTriggerable : MonoBehaviour, ITriggerable, IRunResettable
 
         SetCollected(true);
         AudioManager.GetInstance().Play(Sound.Pickup);
+        ToastManager.GetInstance().Show($"+{speedToAdd:F0} speed");
         return speedToAdd;
     }
 
