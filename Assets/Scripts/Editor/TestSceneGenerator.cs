@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// Builds a throwaway play-test scene from a seed: track, scattered pickups, junctions.
+// Builds a playable test scene from a seed: track, pickups, managers, player.
 // Menu for hand use, GenerateFromCommandLine for headless/agentic runs.
 public static class TestSceneGenerator
 {
@@ -14,30 +14,37 @@ public static class TestSceneGenerator
     {
         public int Seed = 1;
         public int Pieces = 40;
+        public float PieceLength = 10f;
         public float PickupChance = 0.35f;
-        public int JunctionEvery = 12;
+        public float MaxYawDegrees = 7f;  // per seam; strings of these make the bends
+        public float StraightChance = 0.4f;
         public string Name = "Generated";
     }
 
     [MenuItem("Liminal Leap/Generate Test Scene")]
     public static void GenerateDefault()
     {
-        var path = Generate(new Settings { Seed = Environment.TickCount, Name = "Manual" });
-        Debug.Log("GENERATED " + path);
+        Debug.Log("GENERATED " + Generate(new Settings { Seed = Environment.TickCount, Name = "Manual" }));
     }
 
-    // -executeMethod entry point. Args: -seed N -pieces N -count N
+    // -executeMethod entry. Args: -seed N -pieces N -count N -yaw N
     public static void GenerateFromCommandLine()
     {
         var args = Environment.GetCommandLineArgs();
         var seed = ArgInt(args, "-seed", 1);
         var pieces = ArgInt(args, "-pieces", 40);
         var count = ArgInt(args, "-count", 1);
+        var yaw = ArgInt(args, "-yaw", 7);
 
         for (var i = 0; i < count; i++)
         {
-            var settings = new Settings { Seed = seed + i, Pieces = pieces, Name = "Seed" + (seed + i) };
-            Debug.Log("GENERATED " + Generate(settings));
+            Debug.Log("GENERATED " + Generate(new Settings
+            {
+                Seed = seed + i,
+                Pieces = pieces,
+                MaxYawDegrees = yaw,
+                Name = "Seed" + (seed + i),
+            }));
         }
     }
 
@@ -49,42 +56,88 @@ public static class TestSceneGenerator
         var rng = new System.Random(settings.Seed);
 
         var root = new GameObject("GeneratedTrack");
-        var built = 0;
-        var cursor = Vector3.zero;
+        var track = root.AddComponent<Track>();
+
+        var position = Vector3.zero;
+        var forward = Vector3.forward;
 
         for (var i = 0; i < settings.Pieces; i++)
         {
-            var length = 10f;
-            var piece = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            piece.name = "Piece" + i;
+            // Origin sits at the piece's start, so it chains socket to socket like the runtime generator.
+            var piece = new GameObject("Piece" + i);
             piece.transform.SetParent(root.transform);
-            piece.transform.localScale = new Vector3(8f, 0.5f, length);
-            piece.transform.position = cursor + new Vector3(0f, -0.25f, length * 0.5f);
+            piece.transform.SetPositionAndRotation(position, Quaternion.LookRotation(forward));
 
-            var trackPiece = piece.AddComponent<TrackPiece>();
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visual.name = "Visual";
+            visual.transform.SetParent(piece.transform, false);
+            visual.transform.localScale = new Vector3(8f, 0.5f, settings.PieceLength);
+            visual.transform.localPosition = new Vector3(0f, -0.25f, settings.PieceLength * 0.5f);
+
+            // First piece stays straight so the run doesn't open on a bend.
+            var yaw = i == 0 || rng.NextDouble() < settings.StraightChance
+                ? 0f
+                : (float)(rng.NextDouble() * 2d - 1d) * settings.MaxYawDegrees;
+
             var anchor = new GameObject("End").transform;
             anchor.SetParent(piece.transform, false);
-            // local +Z is half the piece, and the cube's scale is already applied by the parent
-            anchor.localPosition = new Vector3(0f, 0.5f, 0.5f);
+            anchor.localPosition = new Vector3(0f, 0f, settings.PieceLength);
+            anchor.localRotation = Quaternion.Euler(0f, yaw, 0f);
+
+            var trackPiece = piece.AddComponent<TrackPiece>();
             SetPrivate(trackPiece, "endAnchor", anchor);
 
             if (rng.NextDouble() < settings.PickupChance)
             {
-                AddPickup(root.transform, cursor + new Vector3(LaneOffset(rng), 1f, length * 0.5f));
+                var lane = (float)(rng.NextDouble() * 6d - 3d);
+                AddPickup(root.transform, piece.transform.TransformPoint(new Vector3(lane, 1f, settings.PieceLength * 0.5f)));
             }
 
-            cursor += new Vector3(0f, 0f, length);
-            built++;
-
-            if (settings.JunctionEvery > 0 && built % settings.JunctionEvery == 0)
-            {
-                AddJunctionMarker(root.transform, cursor);
-            }
+            position = anchor.position;
+            forward = anchor.forward;
         }
+
+        AddSupportingCast(track);
 
         var path = Path.Combine(OutputDir, settings.Name + ".unity");
         EditorSceneManager.SaveScene(scene, path);
         return path;
+    }
+
+    // Without these the scene builds a track nobody can run on.
+    private static void AddSupportingCast(Track track)
+    {
+        InstantiatePrefab("Assets/Prefabs/Singletons/GameManager.prefab");
+        InstantiatePrefab("Assets/Prefabs/Singletons/UIManager.prefab");
+        InstantiatePrefab("Assets/Prefabs/Singletons/CameraManager.prefab");
+
+        var trackManager = InstantiatePrefab("Assets/Prefabs/Singletons/TrackManager.prefab");
+        if (trackManager != null)
+        {
+            var tm = trackManager.GetComponent<TrackManager>();
+            if (tm != null)
+            {
+                SetPrivate(tm, "startingTrack", track);
+            }
+        }
+
+        var player = InstantiatePrefab("Assets/Prefabs/Player.prefab");
+        if (player != null)
+        {
+            player.transform.position = new Vector3(0f, 1f, 0f);
+        }
+    }
+
+    private static GameObject InstantiatePrefab(string path)
+    {
+        var asset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        if (asset == null)
+        {
+            Debug.LogWarning("Missing prefab, skipping: " + path);
+            return null;
+        }
+
+        return (GameObject)PrefabUtility.InstantiatePrefab(asset);
     }
 
     private static void AddPickup(Transform parent, Vector3 position)
@@ -94,28 +147,9 @@ public static class TestSceneGenerator
         pickup.transform.SetParent(parent);
         pickup.transform.position = position;
         pickup.transform.localScale = Vector3.one * 0.8f;
+        pickup.GetComponent<Collider>().isTrigger = true;
 
-        var col = pickup.GetComponent<Collider>();
-        col.isTrigger = true;
-
-        var trig = pickup.AddComponent<SpeedTriggerable>();
-        SetPrivate(trig, "speedToAdd", 2f);
-    }
-
-    // A visible marker only; wiring real branches needs authored Track objects.
-    private static void AddJunctionMarker(Transform parent, Vector3 position)
-    {
-        var marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        marker.name = "JunctionMarker";
-        marker.transform.SetParent(parent);
-        marker.transform.position = position + Vector3.up;
-        marker.transform.localScale = new Vector3(0.3f, 2f, 0.3f);
-        UnityEngine.Object.DestroyImmediate(marker.GetComponent<Collider>());
-    }
-
-    private static float LaneOffset(System.Random rng)
-    {
-        return (float)(rng.NextDouble() * 6d - 3d);
+        SetPrivate(pickup.AddComponent<SpeedTriggerable>(), "speedToAdd", 2f);
     }
 
     private static int ArgInt(string[] args, string flag, int fallback)
@@ -137,16 +171,18 @@ public static class TestSceneGenerator
         var prop = so.FindProperty(field);
         if (prop == null)
         {
+            Debug.LogWarning("No serialized field '" + field + "' on " + target.GetType().Name);
             return;
         }
 
-        if (value is Transform t)
+        switch (value)
         {
-            prop.objectReferenceValue = t;
-        }
-        else if (value is float f)
-        {
-            prop.floatValue = f;
+            case float f:
+                prop.floatValue = f;
+                break;
+            case UnityEngine.Object o:
+                prop.objectReferenceValue = o;
+                break;
         }
 
         so.ApplyModifiedPropertiesWithoutUndo();
