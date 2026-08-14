@@ -12,7 +12,7 @@ public class Singleton<T> : SubscriberMonoBehaviour where T : MonoBehaviour
     {
         if (instance == null)
         {
-            instance = FindObjectOfType<T>();
+            instance = FindFirstObjectByType<T>();
             if (instance == null)
             {
                 var singleton = new GameObject();

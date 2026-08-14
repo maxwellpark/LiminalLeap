@@ -72,3 +72,9 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 .vsconfig
+
+# VS Code
+.vscode/
+
+# New-format VS solution (Unity 6)
+*.slnx
