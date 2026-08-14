@@ -88,28 +88,9 @@ public class ToastManager : Singleton<ToastManager>
 
     private static TMP_Text BuildLabel()
     {
-        var canvasGo = new GameObject("ToastCanvas");
-        var canvas = canvasGo.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
-        canvasGo.AddComponent<UnityEngine.UI.CanvasScaler>().uiScaleMode =
-            UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
-
-        var textGo = new GameObject("ToastText");
-        textGo.transform.SetParent(canvasGo.transform, false);
-
-        var text = textGo.AddComponent<TextMeshProUGUI>();
-        text.alignment = TextAlignmentOptions.Center;
-        text.fontSize = 42f;
-        text.raycastTarget = false;
-
-        var rect = text.rectTransform;
-        rect.anchorMin = new Vector2(0.5f, 0.72f);
-        rect.anchorMax = new Vector2(0.5f, 0.72f);
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = new Vector2(900f, 120f);
-        rect.anchoredPosition = Vector2.zero;
-
-        return text;
+        var canvas = RuntimeUi.CreateCanvas("ToastCanvas", 100);
+        return RuntimeUi.CreateText(
+            canvas.transform, "ToastText", new Vector2(0.5f, 0.72f), Vector2.zero,
+            new Vector2(900f, 120f), 42f, TextAlignmentOptions.Center);
     }
 }
