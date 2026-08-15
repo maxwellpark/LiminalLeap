@@ -1,7 +1,6 @@
 using System;
 
-// Pure alpha ramp for the speed vignette, kept free of Unity texture types so it
-// can be unit tested. Built-in pipeline here, so there's no post-processing to lean on.
+// Pure alpha ramp, no Unity texture types, so it's testable. No post-processing here.
 public static class VignetteTexture
 {
     // Row-major alphas, 0 in the clear centre rising to 1 at the corners.

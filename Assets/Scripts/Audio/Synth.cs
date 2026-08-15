@@ -111,8 +111,7 @@ public static class Synth
         return buf;
     }
 
-    // Crossfades the dropped tail over the head and shortens the buffer by that much,
-    // so the last sample flows into the first and a looping clip doesn't tick each cycle.
+    // Crossfades the tail over the head and truncates, so the loop point doesn't tick.
     public static float[] MakeSeamless(float[] buf, int crossfadeSamples)
     {
         var n = Math.Min(crossfadeSamples, buf.Length / 2);

@@ -4,15 +4,14 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// Opens scenes and reports unassigned serialized references. A generated scene
-// looked fine until play, because the UIManager prefab ships its text fields empty.
+// Reports unassigned refs. Generated scenes looked fine until play without this.
 public static class SceneValidator
 {
     // Fields that are legitimately optional, so an empty one isn't a fault.
     private static readonly HashSet<string> Optional = new()
     {
-        "marker", "generator", "authored", "endAnchor", "shakeSettings", "label",
-        "distanceText", "speedText", "highScoreText",
+        "marker", "generator", "authored", "endAnchor", "shakeSettings", "label", "sheet",
+        "distanceText", "speedText", "highScoreText", "scoreText", "multiplierText",
     };
 
     [MenuItem("Liminal Leap/Validate Generated Scenes")]
@@ -40,8 +39,7 @@ public static class SceneValidator
         var problems = 0;
         var pieces = 0;
 
-        // Two MainCamera-tagged cameras makes Camera.main a coin flip, and the loser
-        // is usually the one that actually follows the player.
+        // Two MainCamera tags makes Camera.main a coin flip.
         var mainCameras = 0;
         foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
@@ -83,8 +81,7 @@ public static class SceneValidator
         return problems;
     }
 
-    // Pickups sat 0.1 units above the player's trigger box, catchable only mid-jump.
-    // Nothing errored, they just quietly did nothing.
+    // Pickups sat 0.1 units out of reach and just quietly did nothing.
     private static int CheckPickupsAreReachable(string path)
     {
         var trigger = FindPlayerTrigger();
@@ -94,9 +91,7 @@ public static class SceneValidator
             return 0;
         }
 
-        // Measure against the track, not the player's authored pose. basePos converges
-        // onto the piece anchors at runtime, so wherever the player is parked in the
-        // saved scene tells you nothing about the height it actually runs at.
+        // Measure against the track: basePos converges onto the anchors at runtime.
         var halfHeight = trigger.bounds.extents.y;
         var problems = 0;
 

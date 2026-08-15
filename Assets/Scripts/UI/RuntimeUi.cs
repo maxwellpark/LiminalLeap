@@ -2,8 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Managers build their own UI when nothing is wired in the scene, so generated
-// scenes and headless runs work without a hand-authored canvas.
+// Managers build their own UI when nothing is wired, so generated scenes work.
 public static class RuntimeUi
 {
     public static Canvas CreateCanvas(string name, int sortingOrder)

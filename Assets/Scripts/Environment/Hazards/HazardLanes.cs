@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-// Whether a row of hazards leaves a gap the player can fit through. A procedurally
-// placed row that spans the track is an unwinnable run, and nothing else would catch it.
+// A row spanning the track is an unwinnable run and nothing else would catch it.
 public static class HazardLanes
 {
     public struct Span
@@ -42,6 +41,18 @@ public static class HazardLanes
         }
 
         return trackHalfWidth - cursor >= needed;
+    }
+
+    // Rows must be far enough apart that a jump over one lands before the next.
+    public static int RequiredPieceGap(float maxSpeed, float jumpAirtime, float pieceLength, float marginUnits)
+    {
+        if (pieceLength <= 0f)
+        {
+            return 1;
+        }
+
+        var reach = Math.Max(0f, maxSpeed * jumpAirtime) + Math.Max(0f, marginUnits);
+        return Math.Max(1, (int)Math.Ceiling(reach / pieceLength));
     }
 
     // Widest gap available, so a generator can pick a lane that stays passable.

@@ -11,8 +11,7 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private TMP_Text highScoreText;
     [SerializeField] private TMP_Text speedText;
 
-    // Score and the multiplier existed since hazards landed but were invisible, which
-    // made the whole near-miss risk/reward loop pointless to a player.
+    // Score existed since hazards landed but was invisible, so risk/reward read as nothing.
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text multiplierText;
 
@@ -20,8 +19,7 @@ public class UIManager : Singleton<UIManager>
     {
         gameManager = GameManager.GetInstance();
 
-        // The prefab ships with these unassigned; the authored labels only exist in
-        // MovementTestScene, so anything else needs a HUD building at runtime.
+        // Prefab ships these unassigned, so anything but MovementTestScene builds its own.
         if (distanceText == null || speedText == null || highScoreText == null
             || scoreText == null || multiplierText == null)
         {

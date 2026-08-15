@@ -1,8 +1,6 @@
 using UnityEngine;
 
-// End is an explicit child transform where the next piece attaches. The old version
-// derived it from Renderer.bounds, a world-space AABB, so it only held for pieces
-// aligned to +Z and made turns impossible.
+// End anchor, not Renderer.bounds: a world AABB only held for pieces facing +Z.
 public class TrackPiece : MonoBehaviour
 {
     public bool Passed { get; set; }

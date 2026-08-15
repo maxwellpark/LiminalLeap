@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// Full-screen wipe for the death beat. Self-provisioning, and driven by unscaled time
-// so it still runs while the death sequence has the game in slow motion.
+// Unscaled time, so the wipe still runs while the death sequence slows the game.
 public class ScreenFade : Singleton<ScreenFade>
 {
     [SerializeField] private Image sheet;

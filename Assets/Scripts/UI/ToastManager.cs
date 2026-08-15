@@ -3,8 +3,7 @@ using TMPro;
 using UnityEngine;
 using EventType = Events.EventType;
 
-// Transient one-line messages. Self-provisioning like AudioManager, so generated
-// scenes and MovementTestScene both get toasts without being edited.
+// Transient one-liners. Self-provisioning like the other managers.
 public class ToastManager : Singleton<ToastManager>
 {
     protected override EventType[] EventTypes => new[] { EventType.Death };
@@ -26,8 +25,7 @@ public class ToastManager : Singleton<ToastManager>
         SetAlpha(0f);
     }
 
-    // Replaces whatever is showing rather than queueing. At speed, pickups arrive faster
-    // than a toast can play out, and the queue was silently dropping over half of them.
+    // Replaces rather than queues: at speed the queue dropped over half of them.
     public void Show(string message)
     {
         if (label != null)

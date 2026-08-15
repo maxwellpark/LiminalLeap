@@ -1,8 +1,7 @@
 using System;
 using UnityEngine;
 
-// The swap target. Drop wavs in here and assign the asset on AudioManager; anything
-// left empty falls back to the synthesised version, so it can be filled in one at a time.
+// Drop wavs in here; anything left empty falls back to the synth, one at a time.
 [CreateAssetMenu(fileName = "AudioLibrary", menuName = "ScriptableObjects/AudioLibrary", order = 2)]
 public class AuthoredAudioLibrary : ScriptableObject, IAudioLibrary
 {

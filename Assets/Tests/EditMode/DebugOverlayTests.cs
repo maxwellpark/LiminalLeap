@@ -2,8 +2,7 @@ using NUnit.Framework;
 
 public class DebugOverlayTests
 {
-    // The overlay binds tuning fields by name through reflection, and a typo or a later
-    // rename only warns at runtime behind an F1 press. This turns that into a red test.
+    // Binding is by name, so a rename only warns behind an F1 press. This makes it red.
     [Test]
     public void EveryKnobResolvesToAFloatField()
     {

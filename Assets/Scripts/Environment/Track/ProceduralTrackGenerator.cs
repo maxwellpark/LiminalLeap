@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Chains piece prefabs ahead of the player and pools the ones behind.
-// Anchored pieces chain socket to socket, so turns work; anchorless ones fall back
-// to the old centre-origin maths.
+// Chains pieces ahead and pools those behind. Anchored ones socket together.
 public class ProceduralTrackGenerator : MonoBehaviour
 {
     [SerializeField] private TrackPiece[] piecePrefabs;

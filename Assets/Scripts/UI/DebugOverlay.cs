@@ -4,12 +4,7 @@ using System.Reflection;
 using Unity.Profiling;
 using UnityEngine;
 
-// F1 in play mode. Live telemetry plus sliders bound straight to the serialized tuning
-// fields, so a value that feels wrong gets dragged rather than described, changed in code
-// and replayed.
-//
-// Dev tooling, so it reads the keyboard directly rather than through InputRouter: the
-// gameplay seam is for gameplay, and a scripted test should never toggle this.
+// F1: telemetry plus sliders on the tuning fields. Reads the keyboard directly, it's dev only.
 public class DebugOverlay : Singleton<DebugOverlay>
 {
     private class Knob
@@ -139,9 +134,7 @@ public class DebugOverlay : Singleton<DebugOverlay>
         }
     }
 
-    // Explicit list rather than reflecting over everything: these are the numbers that
-    // were invented and are most likely wrong. Public so a test can check the field
-    // names still resolve, since a typo here only warns at runtime behind an F1 press.
+    // Public so a test can check the names resolve; a typo only warns behind an F1 press.
     public static readonly KnobSpec[] Specs =
     {
         new(typeof(PlayerTrackMovement), "maxSpeed", "max speed", 10f, 60f),

@@ -1,5 +1,4 @@
-// Test-driven input. Press/Release are one-frame edges like the real thing, so a caller
-// has to call Tick each frame or a press would stick and fire forever.
+// Presses are one-frame edges like the real thing, so callers must Tick each frame.
 public class ScriptedInput : IInputSource
 {
     private bool jumpQueued;
