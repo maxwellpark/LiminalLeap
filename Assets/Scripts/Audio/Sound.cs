@@ -5,6 +5,8 @@ public enum Sound
     Pickup,
     Death,
     Wind,
+    TitleSting,
+    Confirm,
 }
 
 public interface IAudioLibrary
