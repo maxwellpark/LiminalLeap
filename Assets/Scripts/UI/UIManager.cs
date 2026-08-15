@@ -10,10 +10,18 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private TMP_Text distanceText;
     [SerializeField] private TMP_Text highScoreText;
     [SerializeField] private TMP_Text speedText;
-
-    // Score existed since hazards landed but was invisible, so risk/reward read as nothing.
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text multiplierText;
+
+    // Score ticks up every frame, so pop on milestones rather than on every change.
+    [SerializeField] private float scorePopEvery = 250f;
+    [SerializeField] private float multiplierPopStep = 0.15f;
+
+    private UiPop scorePop;
+    private UiPop multiplierPop;
+    private UiPop highScorePop;
+    private float nextScorePop;
+    private float lastMultiplier = 1f;
 
     private void Start()
     {
@@ -27,6 +35,7 @@ public class UIManager : Singleton<UIManager>
         }
 
         highScoreText.gameObject.SetActive(gameManager.HighScore > 0);
+        nextScorePop = scorePopEvery;
     }
 
     private void Update()
@@ -37,18 +46,50 @@ public class UIManager : Singleton<UIManager>
         }
 
         // SetText with args formats into TMP's own buffer, string interpolation allocates every frame
-        distanceText.SetText("Distance  {0:1} m", PlayerTrackMovement.DistanceCovered);
-        speedText.SetText("Speed  {0:1}", PlayerTrackMovement.CurrentSpeed);
+        distanceText.SetText("{0:1} m", PlayerTrackMovement.DistanceCovered);
+        speedText.SetText("{0:1} u/s", PlayerTrackMovement.CurrentSpeed);
 
         if (scoreText != null)
         {
-            scoreText.SetText("Score  {0:0}", PlayerTrackMovement.Score);
+            scoreText.SetText("{0:0}", PlayerTrackMovement.Score);
+            TrackScoreMilestones();
         }
 
         if (multiplierText != null)
         {
             multiplierText.SetText("x{0:2}", PlayerTrackMovement.Multiplier);
+            TrackMultiplierJumps();
         }
+    }
+
+    private void TrackScoreMilestones()
+    {
+        var score = PlayerTrackMovement.Score;
+
+        if (score < nextScorePop - scorePopEvery)
+        {
+            nextScorePop = scorePopEvery; // the run reset under us
+            return;
+        }
+
+        if (score >= nextScorePop)
+        {
+            nextScorePop += scorePopEvery;
+            scorePop?.Punch();
+        }
+    }
+
+    private void TrackMultiplierJumps()
+    {
+        var multiplier = PlayerTrackMovement.Multiplier;
+
+        // Only the discrete near-miss jumps, not the smooth climb with speed.
+        if (multiplier > lastMultiplier + multiplierPopStep)
+        {
+            multiplierPop?.Punch();
+        }
+
+        lastMultiplier = multiplier;
     }
 
     protected override void OnDataUpdated()
@@ -56,7 +97,8 @@ public class UIManager : Singleton<UIManager>
         if (highScoreText != null && gameManager != null && gameManager.HighScore > 0)
         {
             highScoreText.gameObject.SetActive(true);
-            highScoreText.SetText("High score: {0:1}", gameManager.HighScore);
+            highScoreText.SetText("BEST {0:0}", gameManager.HighScore);
+            highScorePop?.Punch();
         }
     }
 
@@ -64,15 +106,31 @@ public class UIManager : Singleton<UIManager>
     {
         var canvas = RuntimeUi.CreateCanvas("HudCanvas", 90);
         var topLeft = new Vector2(0f, 1f);
-        var size = new Vector2(700f, 60f);
-
-        distanceText ??= RuntimeUi.CreateText(canvas.transform, "Distance", topLeft, new Vector2(30f, -30f), size, 34f, TextAlignmentOptions.TopLeft);
-        speedText ??= RuntimeUi.CreateText(canvas.transform, "Speed", topLeft, new Vector2(30f, -80f), size, 34f, TextAlignmentOptions.TopLeft);
-        highScoreText ??= RuntimeUi.CreateText(canvas.transform, "HighScore", topLeft, new Vector2(30f, -130f), size, 34f, TextAlignmentOptions.TopLeft);
-
-        // Score reads top-right, away from the run telemetry on the left.
         var topRight = new Vector2(1f, 1f);
-        scoreText ??= RuntimeUi.CreateText(canvas.transform, "Score", topRight, new Vector2(-30f, -30f), size, 44f, TextAlignmentOptions.TopRight);
-        multiplierText ??= RuntimeUi.CreateText(canvas.transform, "Multiplier", topRight, new Vector2(-30f, -85f), size, 34f, TextAlignmentOptions.TopRight);
+        var row = new Vector2(520f, 60f);
+
+        speedText ??= RuntimeUi.Style(
+            RuntimeUi.CreateText(canvas.transform, "Speed", topLeft, new Vector2(40f, -36f), row, RuntimeUi.Headline, TextAlignmentOptions.TopLeft),
+            RuntimeUi.Ink);
+
+        distanceText ??= RuntimeUi.Style(
+            RuntimeUi.CreateText(canvas.transform, "Distance", topLeft, new Vector2(40f, -100f), row, RuntimeUi.Body, TextAlignmentOptions.TopLeft),
+            RuntimeUi.Muted);
+
+        scoreText ??= RuntimeUi.Style(
+            RuntimeUi.CreateText(canvas.transform, "Score", topRight, new Vector2(-40f, -36f), row, RuntimeUi.Display, TextAlignmentOptions.TopRight),
+            RuntimeUi.Ink, 0.24f, 2f);
+
+        multiplierText ??= RuntimeUi.Style(
+            RuntimeUi.CreateText(canvas.transform, "Multiplier", topRight, new Vector2(-40f, -146f), row, RuntimeUi.Headline, TextAlignmentOptions.TopRight),
+            RuntimeUi.Accent);
+
+        highScoreText ??= RuntimeUi.Style(
+            RuntimeUi.CreateText(canvas.transform, "HighScore", topRight, new Vector2(-40f, -206f), row, RuntimeUi.Caption, TextAlignmentOptions.TopRight),
+            RuntimeUi.Muted);
+
+        scorePop = RuntimeUi.AddPop((TextMeshProUGUI)scoreText);
+        multiplierPop = RuntimeUi.AddPop((TextMeshProUGUI)multiplierText);
+        highScorePop = RuntimeUi.AddPop((TextMeshProUGUI)highScoreText);
     }
 }
