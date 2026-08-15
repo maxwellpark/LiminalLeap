@@ -20,8 +20,7 @@ public class RunTests
         fixture.Teardown();
     }
 
-    // Waits on elapsed game time, not frames. Batchmode runs uncapped, so a frame count
-    // is not a duration: 60 frames headless was about 0.12s, not a second.
+    // Elapsed time, not frames: batchmode runs uncapped so 60 frames was about 0.12s.
     private IEnumerator Seconds(float seconds)
     {
         var until = Time.time + seconds;
@@ -59,9 +58,7 @@ public class RunTests
         Assert.AreEqual(travelled, PlayerTrackMovement.DistanceCovered, travelled * 0.25f + 1f);
     }
 
-    // Not "ramps then holds": at 1.4 u/s^2 from 8 to 32 the ramp takes about 17 seconds,
-    // so waiting for the plateau would make this a very slow test. The invariant worth
-    // pinning is that it climbs monotonically and never passes the configured cap.
+    // The ramp takes about 17s, so pin the invariants rather than wait for the plateau.
     [UnityTest]
     public IEnumerator SpeedRampsAndNeverPassesTheCap()
     {

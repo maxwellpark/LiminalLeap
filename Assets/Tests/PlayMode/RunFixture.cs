@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Builds a playable scene from nothing at runtime. Deliberately not using
-// TestSceneGenerator: that's editor-only, and generated scenes are gitignored, so CI
-// would have nothing to load.
+// Built at runtime: TestSceneGenerator is editor-only and generated scenes are ignored.
 public class RunFixture
 {
     public const float PieceLength = 10f;
@@ -15,9 +13,7 @@ public class RunFixture
 
     private readonly List<GameObject> spawned = new();
 
-    // Everything is built inactive and activated in dependency order. Awake fires the
-    // moment a component is added to a live object, so building live meant Track.Awake
-    // ran before its pieces existed and TrackManager.Awake before startingTrack was set.
+    // Built inactive and activated in order: Awake fires the moment a component is added.
     public void Build(int pieces = 30)
     {
         Root = new GameObject("TestRoot");

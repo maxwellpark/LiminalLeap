@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class CameraManager : Singleton<CameraManager>
 {
-    // Unassigned on the prefab: the authored reference only exists in MovementTestScene,
-    // so anywhere else has to find the one the Player prefab carries.
+    // Unassigned on the prefab, so anywhere but MovementTestScene has to find it.
     [SerializeField] private CameraShake cameraShake;
 
     public override void Init()

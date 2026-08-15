@@ -1,7 +1,6 @@
 using UnityEngine;
 
-// Fog, ambient and a flickering key light. Self-provisioning like the other managers,
-// so generated scenes and MovementTestScene both get the mood without being edited.
+// Fog, ambient and a flickering key light. Self-provisioning like the other managers.
 public class MoodLighting : Singleton<MoodLighting>
 {
     [SerializeField] private Color fogColour = new(0.08f, 0.09f, 0.11f);
@@ -11,13 +10,20 @@ public class MoodLighting : Singleton<MoodLighting>
     [SerializeField] private float keyIntensity = 0.9f;
 
     [Header("Flicker")]
-    [SerializeField] private float flickerDepth = 0.18f;
-    [SerializeField] private float flickerSpeed = 7f;
-    [SerializeField] private float dropoutChance = 0.004f; // per frame, brief full dip
-    [SerializeField] private float dropoutSeconds = 0.06f;
+    [SerializeField] private bool reducedFlashing;          // accessibility: drift only, no dips
+    [SerializeField] private float flickerDepth = 0.12f;
+    [SerializeField] private float flickerSpeed = 3f;
+    [SerializeField] private float responsiveness = 9f;     // how fast intensity chases its target
+
+    [Header("Dropouts")]
+    [SerializeField] private float dropoutsPerSecond = 0.08f; // roughly one every 12s
+    [SerializeField] private float dropoutSeconds = 0.12f;
+    [SerializeField, Range(0f, 1f)] private float dropoutFloor = 0.45f;
+    [SerializeField] private float dropoutCooldown = 4f;      // never two in quick succession
 
     private Light key;
-    private float dropoutUntil;
+    private float dropoutRemaining;
+    private float nextDropoutAllowed;
     private float noiseSeed;
 
     public override void Init()
@@ -59,20 +65,43 @@ public class MoodLighting : Singleton<MoodLighting>
             return;
         }
 
-        if (Time.time < dropoutUntil)
-        {
-            key.intensity = keyIntensity * 0.15f;
-            return;
-        }
-
-        if (Random.value < dropoutChance)
-        {
-            dropoutUntil = Time.time + dropoutSeconds;
-            return;
-        }
+        var dt = Time.deltaTime;
 
         // Perlin rather than Random per frame: strobing reads as a bug, drift reads as dread.
         var wobble = Mathf.PerlinNoise(noiseSeed, Time.time * flickerSpeed) - 0.5f;
-        key.intensity = keyIntensity * (1f + wobble * flickerDepth * 2f);
+        var depth = reducedFlashing ? flickerDepth * 0.4f : flickerDepth;
+        var target = keyIntensity * (1f + wobble * depth * 2f);
+
+        if (!reducedFlashing)
+        {
+            target *= DropoutMultiplier(dt);
+        }
+
+        // Chased, not assigned: snapping to the floor was the strobe that felt epileptic.
+        key.intensity = Mathf.Lerp(key.intensity, target, responsiveness * dt);
+    }
+
+    private float DropoutMultiplier(float dt)
+    {
+        if (dropoutRemaining > 0f)
+        {
+            dropoutRemaining -= dt;
+            return dropoutFloor;
+        }
+
+        if (Time.time < nextDropoutAllowed)
+        {
+            return 1f;
+        }
+
+        // Per second, not per frame, or the flicker rate depends on the framerate.
+        if (Random.value < dropoutsPerSecond * dt)
+        {
+            dropoutRemaining = dropoutSeconds;
+            nextDropoutAllowed = Time.time + dropoutCooldown;
+            return dropoutFloor;
+        }
+
+        return 1f;
     }
 }

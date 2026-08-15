@@ -9,8 +9,7 @@ public enum Surface
     Pickup,
 }
 
-// Materials built from generated textures, cached per surface. Built-in pipeline,
-// so this targets the Standard shader.
+// Generated materials cached per surface. Built-in pipeline, so Standard shader.
 public static class MaterialLibrary
 {
     private const int Size = 256;

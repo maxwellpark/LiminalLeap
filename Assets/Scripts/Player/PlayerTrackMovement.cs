@@ -74,6 +74,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private float fovBase;
     private float fovKick;
     private bool dying;
+    private bool hadPiece;
     private float jumpOffset;
     private float jumpVy;
     private bool airborne;
@@ -99,13 +100,13 @@ public class PlayerTrackMovement : MonoBehaviour
             fovBase = camComponent.fieldOfView;
         }
 
-        // Self-provisioning managers need someone to ask first. Doing it here also
-        // builds their canvases up front rather than hitching on the first death.
+        // Someone has to ask first, and this builds their canvases before the first death.
         AudioManager.GetInstance();
         ToastManager.GetInstance();
         ScreenFade.GetInstance();
         SpeedVignette.GetInstance();
         MoodLighting.GetInstance();
+        DebugOverlay.GetInstance();
     }
 
     private void Update()
@@ -181,8 +182,16 @@ public class PlayerTrackMovement : MonoBehaviour
         var piece = trackManager.GetClosestPiece(basePos);
         if (piece == null)
         {
+            // Running out of track used to stall silently, same dead end junctions had.
+            if (hadPiece)
+            {
+                FinishRun(true);
+            }
+
             return;
         }
+
+        hadPiece = true;
 
         CurrentSpeed = Mathf.Clamp(Mathf.MoveTowards(CurrentSpeed, maxSpeed, acceleration * dt), minSpeed, maxSpeed);
 
@@ -220,8 +229,7 @@ public class PlayerTrackMovement : MonoBehaviour
         tilt = Mathf.Lerp(tilt, lean * strafeTiltDegrees, 10f * dt);
     }
 
-    // Bob is what sells running. Driven off travelled distance, not time, so it
-    // stays in step with the speed and stops dead when the track runs out.
+    // Driven off distance travelled, not time, so it stays in step with the speed.
     private void HandleBob(float dt)
     {
         if (airborne)
@@ -246,8 +254,7 @@ public class PlayerTrackMovement : MonoBehaviour
             return;
         }
 
-        // Base and kick tracked separately: lerping the camera's own value would eat
-        // last frame's kick and the punch would never read.
+        // Tracked separately, or the lerp eats last frame's kick and the punch never reads.
         fovBase = Mathf.Lerp(fovBase, baseFov + maxFovBoost * SpeedT, 5f * dt);
         fovKick = Mathf.Lerp(fovKick, 0f, fovKickDecay * dt);
         camComponent.fieldOfView = fovBase + fovKick;
@@ -280,19 +287,31 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void KillPlayer()
     {
+        FinishRun(false);
+    }
+
+    private void FinishRun(bool completed)
+    {
         if (!dying)
         {
-            StartCoroutine(DeathSequence());
+            StartCoroutine(EndSequence(completed));
         }
     }
 
-    // Shake, slow down, wipe to black, then reset behind the wipe so the respawn
-    // isn't a teleport in your face.
-    private System.Collections.IEnumerator DeathSequence()
+    // Reset happens behind the wipe so the respawn isn't a teleport in your face.
+    private System.Collections.IEnumerator EndSequence(bool completed)
     {
         dying = true;
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered));
-        CameraManager.GetInstance().Shake(deathShake);
+
+        if (completed)
+        {
+            ToastManager.GetInstance().Show($"Track complete   {Score:F0}");
+        }
+        else
+        {
+            CameraManager.GetInstance().Shake(deathShake);
+        }
         ScreenFade.GetInstance().To(1f, deathPause * 0.8f);
         Time.timeScale = deathTimeScale;
 
@@ -324,6 +343,7 @@ public class PlayerTrackMovement : MonoBehaviour
         jumpOffset = 0f;
         jumpVy = 0f;
         airborne = false;
+        hadPiece = false;
         DistanceCovered = 0f;
         Score = 0f;
         nearMissBonus = 0f;

@@ -1,7 +1,6 @@
 using UnityEngine;
 
-// Wider trigger around a hazard. Credit is given on exit, not entry, so dying inside
-// one doesn't count as a near miss.
+// Credited on exit, not entry, so dying inside one doesn't pay out.
 [RequireComponent(typeof(Collider))]
 public class NearMissZone : MonoBehaviour, IRunResettable
 {

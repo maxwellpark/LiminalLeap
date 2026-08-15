@@ -63,8 +63,7 @@ public class JunctionTests
         Assert.AreEqual(3, Junction.ChooseBranch(5f, 4, Deadzone));
     }
 
-    // Known limit: only left/middle/right exist, so a 4-way can never select index 2.
-    // Fine while junctions are 2 or 3 wide; needs real lane bands if that changes.
+    // Known limit: only left/middle/right, so a 4-way can never select index 2.
     [Test]
     public void FourBranches_CannotReachTheSecondMiddleLane()
     {

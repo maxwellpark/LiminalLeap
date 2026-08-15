@@ -55,8 +55,7 @@ public class ProceduralAudioLibrary : IAudioLibrary
 
             case Sound.Wind:
             {
-                // Long loop so the repeat isn't obvious, heavy filtering so it's air not hiss,
-                // and two LFOs at odd rates so it drifts instead of sitting flat.
+                // Long loop, heavy filter, two odd-rate LFOs so it drifts instead of sitting flat.
                 const float length = 7.3f;
 
                 var air = Synth.Noise(length, 29, 0.012f);

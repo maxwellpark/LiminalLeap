@@ -1,7 +1,6 @@
 using System;
 
-// Greyscale texture maths, no Unity texture types, so it's unit testable like Synth.
-// Everything is a grey cube otherwise, which caps how good any amount of juice can look.
+// Greyscale maths, no Unity texture types, so it's unit testable like Synth.
 public static class ProceduralTextures
 {
     // Value noise: hashed lattice, smoothstepped between corners. Deterministic per seed.

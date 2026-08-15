@@ -5,14 +5,12 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// Builds a playable test scene from a seed: track, pickups, managers, player.
-// Menu for hand use, GenerateFromCommandLine for headless/agentic runs.
+// Builds a playable scene from a seed. Menu for hand use, command line for headless.
 public static class TestSceneGenerator
 {
     private const string OutputDir = "Assets/Scenes/Generated";
 
-    // The player's trigger box is 1 unit centred on the track surface, so it only reaches
-    // y +0.5. Pickups at y=1 with a 0.4 radius missed by 0.1 and were catchable only mid-jump.
+    // Player trigger only reaches y +0.5, so anything higher is uncollectable.
     private const float PickupHeight = 0.5f;
     private const float PickupDiameter = 1f;
 
@@ -25,6 +23,9 @@ public static class TestSceneGenerator
         public float MaxYawDegrees = 7f;  // per seam; strings of these make the bends
         public float StraightChance = 0.4f;
         public float HazardChance = 0.3f;
+        public float PlayerMaxSpeed = 32f;   // matches PlayerTrackMovement
+        public float JumpAirtime = 0.64f;    // jumpUpTime * 2
+        public float HazardMarginUnits = 6f; // reaction room past the landing point
         public float TrackHalfWidth = 3f;   // matches the player's strafe limit
         public float PlayerHalfWidth = 0.6f;
         public string Name = "Generated";
@@ -69,6 +70,7 @@ public static class TestSceneGenerator
 
         var position = Vector3.zero;
         var forward = Vector3.forward;
+        var lastHazardPiece = int.MinValue / 2;
 
         for (var i = 0; i < settings.Pieces; i++)
         {
@@ -99,9 +101,16 @@ public static class TestSceneGenerator
 
             // Hazards first: pickups then avoid the lanes they occupy.
             var blocked = new List<HazardLanes.Span>();
-            if (i > 2 && rng.NextDouble() < settings.HazardChance)
+            var gap = HazardLanes.RequiredPieceGap(
+                settings.PlayerMaxSpeed, settings.JumpAirtime, settings.PieceLength, settings.HazardMarginUnits);
+
+            if (i > 2 && i - lastHazardPiece >= gap && rng.NextDouble() < settings.HazardChance)
             {
                 blocked = AddHazardRow(piece.transform, settings, rng);
+                if (blocked.Count > 0)
+                {
+                    lastHazardPiece = i;
+                }
             }
 
             if (rng.NextDouble() < settings.PickupChance)
@@ -142,8 +151,7 @@ public static class TestSceneGenerator
         var player = InstantiatePrefab("Assets/Prefabs/Player.prefab");
         if (player != null)
         {
-            // On the track line: basePos starts here and converges onto the anchors,
-            // so spawning higher just makes the player sink for the first piece.
+            // On the track line, or the player sinks through the first piece.
             player.transform.position = Vector3.zero;
         }
 
@@ -160,8 +168,7 @@ public static class TestSceneGenerator
         }
     }
 
-    // The Player prefab brings its own MainCamera-tagged camera, so the one the default
-    // scene template drops at the origin just fights it for Camera.main and never moves.
+    // Player prefab brings its own camera; the template's just fights it for Camera.main.
     private static void RemoveStrayCameras(GameObject player)
     {
         var playerCameras = player != null

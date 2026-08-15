@@ -2,8 +2,7 @@ using Events;
 using UnityEngine;
 using EventType = Events.EventType;
 
-// Self-provisioning: GetInstance spawns one if the scene has none, so greybox audio
-// works without touching the scene. Leave authored empty to stay fully procedural.
+// Spawns itself if the scene has none. Leave authored empty to stay procedural.
 public class AudioManager : Singleton<AudioManager>
 {
     protected override EventType[] EventTypes => new[] { EventType.Death };

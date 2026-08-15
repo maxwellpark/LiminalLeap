@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// Darkens the edges as you accelerate. Self-provisioning, and sits under the toasts
-// and HUD in sort order so it never dims the text.
+// Darkens the edges with speed. Sorts under the HUD so it never dims the text.
 public class SpeedVignette : Singleton<SpeedVignette>
 {
     [SerializeField] private Image sheet;
