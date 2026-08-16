@@ -13,6 +13,10 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField, Range(0f, 1f)] private float windFloor = 0.25f; // audible when stood still
     [SerializeField] private float windPitchAtSpeed = 0.35f;
 
+    [Header("Dread")]
+    [SerializeField, Range(0f, 1f)] private float dreadVolume = 0.5f;
+    [SerializeField] private float dreadPitchAtContact = 0.45f;
+
     [Header("Pickup combo")]
     [SerializeField] private float comboWindow = 1.6f;  // gap that resets the run of pickups
     [SerializeField] private int comboSteps = 8;        // pitch stops climbing after this
@@ -22,6 +26,8 @@ public class AudioManager : Singleton<AudioManager>
     private AudioSource sfx;
     private AudioSource pickup;   // its own source: PlayOneShot uses the source pitch
     private AudioSource wind;
+    private AudioSource dread;
+    private Pursuer pursuer;
     private int combo;
     private float lastPickupAt = -999f;
 
@@ -36,6 +42,12 @@ public class AudioManager : Singleton<AudioManager>
 
         pickup = gameObject.AddComponent<AudioSource>();
         pickup.playOnAwake = false;
+
+        dread = gameObject.AddComponent<AudioSource>();
+        dread.clip = library.Get(Sound.Dread);
+        dread.loop = true;
+        dread.volume = 0f;
+        dread.Play();
 
         wind = gameObject.AddComponent<AudioSource>();
         wind.clip = library.Get(Sound.Wind);
@@ -85,6 +97,24 @@ public class AudioManager : Singleton<AudioManager>
         var target = windVolume * Mathf.Lerp(windFloor, 1f, t);
         wind.volume = Mathf.Lerp(wind.volume, target, 2f * Time.deltaTime);
         wind.pitch = 1f + windPitchAtSpeed * t;
+
+        DriveDread();
+    }
+
+    // Hearing it approach is what makes raising the mirror a decision rather than a guess.
+    private void DriveDread()
+    {
+        if (dread == null)
+        {
+            return;
+        }
+
+        pursuer = pursuer != null ? pursuer : Pursuer.Instance;
+        var near = pursuer != null ? pursuer.Proximity : 0f;
+
+        // Squared, so it stays almost silent at distance and swells late.
+        dread.volume = Mathf.Lerp(dread.volume, dreadVolume * near * near, 2.5f * Time.deltaTime);
+        dread.pitch = 1f + dreadPitchAtContact * near;
     }
 
     // Nothing is audible without one, and the scene currently has none.

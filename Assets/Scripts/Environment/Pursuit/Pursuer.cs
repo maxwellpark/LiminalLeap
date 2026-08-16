@@ -9,6 +9,8 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     [SerializeField] private float closeRate = 3.5f;
     [SerializeField] private float recoverRate = 6f;
     [SerializeField] private float speedRelief = 2.5f;
+    [SerializeField] private float lungeWithin = 12f;
+    [SerializeField] private float lungeMultiplier = 2.2f;
     [SerializeField] private float bodyHeight = 2.4f;
 
     private PursuitModel.Settings settings;
@@ -28,6 +30,8 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             RecoverRate = recoverRate,
             MaxDistance = startDistance,
             SpeedRelief = speedRelief,
+            LungeWithin = lungeWithin,
+            LungeMultiplier = lungeMultiplier,
         };
 
         distance = startDistance;

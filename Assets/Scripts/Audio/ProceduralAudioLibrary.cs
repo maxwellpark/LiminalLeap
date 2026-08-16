@@ -73,6 +73,26 @@ public class ProceduralAudioLibrary : IAudioLibrary
                 return Synth.MakeSeamless(buf, Synth.Samples(0.6f));
             }
 
+            case Sound.Dread:
+            {
+                // Slow pulse, ambiguous between a breath and machinery. Loops under everything
+                // so the pursuer can be heard before the mirror confirms it.
+                const float length = 4.4f;
+
+                var sub = Synth.Sweep(41f, 41f, length, 0f);
+                Synth.Modulate(sub, 0.42f, 0.85f, 0f);
+
+                var body = Synth.Sweep(82f, 82f, length, 0f);
+                Synth.Modulate(body, 0.42f, 0.9f, 0.6f);
+
+                var breath = Synth.Noise(length, 53, 0.03f);
+                Synth.Modulate(breath, 0.42f, 0.95f, 0.3f);
+
+                var buf = Synth.Mix(Synth.Mix(sub, 0.6f, body, 0.3f), 1f, breath, 0.5f);
+                Synth.Normalise(buf, 0.6f);
+                return Synth.MakeSeamless(buf, Synth.Samples(0.5f));
+            }
+
             case Sound.Success:
             {
                 // Rising major arpeggio, the opposite shape to Death's falling sweep.
