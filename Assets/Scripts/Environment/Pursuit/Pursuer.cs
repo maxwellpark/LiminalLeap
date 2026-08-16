@@ -13,10 +13,15 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     [SerializeField] private float lungeMultiplier = 2.2f;
     [SerializeField] private float bodyHeight = 2.4f;
 
+    [Header("Warnings")]
+    [SerializeField] private float[] warnAt = { 0.3f, 0.55f, 0.75f };
+
     private PursuitModel.Settings settings;
     private Transform body;
     private Renderer bodyRenderer;
     private float distance;
+    private int warningsGiven;
+    private bool lunging;
 
     public float Distance => distance;
     public float Proximity => PursuitModel.Proximity(distance, settings);
@@ -41,6 +46,8 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     public void ResetForNewRun()
     {
         distance = startDistance;
+        warningsGiven = 0;
+        lunging = false;
     }
 
     private void Update()
@@ -54,11 +61,32 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         distance = PursuitModel.Step(distance, Time.deltaTime, observed, PlayerTrackMovement.SpeedFraction, settings);
 
         Follow();
+        Warn();
 
         if (PursuitModel.Caught(distance))
         {
             PlayerTrackMovement.Caught();
         }
+    }
+
+    // Only on the way in. Announcing every recovery would make it chatty rather than tense.
+    private void Warn()
+    {
+        var near = Proximity;
+
+        if (warnAt != null && warningsGiven < warnAt.Length && near >= warnAt[warningsGiven])
+        {
+            warningsGiven++;
+            AudioManager.GetInstance().Play(Sound.Approach);
+        }
+
+        var inLunge = distance < lungeWithin;
+        if (inLunge && !lunging)
+        {
+            AudioManager.GetInstance().Play(Sound.Lunge);
+        }
+
+        lunging = inLunge;
     }
 
     private void Follow()

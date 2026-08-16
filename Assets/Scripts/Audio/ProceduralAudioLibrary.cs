@@ -73,6 +73,29 @@ public class ProceduralAudioLibrary : IAudioLibrary
                 return Synth.MakeSeamless(buf, Synth.Samples(0.6f));
             }
 
+            case Sound.Approach:
+            {
+                // A discrete "it gained on you". Continuous swells get tuned out; events don't.
+                var scrape = Synth.Noise(0.55f, 173, 0.16f);
+                Synth.Modulate(scrape, 9f, 0.5f, 0f);
+                Synth.Decay(scrape, 3.2f);
+
+                var lift = Synth.Sweep(70f, 190f, 0.55f, 2.6f);
+                return Shaped(Synth.Mix(scrape, 0.6f, lift, 0.5f), 0.5f);
+            }
+
+            case Sound.Lunge:
+            {
+                // Two frequencies a semitone apart, beating against each other. Dissonance
+                // reads as wrong far faster than volume does.
+                var a = Synth.Sweep(240f, 150f, 0.5f, 4.5f);
+                var b = Synth.Sweep(254f, 159f, 0.5f, 4.5f);
+                var hiss = Synth.Noise(0.5f, 211, 0.3f);
+                Synth.Decay(hiss, 6f);
+
+                return Shaped(Synth.Mix(Synth.Mix(a, 0.5f, b, 0.5f), 1f, hiss, 0.35f), 0.75f);
+            }
+
             case Sound.Dread:
             {
                 // Slow pulse, ambiguous between a breath and machinery. Loops under everything

@@ -16,6 +16,7 @@ public class AudioManager : Singleton<AudioManager>
     [Header("Dread")]
     [SerializeField, Range(0f, 1f)] private float dreadVolume = 0.5f;
     [SerializeField] private float dreadPitchAtContact = 0.45f;
+    [SerializeField, Range(0f, 1f)] private float windDuckedByDread = 0.75f;
 
     [Header("Pickup combo")]
     [SerializeField] private float comboWindow = 1.6f;  // gap that resets the run of pickups
@@ -95,6 +96,10 @@ public class AudioManager : Singleton<AudioManager>
 
         var t = PlayerTrackMovement.SpeedFraction;
         var target = windVolume * Mathf.Lerp(windFloor, 1f, t);
+
+        // The world falling quiet as it closes is worth more than anything getting louder.
+        target *= 1f - windDuckedByDread * Dread();
+
         wind.volume = Mathf.Lerp(wind.volume, target, 2f * Time.deltaTime);
         wind.pitch = 1f + windPitchAtSpeed * t;
 
@@ -109,12 +114,17 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        pursuer = pursuer != null ? pursuer : Pursuer.Instance;
-        var near = pursuer != null ? pursuer.Proximity : 0f;
+        var near = Dread();
 
         // Squared, so it stays almost silent at distance and swells late.
         dread.volume = Mathf.Lerp(dread.volume, dreadVolume * near * near, 2.5f * Time.deltaTime);
         dread.pitch = 1f + dreadPitchAtContact * near;
+    }
+
+    private float Dread()
+    {
+        pursuer = pursuer != null ? pursuer : Pursuer.Instance;
+        return pursuer != null ? pursuer.Proximity : 0f;
     }
 
     // Nothing is audible without one, and the scene currently has none.
