@@ -16,6 +16,7 @@ public static class TrackPiecePrefabs
     public static void GenerateFromCommandLine()
     {
         Directory.CreateDirectory(Folder);
+        MaterialAssets.GenerateFromCommandLine();
 
         Build("Straight", 0f, Decoration.None);
         Build("TurnLeft", -7f, Decoration.None);
@@ -46,7 +47,7 @@ public static class TrackPiecePrefabs
         visual.transform.SetParent(root.transform, false);
         visual.transform.localScale = new Vector3(Width, 0.5f, Length);
         visual.transform.localPosition = new Vector3(0f, -0.25f, Length * 0.5f);
-        visual.GetComponent<Renderer>().sharedMaterial = MaterialLibrary.Get(Surface.Track);
+        visual.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Track);
         Object.DestroyImmediate(visual.GetComponent<Collider>());
 
         var anchor = new GameObject("End").transform;
@@ -78,7 +79,7 @@ public static class TrackPiecePrefabs
                 pickup.transform.SetParent(piece, false);
                 pickup.transform.localPosition = new Vector3(0f, 0.5f, Length * 0.5f);
                 pickup.GetComponent<Collider>().isTrigger = true;
-                pickup.GetComponent<Renderer>().sharedMaterial = MaterialLibrary.Get(Surface.Pickup);
+                pickup.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Pickup);
 
                 var trig = pickup.AddComponent<SpeedTriggerable>();
                 var so = new SerializedObject(trig);
@@ -113,7 +114,7 @@ public static class TrackPiecePrefabs
         body.transform.localScale = new Vector3(width, height, 0.8f);
         body.GetComponent<Collider>().isTrigger = true;
         body.GetComponent<Renderer>().sharedMaterial =
-            MaterialLibrary.Get(jumpable ? Surface.JumpBar : Surface.Hazard);
+            MaterialAssets.Load(jumpable ? Surface.JumpBar : Surface.Hazard);
 
         var hazard = body.AddComponent<Hazard>();
         var so = new SerializedObject(hazard);

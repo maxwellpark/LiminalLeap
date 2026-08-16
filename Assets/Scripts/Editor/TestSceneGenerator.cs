@@ -115,7 +115,7 @@ public static class TestSceneGenerator
             visual.transform.SetParent(piece.transform, false);
             visual.transform.localScale = new Vector3(8f, 0.5f, settings.PieceLength);
             visual.transform.localPosition = new Vector3(0f, -0.25f, settings.PieceLength * 0.5f);
-            visual.GetComponent<Renderer>().sharedMaterial = MaterialLibrary.Get(Surface.Track);
+            visual.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Track);
 
             // First piece stays straight so the run doesn't open on a bend.
             var yaw = i == 0 || rng.NextDouble() < settings.StraightChance
@@ -380,7 +380,7 @@ public static class TestSceneGenerator
         body.transform.localScale = new Vector3(halfWidth * 2f, height, 0.8f);
         body.GetComponent<Collider>().isTrigger = true;
         body.GetComponent<Renderer>().sharedMaterial =
-            MaterialLibrary.Get(jumpable ? Surface.JumpBar : Surface.Hazard);
+            MaterialAssets.Load(jumpable ? Surface.JumpBar : Surface.Hazard);
 
         var hazard = body.AddComponent<Hazard>();
         var so = new SerializedObject(hazard);
@@ -442,7 +442,7 @@ public static class TestSceneGenerator
         pickup.transform.position = position;
         pickup.transform.localScale = Vector3.one * PickupDiameter;
         pickup.GetComponent<Collider>().isTrigger = true;
-        pickup.GetComponent<Renderer>().sharedMaterial = MaterialLibrary.Get(Surface.Pickup);
+        pickup.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Pickup);
 
         var trig = pickup.AddComponent<SpeedTriggerable>();
         var so = new SerializedObject(trig);

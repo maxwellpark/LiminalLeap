@@ -107,6 +107,13 @@ public class ProceduralTrackGenerator : MonoBehaviour
         piece.gameObject.SetActive(true);
         piece.Passed = false;
 
+        // Pooling reuses the object, so a collected pickup stays collected without this.
+        // That is why pickups ran out mid-run once every pooled one had been eaten.
+        foreach (var resettable in piece.GetComponentsInChildren<IRunResettable>(true))
+        {
+            resettable.ResetForNewRun();
+        }
+
         piece.transform.SetPositionAndRotation(
             piece.HasEndAnchor ? nextEnd : TrackChainer.NextPiecePosition(nextEnd, nextForward, piece.Length()),
             Quaternion.LookRotation(nextForward));
@@ -127,7 +134,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         for (var i = 0; i < piecePrefabs.Length; i++)
         {
             var p = piecePrefabs[i];
-            if (p != null && !p.ContainsHazard && p.TurnDegrees < 1f)
+            if (p != null && p.IsPlain && p.TurnDegrees < 1f)
             {
                 return i;
             }

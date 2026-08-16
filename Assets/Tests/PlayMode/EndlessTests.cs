@@ -25,6 +25,7 @@ public class EndlessTests
             MakePiece("TurnLeft", -7f, false),
             MakePiece("TurnRight", 7f, false),
             MakePiece("Block", 0f, true),
+            MakePickupPiece("Pickup"),
         };
 
         root = new GameObject("EndlessRoot");
@@ -66,6 +67,20 @@ public class EndlessTests
         return piece;
     }
 
+    private TrackPiece MakePickupPiece(string name)
+    {
+        var piece = MakePiece(name, 0f, false);
+
+        var pickup = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        pickup.name = "SpeedPickup";
+        pickup.transform.SetParent(piece.transform, false);
+        pickup.transform.localPosition = new Vector3(0f, 0.5f, 5f);
+        pickup.GetComponent<Collider>().isTrigger = true;
+        pickup.AddComponent<SpeedTriggerable>();
+
+        return piece;
+    }
+
     private static void SetField(object target, string name, object value)
     {
         var f = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
@@ -103,5 +118,47 @@ public class EndlessTests
         var late = root.transform.childCount;
         Debug.Log($"ENDLESS children early={early} late={late}");
         Assert.Less(late, early + 30, $"pieces are accumulating: {early} then {late}");
+    }
+
+    // Pooling reuses objects, so a collected pickup came back still collected and the
+    // track quietly ran out of them mid-run.
+    [UnityTest]
+    public IEnumerator RecycledPickupsComeBack()
+    {
+        // Past the forced-plain lead-in first, or there is nothing collectable yet.
+        for (var step = 0; step < 25; step++)
+        {
+            player.position += Vector3.forward * 12f;
+            yield return null;
+        }
+
+        var collected = 0;
+        foreach (var trig in root.GetComponentsInChildren<SpeedTriggerable>(true))
+        {
+            trig.Trigger();
+            collected++;
+        }
+
+        Assert.Greater(collected, 0, "no pickups spawned, so this proves nothing");
+
+        // Run far enough that every spawned piece has been recycled at least once.
+        for (var step = 0; step < 60; step++)
+        {
+            player.position += Vector3.forward * 12f;
+            yield return null;
+        }
+
+        var live = 0;
+        foreach (var trig in root.GetComponentsInChildren<SpeedTriggerable>(true))
+        {
+            var renderer = trig.GetComponent<Renderer>();
+            if (renderer != null && renderer.enabled)
+            {
+                live++;
+            }
+        }
+
+        Debug.Log($"ENDLESS pickups collected={collected} live after recycling={live}");
+        Assert.Greater(live, 0, "every pooled pickup stayed collected, so the track ran dry");
     }
 }
