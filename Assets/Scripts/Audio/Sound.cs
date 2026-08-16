@@ -10,6 +10,7 @@ public enum Sound
     MirrorUp,
     MirrorDown,
     Success,
+    Dread,
 }
 
 public interface IAudioLibrary
