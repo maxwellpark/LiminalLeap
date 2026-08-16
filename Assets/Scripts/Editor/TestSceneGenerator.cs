@@ -27,6 +27,7 @@ public static class TestSceneGenerator
         public float PlayerMaxSpeed = 32f;   // matches PlayerTrackMovement
         public float JumpAirtime = 0.64f;    // jumpUpTime * 2
         public float HazardMarginUnits = 6f; // reaction room past the landing point
+        public float HazardSeparation = 0.6f; // clear space between hazards in a row
         public float TrackHalfWidth = 3f;   // matches the player's strafe limit
         public float PlayerHalfWidth = 0.6f;
         public string Name = "Generated";
@@ -36,6 +37,25 @@ public static class TestSceneGenerator
     public static void GenerateDefault()
     {
         Debug.Log("GENERATED " + Generate(new Settings { Seed = Environment.TickCount, Name = "Manual" }));
+    }
+
+    // Seeded batch from the menu, so regenerating doesn't need the command line.
+    [MenuItem("Liminal Leap/Generate Seeded Scenes")]
+    public static void GenerateSeededBatch()
+    {
+        const int baseSeed = 1;
+        const int count = 3;
+
+        for (var i = 0; i < count; i++)
+        {
+            Debug.Log("GENERATED " + Generate(new Settings
+            {
+                Seed = baseSeed + i,
+                Name = "Seed" + (baseSeed + i),
+            }));
+        }
+
+        TitleSceneGenerator.RegisterBuildScenes();
     }
 
     // -executeMethod entry. Args: -seed N -pieces N -count N -yaw N
@@ -240,6 +260,13 @@ public static class TestSceneGenerator
         {
             var centre = (float)(rng.NextDouble() * 2d - 1d) * (settings.TrackHalfWidth - halfWidth);
             var candidate = new HazardLanes.Span(centre, halfWidth);
+
+            // Two checks, not one: the row must stay passable AND the pieces must not
+            // intersect each other.
+            if (HazardLanes.Overlaps(candidate, blocked, settings.HazardSeparation))
+            {
+                continue;
+            }
 
             var trial = new List<HazardLanes.Span>(blocked) { candidate };
             if (!HazardLanes.HasGap(trial, settings.TrackHalfWidth, settings.PlayerHalfWidth))
