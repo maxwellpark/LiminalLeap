@@ -35,5 +35,13 @@ public class Singleton<T> : SubscriberMonoBehaviour where T : MonoBehaviour
         Init();
     }
 
+    protected virtual void OnDestroy()
+    {
+        if ((object)instance == this)
+        {
+            instance = null;
+        }
+    }
+
     public virtual void Init() { }
 }

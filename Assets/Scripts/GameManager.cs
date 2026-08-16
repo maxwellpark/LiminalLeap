@@ -23,16 +23,23 @@ public class GameManager : Singleton<GameManager>
             data = ScriptableObject.CreateInstance<GameData>();
         }
 
-        data.ResetToDefaults();
+        // Was ResetToDefaults, which wiped the high score every launch and made the
+        // BEST readout decorative. The save is the source of truth now.
+        data.HighScore = SaveStore.Data.HighScore;
     }
 
     protected override void OnDeath(OnDeathEvent evt)
     {
-        if (evt.DistanceCovered > data.HighScore)
+        var improved = SaveStore.Data.RecordRun(PlayerTrackMovement.Score, evt.DistanceCovered);
+        SaveStore.Save();
+
+        data.HighScore = SaveStore.Data.HighScore;
+
+        if (improved)
         {
-            data.HighScore = evt.DistanceCovered;
-            ToastManager.GetInstance().Show($"New high score  {data.HighScore:F0}m");
-            EventService.Dispatch<OnDataUpdatedEvent>();
+            ToastManager.GetInstance().Show($"New best  {data.HighScore:F0}");
         }
+
+        EventService.Dispatch<OnDataUpdatedEvent>();
     }
 }

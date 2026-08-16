@@ -2,7 +2,8 @@
     "name": "LiminalLeap.Editor",
     "rootNamespace": "",
     "references": [
-        "LiminalLeap"
+        "LiminalLeap",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"
