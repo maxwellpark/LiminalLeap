@@ -59,6 +59,23 @@ public class PursuerTests
         Assert.Greater(afterWatching, afterIgnoring, "watching did not hold it off");
     }
 
+    // CopyFrom copies the transform, so setting the 180 before it silently showed the
+    // forward view in the mirror.
+    [UnityTest]
+    public IEnumerator MirrorActuallyLooksBackwards()
+    {
+        yield return Seconds(0.3f);
+
+        var mirror = RearView.GetInstance().MirrorCamera;
+        Assert.IsNotNull(mirror, "no mirror camera");
+
+        var main = Camera.main;
+        Assert.IsNotNull(main, "no main camera");
+
+        var dot = Vector3.Dot(mirror.transform.forward, main.transform.forward);
+        Assert.Less(dot, -0.9f, $"mirror is not facing backwards, dot={dot:F2}");
+    }
+
     [UnityTest]
     public IEnumerator DeathPutsItBack()
     {

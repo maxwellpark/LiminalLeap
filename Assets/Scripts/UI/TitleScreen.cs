@@ -13,6 +13,7 @@ public class TitleScreen : MonoBehaviour
     [Header("Presentation")]
     [SerializeField] private string title = "LIMINAL LEAP";
     [SerializeField] private string subtitle = "keep running";
+    [SerializeField] private string controls = "A D  steer      SPACE  jump      SHIFT  look back";
     [SerializeField] private float driftSpeed = 1.6f;
     [SerializeField] private float startDelay = 0.6f;
 
@@ -114,7 +115,10 @@ public class TitleScreen : MonoBehaviour
 
         column.Add("Title", RuntimeUi.Display, RuntimeUi.Ink, 0.3f, 22f).text = title;
         column.Add("Subtitle", RuntimeUi.Body, RuntimeUi.Muted, 0.15f, 14f).text = subtitle;
-        column.Space(120f);
+        column.Space(90f);
+
+        column.Add("Controls", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = controls;
+        column.Space(40f);
 
         prompt = column.Add("Prompt", RuntimeUi.Caption, RuntimeUi.Accent, 0.15f, 10f);
         prompt.text = "press any key";

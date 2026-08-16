@@ -23,6 +23,7 @@ public static class TestSceneGenerator
         public float MaxYawDegrees = 7f;  // per seam; strings of these make the bends
         public float StraightChance = 0.4f;
         public float HazardChance = 0.3f;
+        public bool PaintControls = true;   // floor signage instead of a tutorial overlay
         public float PlayerMaxSpeed = 32f;   // matches PlayerTrackMovement
         public float JumpAirtime = 0.64f;    // jumpUpTime * 2
         public float HazardMarginUnits = 6f; // reaction room past the landing point
@@ -100,6 +101,11 @@ public static class TestSceneGenerator
 
             var trackPiece = piece.AddComponent<TrackPiece>();
             SetPrivate(trackPiece, "endAnchor", anchor);
+
+            if (settings.PaintControls)
+            {
+                PaintControlSign(piece.transform, settings, i);
+            }
 
             // Hazards first: pickups then avoid the lanes they occupy.
             var blocked = new List<HazardLanes.Span>();
@@ -199,6 +205,28 @@ public static class TestSceneGenerator
         }
 
         return (GameObject)PrefabUtility.InstantiatePrefab(asset);
+    }
+
+    // The opening stretch teaches the controls as floor markings, which is also just
+    // what these spaces look like.
+    private static void PaintControlSign(Transform piece, Settings settings, int index)
+    {
+        string text = index switch
+        {
+            1 => "A   D    STEER",
+            2 => "SPACE    JUMP",
+            3 => "SHIFT    LOOK BACK",
+            5 => "R    RESTART",
+            _ => null,
+        };
+
+        if (text == null)
+        {
+            return;
+        }
+
+        var faded = new Color(0.78f, 0.78f, 0.74f, 0.55f);
+        WorldSign.Floor(piece, text, new Vector3(0f, 0.02f, settings.PieceLength * 0.5f), 3.2f, faded);
     }
 
     // Places blockers one at a time, refusing any that would leave no way through.

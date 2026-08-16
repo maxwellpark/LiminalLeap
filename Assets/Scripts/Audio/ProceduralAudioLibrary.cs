@@ -88,6 +88,23 @@ public class ProceduralAudioLibrary : IAudioLibrary
                 return Shaped(Synth.Mix(chord, 1f, air, 0.25f), 0.7f);
             }
 
+            case Sound.MirrorUp:
+            {
+                // Short filtered swish, no tone, so it reads as movement not a UI beep.
+                var air = Synth.Noise(0.22f, 131, 0.09f);
+                Synth.Decay(air, 7f);
+                var body = Synth.Sweep(180f, 420f, 0.22f, 6f);
+                return Shaped(Synth.Mix(air, 0.8f, body, 0.25f), 0.4f);
+            }
+
+            case Sound.MirrorDown:
+            {
+                var air = Synth.Noise(0.18f, 137, 0.07f);
+                Synth.Decay(air, 9f);
+                var body = Synth.Sweep(360f, 150f, 0.18f, 7f);
+                return Shaped(Synth.Mix(air, 0.7f, body, 0.25f), 0.35f);
+            }
+
             case Sound.Confirm:
                 return Shaped(Synth.Sweep(520f, 1040f, 0.16f, 4f), 0.55f);
 

@@ -7,6 +7,8 @@ public enum Sound
     Wind,
     TitleSting,
     Confirm,
+    MirrorUp,
+    MirrorDown,
 }
 
 public interface IAudioLibrary

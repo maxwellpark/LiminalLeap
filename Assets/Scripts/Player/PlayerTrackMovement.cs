@@ -10,7 +10,7 @@ public class PlayerTrackMovement : MonoBehaviour
     [SerializeField] private float minSpeed = 4f;
     [SerializeField] private float maxSpeed = 32f;
     [SerializeField] private float acceleration = 1.4f;   // ramp toward maxSpeed, units/s^2
-    [SerializeField] private float turnSpeed = 200f;      // deg/s the heading follows the track
+    [SerializeField] private float turnResponse = 6f;     // heading ease rate, higher is snappier
 
     [Header("Strafe")]
     [SerializeField] private float strafeSpeed = 8f;
@@ -113,6 +113,7 @@ public class PlayerTrackMovement : MonoBehaviour
         DebugOverlay.GetInstance();
         RearView.GetInstance();
         Pursuer.GetInstance();
+        Onboarding.GetInstance();
     }
 
     private void Update()
@@ -215,7 +216,6 @@ public class PlayerTrackMovement : MonoBehaviour
             basePos = Vector3.MoveTowards(basePos, target, step);
             travelledThisFrame += step;
             remaining -= step;
-            trackRot = Quaternion.RotateTowards(trackRot, piece.transform.rotation, turnSpeed * dt);
 
             if (toEnd - step > 0.0001f)
             {
@@ -224,6 +224,16 @@ public class PlayerTrackMovement : MonoBehaviour
 
             piece.Passed = true;
             piece = trackManager.GetClosestPiece(basePos);
+        }
+
+        // Once per frame, outside the loop: rotating per iteration turned twice as far on a
+        // boundary frame, and boundaries arrive faster the quicker you run.
+        if (piece != null)
+        {
+            // Exponential ease so the heading never snaps onto a new piece's angle, and
+            // framerate independent unlike lerping by a raw factor.
+            var blend = 1f - Mathf.Exp(-turnResponse * dt);
+            trackRot = Quaternion.Slerp(trackRot, piece.transform.rotation, blend);
         }
 
         DistanceCovered += travelledThisFrame;
