@@ -73,6 +73,24 @@ public class ProceduralAudioLibrary : IAudioLibrary
                 return Synth.MakeSeamless(buf, Synth.Samples(0.6f));
             }
 
+            case Sound.TitleSting:
+            {
+                // Minor triad, slow decay, one voice detuned so it beats rather than sits flat.
+                var root = Synth.Sweep(110f, 110f, 2.4f, 1.1f);
+                var third = Synth.Sweep(130.8f, 130.8f, 2.4f, 1.2f);
+                var fifth = Synth.Sweep(164.8f, 164.8f, 2.4f, 1.3f);
+                var detune = Synth.Sweep(110.4f, 110.4f, 2.4f, 1.1f);
+
+                var air = Synth.Noise(2.4f, 91, 0.02f);
+                Synth.Decay(air, 2f);
+
+                var chord = Synth.Mix(Synth.Mix(root, 0.5f, third, 0.4f), 1f, Synth.Mix(fifth, 0.35f, detune, 0.3f), 1f);
+                return Shaped(Synth.Mix(chord, 1f, air, 0.25f), 0.7f);
+            }
+
+            case Sound.Confirm:
+                return Shaped(Synth.Sweep(520f, 1040f, 0.16f, 4f), 0.55f);
+
             default:
                 return new float[Synth.Samples(0.01f)];
         }

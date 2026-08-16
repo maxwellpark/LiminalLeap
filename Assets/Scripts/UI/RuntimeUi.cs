@@ -5,6 +5,32 @@ using UnityEngine.UI;
 // Managers build their own UI when nothing is wired, so generated scenes work.
 public static class RuntimeUi
 {
+    // One scale rather than numbers picked per call site, which is why sizes looked arbitrary.
+    public const float Display = 96f;
+    public const float Headline = 52f;
+    public const float Body = 32f;
+    public const float Caption = 24f;
+
+    public static readonly Color Ink = new(0.92f, 0.93f, 0.95f, 1f);
+    public static readonly Color Muted = new(0.62f, 0.65f, 0.7f, 1f);
+    public static readonly Color Accent = new(0.45f, 0.86f, 0.95f, 1f);
+
+    // Outline and a touch of tracking, or light text vanishes against a bright surface.
+    public static TextMeshProUGUI Style(TextMeshProUGUI text, Color colour, float outline = 0.18f, float tracking = 4f)
+    {
+        text.color = colour;
+        text.characterSpacing = tracking;
+        text.fontStyle = FontStyles.Normal;
+        text.outlineWidth = outline;
+        text.outlineColor = new Color32(0, 0, 0, 190);
+        return text;
+    }
+
+    public static UiPop AddPop(TextMeshProUGUI text)
+    {
+        return text.gameObject.AddComponent<UiPop>();
+    }
+
     public static Canvas CreateCanvas(string name, int sortingOrder)
     {
         var go = new GameObject(name);
