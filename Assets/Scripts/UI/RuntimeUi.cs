@@ -31,6 +31,46 @@ public static class RuntimeUi
         return text.gameObject.AddComponent<UiPop>();
     }
 
+    // Stacks rows by their own height. Hand-placed offsets silently overlapped the moment
+    // a font size changed, which is exactly what happened when score went to 96pt.
+    public class Column
+    {
+        private const float LineFactor = 1.3f;
+
+        private readonly Transform parent;
+        private readonly Vector2 anchor;
+        private readonly TextAlignmentOptions alignment;
+        private readonly float x;
+        private readonly float width;
+        private readonly float gap;
+        private float y;
+
+        public Column(Transform parent, Vector2 anchor, TextAlignmentOptions alignment,
+            float x, float top, float width, float gap = 8f)
+        {
+            this.parent = parent;
+            this.anchor = anchor;
+            this.alignment = alignment;
+            this.x = x;
+            this.width = width;
+            this.gap = gap;
+            y = top;
+        }
+
+        public TextMeshProUGUI Add(string name, float size, Color colour, float outline = 0.18f, float tracking = 4f)
+        {
+            var height = size * LineFactor;
+            var text = CreateText(parent, name, anchor, new Vector2(x, y), new Vector2(width, height), size, alignment);
+            y -= height + gap;
+            return Style(text, colour, outline, tracking);
+        }
+
+        public void Space(float pixels)
+        {
+            y -= pixels;
+        }
+    }
+
     public static Canvas CreateCanvas(string name, int sortingOrder)
     {
         var go = new GameObject(name);

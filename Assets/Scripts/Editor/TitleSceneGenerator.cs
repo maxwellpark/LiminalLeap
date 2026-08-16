@@ -27,7 +27,8 @@ public static class TitleSceneGenerator
         BuildBackdrop();
 
         var go = new GameObject("TitleScreen");
-        go.AddComponent<TitleScreen>();
+        var title = go.AddComponent<TitleScreen>();
+        PointAtGameScenes(title);
 
         EditorSceneManager.SaveScene(scene, TitlePath);
         RegisterBuildScenes();
@@ -63,25 +64,69 @@ public static class TitleSceneGenerator
         }
     }
 
-    // The title can't load the game scene unless both are registered.
-    private static void RegisterBuildScenes()
+    // The title can't load anything that isn't registered, generated scenes included.
+    [MenuItem("Liminal Leap/Refresh Build Scenes")]
+    public static void RegisterBuildScenes()
     {
-        var wanted = new[] { TitlePath, GamePath };
         var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>();
 
-        foreach (var path in wanted)
+        if (File.Exists(TitlePath))
         {
-            if (File.Exists(path))
-            {
-                scenes.Add(new EditorBuildSettingsScene(path, true));
-            }
-            else
-            {
-                Debug.LogWarning("Not registering missing scene: " + path);
-            }
+            scenes.Add(new EditorBuildSettingsScene(TitlePath, true));
+        }
+
+        foreach (var path in GeneratedScenePaths())
+        {
+            scenes.Add(new EditorBuildSettingsScene(path, true));
+        }
+
+        if (File.Exists(GamePath))
+        {
+            scenes.Add(new EditorBuildSettingsScene(GamePath, true));
         }
 
         EditorBuildSettings.scenes = scenes.ToArray();
         Debug.Log("BUILD SCENES: " + string.Join(", ", scenes.ConvertAll(s => s.path)));
+    }
+
+    // Generated scenes first, the committed test scene as the fallback that always exists.
+    private static void PointAtGameScenes(TitleScreen title)
+    {
+        var names = new System.Collections.Generic.List<string>();
+        foreach (var path in GeneratedScenePaths())
+        {
+            names.Add(Path.GetFileNameWithoutExtension(path));
+        }
+
+        names.Add(Path.GetFileNameWithoutExtension(GamePath));
+
+        var so = new SerializedObject(title);
+        var array = so.FindProperty("gameScenes");
+        array.arraySize = names.Count;
+        for (var i = 0; i < names.Count; i++)
+        {
+            array.GetArrayElementAtIndex(i).stringValue = names[i];
+        }
+
+        so.ApplyModifiedPropertiesWithoutUndo();
+        Debug.Log("TITLE TARGETS: " + string.Join(", ", names));
+    }
+
+    public static string[] GeneratedScenePaths()
+    {
+        var dir = "Assets/Scenes/Generated";
+        if (!Directory.Exists(dir))
+        {
+            return System.Array.Empty<string>();
+        }
+
+        var found = Directory.GetFiles(dir, "*.unity");
+        System.Array.Sort(found);
+        for (var i = 0; i < found.Length; i++)
+        {
+            found[i] = found[i].Replace('\\', '/');
+        }
+
+        return found;
     }
 }

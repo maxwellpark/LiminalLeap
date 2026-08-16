@@ -56,6 +56,8 @@ public static class TestSceneGenerator
                 Name = "Seed" + (seed + i),
             }));
         }
+
+        TitleSceneGenerator.RegisterBuildScenes();
     }
 
     public static string Generate(Settings settings)

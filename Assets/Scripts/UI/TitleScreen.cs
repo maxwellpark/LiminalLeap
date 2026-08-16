@@ -5,7 +5,12 @@ using UnityEngine.SceneManagement;
 // Builds its own UI so the scene only needs this component and some geometry to look at.
 public class TitleScreen : MonoBehaviour
 {
-    [SerializeField] private string gameScene = "MovementTestScene";
+    [Header("Where to go")]
+    [Tooltip("Tried in order. First one that is in Build Settings wins.")]
+    [SerializeField] private string[] gameScenes = { "MovementTestScene" };
+    [SerializeField] private bool pickRandom;
+
+    [Header("Presentation")]
     [SerializeField] private string title = "LIMINAL LEAP";
     [SerializeField] private string subtitle = "keep running";
     [SerializeField] private float driftSpeed = 1.6f;
@@ -54,6 +59,12 @@ public class TitleScreen : MonoBehaviour
 
     private void StartGame()
     {
+        if (Resolve() == null)
+        {
+            Debug.LogWarning("TitleScreen: none of " + string.Join(", ", gameScenes) + " are in Build Settings");
+            return;
+        }
+
         starting = true;
         AudioManager.GetInstance().Play(Sound.Confirm);
         ScreenFade.GetInstance().To(1f, 0.45f);
@@ -62,15 +73,36 @@ public class TitleScreen : MonoBehaviour
 
     private void LoadGame()
     {
-        if (Application.CanStreamedLevelBeLoaded(gameScene))
+        var scene = Resolve();
+        if (scene != null)
         {
-            SceneManager.LoadScene(gameScene);
-            return;
+            SceneManager.LoadScene(scene);
+        }
+    }
+
+    // Generated scenes are gitignored, so the list has to tolerate missing entries.
+    private string Resolve()
+    {
+        if (gameScenes == null || gameScenes.Length == 0)
+        {
+            return null;
         }
 
-        Debug.LogWarning($"TitleScreen: '{gameScene}' is not in Build Settings, staying put");
-        starting = false;
-        ScreenFade.GetInstance().To(0f, 0.4f);
+        var loadable = new System.Collections.Generic.List<string>();
+        foreach (var name in gameScenes)
+        {
+            if (!string.IsNullOrWhiteSpace(name) && Application.CanStreamedLevelBeLoaded(name))
+            {
+                loadable.Add(name);
+            }
+        }
+
+        if (loadable.Count == 0)
+        {
+            return null;
+        }
+
+        return pickRandom ? loadable[Random.Range(0, loadable.Count)] : loadable[0];
     }
 
     private void BuildUi()
@@ -78,19 +110,13 @@ public class TitleScreen : MonoBehaviour
         var canvas = RuntimeUi.CreateCanvas("TitleCanvas", 120);
         var centre = new Vector2(0.5f, 0.5f);
 
-        var heading = RuntimeUi.Style(
-            RuntimeUi.CreateText(canvas.transform, "Title", centre, new Vector2(0f, 120f), new Vector2(1400f, 180f), RuntimeUi.Display, TextAlignmentOptions.Center),
-            RuntimeUi.Ink, 0.3f, 22f);
-        heading.text = title;
+        var column = new RuntimeUi.Column(canvas.transform, centre, TextAlignmentOptions.Center, 0f, 180f, 1400f, 14f);
 
-        var sub = RuntimeUi.Style(
-            RuntimeUi.CreateText(canvas.transform, "Subtitle", centre, new Vector2(0f, 20f), new Vector2(1200f, 80f), RuntimeUi.Body, TextAlignmentOptions.Center),
-            RuntimeUi.Muted, 0.15f, 14f);
-        sub.text = subtitle;
+        column.Add("Title", RuntimeUi.Display, RuntimeUi.Ink, 0.3f, 22f).text = title;
+        column.Add("Subtitle", RuntimeUi.Body, RuntimeUi.Muted, 0.15f, 14f).text = subtitle;
+        column.Space(120f);
 
-        prompt = RuntimeUi.Style(
-            RuntimeUi.CreateText(canvas.transform, "Prompt", centre, new Vector2(0f, -180f), new Vector2(1200f, 80f), RuntimeUi.Caption, TextAlignmentOptions.Center),
-            RuntimeUi.Accent, 0.15f, 10f);
+        prompt = column.Add("Prompt", RuntimeUi.Caption, RuntimeUi.Accent, 0.15f, 10f);
         prompt.text = "press any key";
 
         ScreenFade.GetInstance().To(1f, 0f);
