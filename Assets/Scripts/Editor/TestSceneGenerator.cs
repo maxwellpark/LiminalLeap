@@ -24,6 +24,7 @@ public static class TestSceneGenerator
         public float StraightChance = 0.4f;
         public float HazardChance = 0.3f;
         public bool PaintControls = true;   // floor signage instead of a tutorial overlay
+        public bool Endless = true;         // runtime generator rather than a fixed run
         public float PlayerMaxSpeed = 32f;   // matches PlayerTrackMovement
         public float JumpAirtime = 0.64f;    // jumpUpTime * 2
         public float HazardMarginUnits = 6f; // reaction room past the landing point
@@ -90,6 +91,13 @@ public static class TestSceneGenerator
 
         var root = new GameObject("GeneratedTrack");
         var track = root.AddComponent<Track>();
+
+        if (settings.Endless)
+        {
+            var endlessPath = BuildEndless(root, settings);
+            EditorSceneManager.SaveScene(scene, endlessPath);
+            return endlessPath;
+        }
 
         var position = Vector3.zero;
         var forward = Vector3.forward;
@@ -160,7 +168,7 @@ public static class TestSceneGenerator
     }
 
     // Without these the scene builds a track nobody can run on.
-    private static void AddSupportingCast(Track track)
+    private static GameObject AddSupportingCast(Track track)
     {
         InstantiatePrefab("Assets/Prefabs/Singletons/GameManager.prefab");
         InstantiatePrefab("Assets/Prefabs/Singletons/UIManager.prefab");
@@ -194,6 +202,8 @@ public static class TestSceneGenerator
                 SetPrivate(cameraManager.GetComponent<CameraManager>(), "cameraShake", shake);
             }
         }
+
+        return player;
     }
 
     // Player prefab brings its own camera; the template's just fights it for Camera.main.
@@ -225,6 +235,84 @@ public static class TestSceneGenerator
         }
 
         return (GameObject)PrefabUtility.InstantiatePrefab(asset);
+    }
+
+    // An endless runner that ends is a level. The runtime generator chains forever.
+    private static string BuildEndless(GameObject root, Settings settings)
+    {
+        var generator = root.AddComponent<ProceduralTrackGenerator>();
+        var prefabs = LoadPiecePrefabs();
+
+        if (prefabs.Length == 0)
+        {
+            Debug.LogWarning("No track piece prefabs. Run Liminal Leap > Generate Track Piece Prefabs first.");
+        }
+
+        var so = new SerializedObject(generator);
+        var array = so.FindProperty("piecePrefabs");
+        array.arraySize = prefabs.Length;
+        for (var i = 0; i < prefabs.Length; i++)
+        {
+            array.GetArrayElementAtIndex(i).objectReferenceValue = prefabs[i];
+        }
+        so.FindProperty("seed").intValue = settings.Seed;
+        so.ApplyModifiedPropertiesWithoutUndo();
+
+        AddKillFloor(root.transform, 400f);
+
+        if (settings.PaintControls)
+        {
+            PaintOpeningSigns(root.transform, settings);
+        }
+
+        var track = root.GetComponent<Track>();
+        var player = AddSupportingCast(track);
+
+        // The generator recycles behind the player, so it needs to know where that is.
+        var so2 = new SerializedObject(generator);
+        so2.FindProperty("player").objectReferenceValue = player != null ? player.transform : null;
+        so2.ApplyModifiedPropertiesWithoutUndo();
+
+        var tm = UnityEngine.Object.FindFirstObjectByType<TrackManager>();
+        if (tm != null)
+        {
+            SetPrivate(tm, "generator", generator);
+        }
+
+        var path = Path.Combine(OutputDir, settings.Name + ".unity");
+        Debug.Log($"ENDLESS scene with {prefabs.Length} piece prefabs");
+        return path;
+    }
+
+    // Static world signs: the generator's lead-in is forced straight so they land on track.
+    private static void PaintOpeningSigns(Transform parent, Settings settings)
+    {
+        var faded = new Color(0.78f, 0.78f, 0.74f, 0.55f);
+        string[] lines = { "A   D    STEER", "SPACE    JUMP", "SHIFT    LOOK BACK", "R    RESTART" };
+        float[] at = { 15f, 25f, 35f, 55f };
+
+        for (var i = 0; i < lines.Length; i++)
+        {
+            WorldSign.Floor(parent, lines[i], new Vector3(0f, 0.02f, at[i]), 3.2f, faded);
+        }
+    }
+
+    private static TrackPiece[] LoadPiecePrefabs()
+    {
+        var guids = AssetDatabase.FindAssets("t:Prefab", new[] { TrackPiecePrefabs.Folder });
+        var found = new System.Collections.Generic.List<TrackPiece>();
+
+        foreach (var guid in guids)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+            var piece = asset != null ? asset.GetComponent<TrackPiece>() : null;
+            if (piece != null)
+            {
+                found.Add(piece);
+            }
+        }
+
+        return found.ToArray();
     }
 
     // The opening stretch teaches the controls as floor markings, which is also just

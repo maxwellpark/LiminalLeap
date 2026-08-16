@@ -8,6 +8,9 @@ public class TrackPiece : MonoBehaviour
     // Which prefab this came from, so the pool hands back the same kind of piece.
     public int PrefabIndex { get; set; } = -1;
 
+    // Lets the generator space hazard pieces apart without inspecting their children.
+    [SerializeField] private bool containsHazard;
+
     [SerializeField] private Transform endAnchor;
     [SerializeField] private GameObject marker;
 
@@ -15,6 +18,10 @@ public class TrackPiece : MonoBehaviour
     private bool rendererLookedUp;
 
     public bool HasEndAnchor => endAnchor != null;
+    public bool ContainsHazard => containsHazard;
+
+    public float TurnDegrees =>
+        endAnchor != null ? Mathf.Abs(Mathf.DeltaAngle(0f, endAnchor.localEulerAngles.y)) : 0f;
 
     public Vector3 GetEndPosition()
     {
