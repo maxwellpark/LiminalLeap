@@ -195,21 +195,37 @@ public class PlayerTrackMovement : MonoBehaviour
 
         CurrentSpeed = Mathf.Clamp(Mathf.MoveTowards(CurrentSpeed, maxSpeed, acceleration * dt), minSpeed, maxSpeed);
 
-        var before = basePos;
-        basePos = Vector3.MoveTowards(basePos, piece.GetEndPosition(), CurrentSpeed * dt);
-        travelledThisFrame = (basePos - before).magnitude;
+        // Spill leftover into the next piece. MoveTowards clamps at its target, so stopping
+        // at a boundary silently dropped the rest of the frame's movement and read as jitter.
+        var remaining = CurrentSpeed * dt;
+        var guard = 0;
+
+        while (remaining > 0f && piece != null && guard++ < 8)
+        {
+            var target = piece.GetEndPosition();
+            var toEnd = Vector3.Distance(basePos, target);
+            var step = Mathf.Min(remaining, toEnd);
+
+            basePos = Vector3.MoveTowards(basePos, target, step);
+            travelledThisFrame += step;
+            remaining -= step;
+            trackRot = Quaternion.RotateTowards(trackRot, piece.transform.rotation, turnSpeed * dt);
+
+            if (toEnd - step > 0.0001f)
+            {
+                break;
+            }
+
+            piece.Passed = true;
+            piece = trackManager.GetClosestPiece(basePos);
+        }
+
         DistanceCovered += travelledThisFrame;
 
         // Pushing pace and skimming hazards both pay, so risk is worth taking.
         nearMissBonus = Mathf.Max(0f, nearMissBonus - nearMissDecayPerSecond * dt);
         Multiplier = 1f + speedMultiplierBonus * SpeedT + nearMissBonus;
         Score += travelledThisFrame * Multiplier;
-        trackRot = Quaternion.RotateTowards(trackRot, piece.transform.rotation, turnSpeed * dt);
-
-        if (basePos.ApproximatelyEquals(piece.GetEndPosition()))
-        {
-            piece.Passed = true;
-        }
     }
 
     private void HandleStrafe(float dt)
