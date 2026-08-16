@@ -55,6 +55,29 @@ public static class HazardLanes
         return Math.Max(1, (int)Math.Ceiling(reach / pieceLength));
     }
 
+    // Passability says nothing about hazards colliding with each other, so two blockers
+    // at nearby lanes both passed while visibly intersecting.
+    public static bool Overlaps(Span candidate, IReadOnlyList<Span> existing, float minGap)
+    {
+        if (existing == null)
+        {
+            return false;
+        }
+
+        var gap = Math.Max(0f, minGap);
+
+        for (var i = 0; i < existing.Count; i++)
+        {
+            var other = existing[i];
+            if (candidate.Min - gap < other.Max && candidate.Max + gap > other.Min)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // Widest gap available, so a generator can pick a lane that stays passable.
     public static float WidestGap(IReadOnlyList<Span> blocked, float trackHalfWidth)
     {

@@ -73,7 +73,12 @@ public static class SceneValidator
                     pieces++;
                 }
 
-                problems += CheckFields(path, mb);
+                // Only our own components. TextMeshPro alone has seven optional object
+                // fields, and auditing Unity's wiring is not the job.
+                if (IsOurs(mb))
+                {
+                    problems += CheckFields(path, mb);
+                }
             }
         }
 
@@ -154,6 +159,11 @@ public static class SceneValidator
         }
 
         return null;
+    }
+
+    private static bool IsOurs(MonoBehaviour mb)
+    {
+        return mb.GetType().Assembly.GetName().Name == "LiminalLeap";
     }
 
     private static int CheckFields(string path, MonoBehaviour mb)
