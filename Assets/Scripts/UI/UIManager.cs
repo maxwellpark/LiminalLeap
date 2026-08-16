@@ -105,29 +105,15 @@ public class UIManager : Singleton<UIManager>
     private void BuildHud()
     {
         var canvas = RuntimeUi.CreateCanvas("HudCanvas", 90);
-        var topLeft = new Vector2(0f, 1f);
-        var topRight = new Vector2(1f, 1f);
-        var row = new Vector2(520f, 60f);
 
-        speedText ??= RuntimeUi.Style(
-            RuntimeUi.CreateText(canvas.transform, "Speed", topLeft, new Vector2(40f, -36f), row, RuntimeUi.Headline, TextAlignmentOptions.TopLeft),
-            RuntimeUi.Ink);
+        var left = new RuntimeUi.Column(canvas.transform, new Vector2(0f, 1f), TextAlignmentOptions.TopLeft, 40f, -36f, 520f);
+        speedText ??= left.Add("Speed", RuntimeUi.Headline, RuntimeUi.Ink);
+        distanceText ??= left.Add("Distance", RuntimeUi.Body, RuntimeUi.Muted);
 
-        distanceText ??= RuntimeUi.Style(
-            RuntimeUi.CreateText(canvas.transform, "Distance", topLeft, new Vector2(40f, -100f), row, RuntimeUi.Body, TextAlignmentOptions.TopLeft),
-            RuntimeUi.Muted);
-
-        scoreText ??= RuntimeUi.Style(
-            RuntimeUi.CreateText(canvas.transform, "Score", topRight, new Vector2(-40f, -36f), row, RuntimeUi.Display, TextAlignmentOptions.TopRight),
-            RuntimeUi.Ink, 0.24f, 2f);
-
-        multiplierText ??= RuntimeUi.Style(
-            RuntimeUi.CreateText(canvas.transform, "Multiplier", topRight, new Vector2(-40f, -146f), row, RuntimeUi.Headline, TextAlignmentOptions.TopRight),
-            RuntimeUi.Accent);
-
-        highScoreText ??= RuntimeUi.Style(
-            RuntimeUi.CreateText(canvas.transform, "HighScore", topRight, new Vector2(-40f, -206f), row, RuntimeUi.Caption, TextAlignmentOptions.TopRight),
-            RuntimeUi.Muted);
+        var right = new RuntimeUi.Column(canvas.transform, new Vector2(1f, 1f), TextAlignmentOptions.TopRight, -40f, -36f, 520f);
+        scoreText ??= right.Add("Score", RuntimeUi.Display, RuntimeUi.Ink, 0.24f, 2f);
+        multiplierText ??= right.Add("Multiplier", RuntimeUi.Headline, RuntimeUi.Accent);
+        highScoreText ??= right.Add("HighScore", RuntimeUi.Caption, RuntimeUi.Muted);
 
         scorePop = RuntimeUi.AddPop((TextMeshProUGUI)scoreText);
         multiplierPop = RuntimeUi.AddPop((TextMeshProUGUI)multiplierText);
