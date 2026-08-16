@@ -111,6 +111,21 @@ public static class Synth
         return buf;
     }
 
+    // Lets notes land in sequence rather than all stacking at sample zero.
+    public static void MixAt(float[] destination, float[] source, int offset, float gain)
+    {
+        for (var i = 0; i < source.Length; i++)
+        {
+            var at = offset + i;
+            if (at < 0 || at >= destination.Length)
+            {
+                continue;
+            }
+
+            destination[at] += source[i] * gain;
+        }
+    }
+
     // Crossfades the tail over the head and truncates, so the loop point doesn't tick.
     public static float[] MakeSeamless(float[] buf, int crossfadeSamples)
     {

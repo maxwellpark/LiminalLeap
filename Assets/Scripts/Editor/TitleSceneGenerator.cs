@@ -89,27 +89,17 @@ public static class TitleSceneGenerator
         Debug.Log("BUILD SCENES: " + string.Join(", ", scenes.ConvertAll(s => s.path)));
     }
 
-    // Generated scenes first, the committed test scene as the fallback that always exists.
+    // Only the fallback. Generated scenes are resolved from Build Settings at runtime,
+    // because a baked list of names goes stale as soon as scenes are regenerated.
     private static void PointAtGameScenes(TitleScreen title)
     {
-        var names = new System.Collections.Generic.List<string>();
-        foreach (var path in GeneratedScenePaths())
-        {
-            names.Add(Path.GetFileNameWithoutExtension(path));
-        }
-
-        names.Add(Path.GetFileNameWithoutExtension(GamePath));
-
         var so = new SerializedObject(title);
         var array = so.FindProperty("gameScenes");
-        array.arraySize = names.Count;
-        for (var i = 0; i < names.Count; i++)
-        {
-            array.GetArrayElementAtIndex(i).stringValue = names[i];
-        }
-
+        array.arraySize = 1;
+        array.GetArrayElementAtIndex(0).stringValue = Path.GetFileNameWithoutExtension(GamePath);
         so.ApplyModifiedPropertiesWithoutUndo();
-        Debug.Log("TITLE TARGETS: " + string.Join(", ", names));
+
+        Debug.Log("TITLE FALLBACK: " + Path.GetFileNameWithoutExtension(GamePath));
     }
 
     public static string[] GeneratedScenePaths()

@@ -9,6 +9,7 @@ public enum Sound
     Confirm,
     MirrorUp,
     MirrorDown,
+    Success,
 }
 
 public interface IAudioLibrary
