@@ -73,6 +73,26 @@ public class ProceduralAudioLibrary : IAudioLibrary
                 return Synth.MakeSeamless(buf, Synth.Samples(0.6f));
             }
 
+            case Sound.Success:
+            {
+                // Rising major arpeggio, the opposite shape to Death's falling sweep.
+                var buf = new float[Synth.Samples(1.6f)];
+                float[] notes = { 261.6f, 329.6f, 392f, 523.3f };
+
+                for (var i = 0; i < notes.Length; i++)
+                {
+                    var note = Synth.Sweep(notes[i], notes[i], 1.2f, 3.4f);
+                    var shimmer = Synth.Sweep(notes[i] * 2f, notes[i] * 2f, 0.8f, 5f);
+                    Synth.MixAt(buf, note, Synth.Samples(0.09f * i), 0.55f);
+                    Synth.MixAt(buf, shimmer, Synth.Samples(0.09f * i), 0.18f);
+                }
+
+                // Final octave held under it so the phrase resolves rather than just stopping.
+                Synth.MixAt(buf, Synth.Sweep(523.3f, 523.3f, 1.4f, 1.8f), Synth.Samples(0.36f), 0.3f);
+
+                return Shaped(buf, 0.75f);
+            }
+
             case Sound.TitleSting:
             {
                 // Minor triad, slow decay, one voice detuned so it beats rather than sits flat.

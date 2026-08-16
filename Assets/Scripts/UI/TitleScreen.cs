@@ -6,7 +6,9 @@ using UnityEngine.SceneManagement;
 public class TitleScreen : MonoBehaviour
 {
     [Header("Where to go")]
-    [Tooltip("Tried in order. First one that is in Build Settings wins.")]
+    [Tooltip("Prefer whatever generated scenes are in Build Settings, resolved at runtime.")]
+    [SerializeField] private bool preferGenerated = true;
+    [Tooltip("Used when preferGenerated is off, or nothing generated is registered.")]
     [SerializeField] private string[] gameScenes = { "MovementTestScene" };
     [SerializeField] private bool pickRandom;
 
@@ -81,29 +83,53 @@ public class TitleScreen : MonoBehaviour
         }
     }
 
-    // Generated scenes are gitignored, so the list has to tolerate missing entries.
+    // Read from Build Settings at runtime. A baked list of names goes stale the moment
+    // scenes are regenerated, which is exactly what happened.
     private string Resolve()
     {
-        if (gameScenes == null || gameScenes.Length == 0)
+        if (preferGenerated)
         {
-            return null;
-        }
-
-        var loadable = new System.Collections.Generic.List<string>();
-        foreach (var name in gameScenes)
-        {
-            if (!string.IsNullOrWhiteSpace(name) && Application.CanStreamedLevelBeLoaded(name))
+            var generated = GeneratedInBuild();
+            if (generated.Count > 0)
             {
-                loadable.Add(name);
+                return Pick(generated);
             }
         }
 
-        if (loadable.Count == 0)
+        var loadable = new System.Collections.Generic.List<string>();
+        if (gameScenes != null)
         {
-            return null;
+            foreach (var name in gameScenes)
+            {
+                if (!string.IsNullOrWhiteSpace(name) && Application.CanStreamedLevelBeLoaded(name))
+                {
+                    loadable.Add(name);
+                }
+            }
         }
 
-        return pickRandom ? loadable[Random.Range(0, loadable.Count)] : loadable[0];
+        return loadable.Count > 0 ? Pick(loadable) : null;
+    }
+
+    private string Pick(System.Collections.Generic.List<string> names)
+    {
+        return pickRandom ? names[Random.Range(0, names.Count)] : names[0];
+    }
+
+    private static System.Collections.Generic.List<string> GeneratedInBuild()
+    {
+        var found = new System.Collections.Generic.List<string>();
+
+        for (var i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+        {
+            var path = SceneUtility.GetScenePathByBuildIndex(i);
+            if (path.Contains("/Generated/"))
+            {
+                found.Add(System.IO.Path.GetFileNameWithoutExtension(path));
+            }
+        }
+
+        return found;
     }
 
     private void BuildUi()

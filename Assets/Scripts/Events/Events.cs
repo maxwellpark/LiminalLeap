@@ -4,9 +4,12 @@
     {
         public EventType Type => EventType.Death;
         public float DistanceCovered { get; }
-        public OnDeathEvent(float distance)
+        public bool Completed { get; }
+
+        public OnDeathEvent(float distance, bool completed = false)
         {
             DistanceCovered = distance;
+            Completed = completed;
         }
     }
 

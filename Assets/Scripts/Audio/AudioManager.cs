@@ -71,7 +71,7 @@ public class AudioManager : Singleton<AudioManager>
     {
         combo = 0;
         lastPickupAt = -999f;
-        Play(Sound.Death);
+        Play(evt.Completed ? Sound.Success : Sound.Death);
     }
 
     private void Update()
