@@ -11,6 +11,8 @@ public enum Sound
     MirrorDown,
     Success,
     Dread,
+    Approach,
+    Lunge,
 }
 
 public interface IAudioLibrary
