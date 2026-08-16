@@ -67,11 +67,33 @@ public class RunFixture
 
         spawned.Clear();
 
-        // Managers spawn themselves, so sweep anything they left behind.
+        // Managers spawn themselves and keep a static instance, so leaking one makes the next
+        // test inherit the last one's pursuer distance, score and canvases.
+        foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (mb != null && IsSingleton(mb.GetType()))
+            {
+                Object.DestroyImmediate(mb.gameObject);
+            }
+        }
+
         foreach (var canvas in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             Object.DestroyImmediate(canvas.gameObject);
         }
+    }
+
+    private static bool IsSingleton(System.Type type)
+    {
+        for (var t = type; t != null; t = t.BaseType)
+        {
+            if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Singleton<>))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public GameObject AddHazard(float lane, int pieceIndex)

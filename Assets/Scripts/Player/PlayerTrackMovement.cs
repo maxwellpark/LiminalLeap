@@ -93,6 +93,10 @@ public class PlayerTrackMovement : MonoBehaviour
         basePos = transform.position;
         trackRot = transform.rotation;
         CurrentSpeed = startingSpeed;
+        DistanceCovered = 0f;
+        Score = 0f;
+        Multiplier = 1f;
+        SpeedFraction = 0f;
 
         if (Camera.main != null)
         {
@@ -107,6 +111,8 @@ public class PlayerTrackMovement : MonoBehaviour
         SpeedVignette.GetInstance();
         MoodLighting.GetInstance();
         DebugOverlay.GetInstance();
+        RearView.GetInstance();
+        Pursuer.GetInstance();
     }
 
     private void Update()
@@ -295,13 +301,23 @@ public class PlayerTrackMovement : MonoBehaviour
         }
     }
 
+    // The pursuer reaching you ends the run the same way a hazard does.
+    public static void Caught()
+    {
+        var player = FindFirstObjectByType<PlayerTrackMovement>();
+        if (player != null)
+        {
+            player.KillPlayer();
+        }
+    }
+
     public void RegisterNearMiss(float reward)
     {
         nearMissBonus = Mathf.Min(nearMissBonus + reward, maxNearMissBonus);
         ToastManager.GetInstance().Show($"Near miss   x{Multiplier:F1}");
     }
 
-    private void KillPlayer()
+    public void KillPlayer()
     {
         FinishRun(false);
     }

@@ -8,6 +8,7 @@ public class SpeedVignette : Singleton<SpeedVignette>
     [SerializeField] private Color colour = Color.black;
     [SerializeField, Range(0f, 1f)] private float restIntensity = 0.12f;
     [SerializeField, Range(0f, 1f)] private float fullIntensity = 0.55f;
+    [SerializeField, Range(0f, 1f)] private float dreadIntensity = 0.35f;
     [SerializeField] private float responsiveness = 3f;
     [SerializeField] private int resolution = 256;
     [SerializeField, Range(0f, 1f)] private float clearRadius = 0.35f;
@@ -36,7 +37,9 @@ public class SpeedVignette : Singleton<SpeedVignette>
             return;
         }
 
-        var target = Mathf.Lerp(restIntensity, fullIntensity, PlayerTrackMovement.SpeedFraction);
+        var speed = Mathf.Lerp(restIntensity, fullIntensity, PlayerTrackMovement.SpeedFraction);
+        var dread = Pursuer.GetInstance().Proximity * dreadIntensity;
+        var target = Mathf.Clamp01(speed + dread);
         intensity = Mathf.Lerp(intensity, target, responsiveness * Time.deltaTime);
         Apply();
     }

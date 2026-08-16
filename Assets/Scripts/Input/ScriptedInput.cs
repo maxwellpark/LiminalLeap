@@ -6,6 +6,7 @@ public class ScriptedInput : IInputSource
     private bool restartQueued;
 
     public float Horizontal { get; set; }
+    public bool LookingBack { get; set; }
     public bool JumpPressed { get; private set; }
     public bool JumpReleased { get; private set; }
     public bool RestartPressed { get; private set; }

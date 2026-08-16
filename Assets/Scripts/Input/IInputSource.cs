@@ -5,4 +5,5 @@ public interface IInputSource
     bool JumpPressed { get; }
     bool JumpReleased { get; }
     bool RestartPressed { get; }
+    bool LookingBack { get; }
 }
