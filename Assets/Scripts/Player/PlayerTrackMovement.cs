@@ -55,6 +55,11 @@ public class PlayerTrackMovement : MonoBehaviour
     public static float Score { get; private set; }
     public static float Multiplier { get; private set; } = 1f;
 
+    // Where you sit across the track, so the pursuer can aim at a lane without a reference.
+    public static float Lane { get; private set; }
+
+    private readonly GhostRecorder ghostRecorder = new();
+    private float runTime;
     private float nearMissBonus;
 
     private static TrackManager trackManager;
@@ -98,6 +103,9 @@ public class PlayerTrackMovement : MonoBehaviour
         Score = 0f;
         Multiplier = 1f;
         SpeedFraction = 0f;
+        Lane = 0f;
+        runTime = 0f;
+        ghostRecorder.Reset();
 
         if (Camera.main != null)
         {
@@ -114,6 +122,7 @@ public class PlayerTrackMovement : MonoBehaviour
         DebugOverlay.GetInstance();
         RearView.GetInstance();
         Pursuer.GetInstance();
+        UnobservedShifter.GetInstance();
         Onboarding.GetInstance();
     }
 
@@ -140,6 +149,10 @@ public class PlayerTrackMovement : MonoBehaviour
 
         Position = transform.position;
         SpeedFraction = SpeedT;
+        Lane = strafeOffset;
+
+        runTime += dt;
+        ghostRecorder.Sample(runTime, DistanceCovered);
 
         if (InputRouter.Source.RestartPressed)
         {
@@ -193,7 +206,7 @@ public class PlayerTrackMovement : MonoBehaviour
             // Running out of track used to stall silently, same dead end junctions had.
             if (hadPiece)
             {
-                FinishRun(true);
+                FinishRun(RunOutcome.Completed);
             }
 
             return;
@@ -295,6 +308,13 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        // Leaving on your own terms is the only way the score survives.
+        if (other.GetComponent<ExitDoor>() != null)
+        {
+            FinishRun(RunOutcome.Banked);
+            return;
+        }
+
         if (other.CompareTag("KillFloor") || other.GetComponent<Hazard>() != null)
         {
             KillPlayer();
@@ -330,24 +350,32 @@ public class PlayerTrackMovement : MonoBehaviour
 
     public void KillPlayer()
     {
-        FinishRun(false);
+        FinishRun(RunOutcome.Died);
     }
 
-    private void FinishRun(bool completed)
+    private void FinishRun(RunOutcome outcome)
     {
         if (!dying)
         {
-            StartCoroutine(EndSequence(completed));
+            StartCoroutine(EndSequence(outcome));
         }
     }
 
     // Reset happens behind the wipe so the respawn isn't a teleport in your face.
-    private System.Collections.IEnumerator EndSequence(bool completed)
+    private System.Collections.IEnumerator EndSequence(RunOutcome outcome)
     {
         dying = true;
-        GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered, completed));
 
-        if (completed)
+        // Written before the dispatch, so whoever saves on death writes this run's ghost.
+        SaveStore.Data.Ghost = ghostRecorder.Build();
+
+        GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered, outcome));
+
+        if (outcome == RunOutcome.Banked)
+        {
+            ToastManager.GetInstance().Show($"BANKED   {Score:F0}");
+        }
+        else if (outcome == RunOutcome.Completed)
         {
             ToastManager.GetInstance().Show($"TRACK COMPLETE   {Score:F0}");
         }
@@ -357,7 +385,7 @@ public class PlayerTrackMovement : MonoBehaviour
             Time.timeScale = deathTimeScale; // slow motion is a death beat, not a win
         }
 
-        var pause = completed ? completePause : deathPause;
+        var pause = outcome == RunOutcome.Died ? deathPause : completePause;
         ScreenFade.GetInstance().To(1f, pause * 0.8f);
 
         // Realtime, or the pause would stretch by however much we slowed the game.
@@ -369,14 +397,32 @@ public class PlayerTrackMovement : MonoBehaviour
         dying = false;
     }
 
+    private void OnEnable()
+    {
+        GameManager.EventService.Add<OnAttackDodgedEvent>(OnDodged);
+    }
+
     // Nothing should be able to leave the game in slow motion.
     private void OnDisable()
     {
+        GameManager.EventService.Remove<OnAttackDodgedEvent>(OnDodged);
+
         if (dying)
         {
             Time.timeScale = 1f;
             dying = false;
         }
+    }
+
+    // Score hangs off the dodge, never off raising the mirror.
+    private void OnDodged(OnAttackDodgedEvent evt)
+    {
+        var pursuer = Pursuer.Instance;
+        var reward = pursuer != null ? pursuer.AttackConfig.ScoreRewardOnDodge : 0f;
+
+        Score += reward * Multiplier;
+        fovKick = pickupFovKick;
+        ToastManager.GetInstance().Show($"Dodged   +{reward * Multiplier:F0}");
     }
 
     private void ResetRun()
@@ -393,6 +439,9 @@ public class PlayerTrackMovement : MonoBehaviour
         Score = 0f;
         nearMissBonus = 0f;
         Multiplier = 1f;
+        Lane = 0f;
+        runTime = 0f;
+        ghostRecorder.Reset();
         CurrentSpeed = startingSpeed;
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
     }

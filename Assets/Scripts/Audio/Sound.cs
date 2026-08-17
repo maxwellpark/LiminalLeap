@@ -13,6 +13,13 @@ public enum Sound
     Dread,
     Approach,
     Lunge,
+    AttackWarning,
+    AttackCharge,
+    AttackImminent,
+    AttackFire,
+    AttackDodge,
+    ExitNear,
+    Bank,
 }
 
 public interface IAudioLibrary

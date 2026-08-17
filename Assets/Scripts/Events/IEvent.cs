@@ -10,5 +10,7 @@ namespace Events
         Death,
         Spawn,
         DataUpdated,
+        AttackDodged,
+        AttackHit,
     }
 }
