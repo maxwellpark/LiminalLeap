@@ -384,7 +384,7 @@ public class PlayerTrackMovement : MonoBehaviour
         dying = true;
 
         // Written before the dispatch, so whoever saves on death writes this run's ghost.
-        SaveStore.Data.Ghost = ghostRecorder.Build();
+        SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
 
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered, outcome));
 

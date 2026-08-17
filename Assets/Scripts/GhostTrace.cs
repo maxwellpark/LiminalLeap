@@ -13,6 +13,23 @@ public class GhostTrace
 
     public bool HasData => Times != null && Times.Length > 1;
 
+    // Best run, not last. Keeping the last one means dying early hands the next run a
+    // trivial pursuer, which makes it easier to die early again.
+    public static GhostTrace Best(GhostTrace current, GhostTrace candidate)
+    {
+        if (candidate == null || !candidate.HasData)
+        {
+            return current;
+        }
+
+        if (current == null || !current.HasData)
+        {
+            return candidate;
+        }
+
+        return candidate.TotalDistance > current.TotalDistance ? candidate : current;
+    }
+
     public float Duration => HasData ? Times[Times.Length - 1] : 0f;
 
     public float TotalDistance => HasData ? (Times.Length - 1) * Spacing : 0f;

@@ -107,6 +107,36 @@ public class GhostTraceTests
         Assert.LessOrEqual(recorder.Count, GhostTrace.MaxSamples);
     }
 
+    // Keeping the last run instead would mean dying early hands the next run a trivial
+    // pursuer, which makes it easier to die early again.
+    [Test]
+    public void TheBetterRunBecomesTheGhost()
+    {
+        var far = new GhostTrace { Times = new[] { 0f, 1f, 2f, 3f, 4f } };
+        var near = new GhostTrace { Times = new[] { 0f, 1f } };
+
+        Assert.AreSame(far, GhostTrace.Best(far, near), "a worse run must not replace the ghost");
+        Assert.AreSame(far, GhostTrace.Best(near, far), "a better run should replace it");
+    }
+
+    [Test]
+    public void AnythingBeatsNothing()
+    {
+        var run = new GhostTrace { Times = new[] { 0f, 1f } };
+
+        Assert.AreSame(run, GhostTrace.Best(null, run));
+        Assert.AreSame(run, GhostTrace.Best(new GhostTrace(), run));
+    }
+
+    [Test]
+    public void AnEmptyRunNeverReplacesARealOne()
+    {
+        var run = new GhostTrace { Times = new[] { 0f, 1f } };
+
+        Assert.AreSame(run, GhostTrace.Best(run, null));
+        Assert.AreSame(run, GhostTrace.Best(run, new GhostTrace()));
+    }
+
     [Test]
     public void ResetClearsTheRecording()
     {

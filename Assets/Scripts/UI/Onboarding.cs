@@ -9,6 +9,7 @@ public class Onboarding : Singleton<Onboarding>
 
     private bool mirrorHintShown;
     private bool laneHintShown;
+    private bool hintedThisAttack;
     private Pursuer pursuer;
 
     private void Update()
@@ -31,11 +32,21 @@ public class Onboarding : Singleton<Onboarding>
     // Told at the one moment it is worth acting on, which is what the warning is for.
     private void HintOnFirstAttack()
     {
-        if (laneHintShown || pursuer.Attack == null || pursuer.Attack.Phase != AttackPhase.Warning)
+        var warning = pursuer.Attack != null && pursuer.Attack.Phase == AttackPhase.Warning;
+
+        // Latched per attack, or the warning lasts a second and this fires every frame of it.
+        if (!warning)
+        {
+            hintedThisAttack = false;
+            return;
+        }
+
+        if (laneHintShown || hintedThisAttack)
         {
             return;
         }
 
+        hintedThisAttack = true;
         laneHintShown = onlyOncePerSession;
 
         if (Raised())

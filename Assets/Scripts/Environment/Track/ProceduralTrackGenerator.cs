@@ -158,6 +158,14 @@ public class ProceduralTrackGenerator : MonoBehaviour
             return;
         }
 
+        // Only announce something worth announcing. A sign on every piece is wallpaper, and
+        // wallpaper is not something anyone reads, let alone distrusts.
+        var truth = TruthFor(piece);
+        if (truth == SignKind.Clear)
+        {
+            return;
+        }
+
         var host = active[active.Count - 1 - signLeadPieces];
         var sign = host.GetComponent<TrackSign>();
         if (sign == null)
@@ -165,7 +173,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
             sign = host.gameObject.AddComponent<TrackSign>();
         }
 
-        sign.Paint(SignText.Choose(TruthFor(piece), (float)rng.NextDouble(), lieChance));
+        sign.Paint(SignText.Choose(truth, (float)rng.NextDouble(), lieChance));
     }
 
     private static SignKind TruthFor(TrackPiece piece)

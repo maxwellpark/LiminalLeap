@@ -296,6 +296,33 @@ public class PursuerAttackModelTests
         Assert.AreEqual(before, model.Phase);
     }
 
+    // Anything that rearranges the track reads this. If it were wrong, a hazard could move
+    // into the escape lane after the attack committed and make it unavoidable.
+    [Test]
+    public void InFlightIsTrueFromTheWarningUntilItResolves()
+    {
+        var model = new PursuerAttackModel(Config(), 1);
+        Assert.IsFalse(model.InFlight, "idle is a safe moment to rearrange");
+
+        model.Tick(1f, 0f, All);
+        Assert.IsTrue(model.InFlight, "warning: the layout is already committed");
+
+        model.Tick(1f, 0f, All);
+        Assert.IsTrue(model.InFlight, "telegraph");
+
+        model.Tick(0.8f, 0f, All);
+        Assert.IsTrue(model.InFlight, "locked");
+
+        model.Tick(0.5f, 0f, All);
+        Assert.IsTrue(model.InFlight, "firing");
+
+        model.Tick(0.2f, 3f, All);
+        Assert.IsTrue(model.InFlight, "resolving");
+
+        model.Tick(0.01f, 3f, All);
+        Assert.IsFalse(model.InFlight, "cooldown is safe again");
+    }
+
     // The structural half of mirror independence. The behavioural half is in PlayMode.
     [Test]
     public void TheModelIsNotAllowedToKnowAboutTheMirror()

@@ -32,6 +32,11 @@ public class PursuerAttackModel
     public bool TargetVisible =>
         Phase is AttackPhase.Telegraph or AttackPhase.Locked or AttackPhase.Fire;
 
+    // An attack is committed to a layout from the warning onward, so anything that rearranges
+    // the track has to hold off until this is clear.
+    public bool InFlight =>
+        Phase is not AttackPhase.Idle and not AttackPhase.Cooldown;
+
     public PursuerAttackModel(PursuerAttackConfig config, int seed)
     {
         this.config = config ?? new PursuerAttackConfig();

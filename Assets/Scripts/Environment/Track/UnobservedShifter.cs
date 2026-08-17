@@ -32,6 +32,15 @@ public class UnobservedShifter : Singleton<UnobservedShifter>
             return;
         }
 
+        // The attack picked its lane against the layout as it was. Moving a hazard into the
+        // escape lane after that would make it unavoidable, which is the one thing the
+        // fairness rules exist to prevent.
+        var pursuer = Pursuer.Instance;
+        if (pursuer != null && pursuer.Attack != null && pursuer.Attack.InFlight)
+        {
+            return;
+        }
+
         nextShiftAt = Time.time + shiftInterval;
         Shift();
     }

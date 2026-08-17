@@ -35,6 +35,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     private Transform body;
     private Renderer bodyRenderer;
     private float distance;
+    private float dodgeBonus;
     private float runTime;
     private int warningsGiven;
     private bool lunging;
@@ -87,6 +88,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     public void ResetForNewRun()
     {
         distance = startDistance;
+        dodgeBonus = 0f;
         runTime = 0f;
         warningsGiven = 0;
         lunging = false;
@@ -135,13 +137,22 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             // Distance becomes how far ahead of your last self you are, so beating your
             // old pace is literally what holds it off.
             var lead = PlayerTrackMovement.DistanceCovered - ghost.DistanceAt(runTime);
-            distance = Mathf.Clamp(startDistance + lead, 0f, startDistance);
+
+            // Ghost mode recomputes distance from scratch every frame, so a dodge reward
+            // added straight to it would be wiped the next frame and quietly do nothing.
+            distance = Mathf.Clamp(startDistance + lead + dodgeBonus, 0f, startDistance);
             return;
         }
 
         // Under attacks the mirror is never consulted, so holding it can't buy anything.
         var observed = !Features.On(Feature.PursuerAttacks) && RearView.GetInstance().IsRaised;
         distance = PursuitModel.Step(distance, dt, observed, PlayerTrackMovement.SpeedFraction, settings);
+
+        if (dodgeBonus > 0f)
+        {
+            distance = Mathf.Min(settings.MaxDistance, distance + dodgeBonus);
+            dodgeBonus = 0f;
+        }
     }
 
     private void TickAttack(float dt)
@@ -179,7 +190,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         {
             LastAttackResult = "dodged " + attackModel.TargetLane;
             audio.Play(Sound.AttackDodge);
-            distance = Mathf.Min(settings.MaxDistance, distance + attack.PursuerSetbackOnDodge);
+            dodgeBonus += attack.PursuerSetbackOnDodge;
             GameManager.EventService.Dispatch(new OnAttackDodgedEvent(attackModel.TargetLane, lane));
         }
 

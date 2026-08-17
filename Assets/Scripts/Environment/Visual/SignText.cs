@@ -19,8 +19,10 @@ public static class SignText
         {
             SignKind.Clear => "CLEAR AHEAD",
             SignKind.Jump => "JUMP AHEAD",
-            SignKind.Strafe => "OBSTRUCTION  KEEP LEFT",
-            SignKind.ExitAhead => "EXIT  400m",
+            // No direction: the blocker is on the left, and the shifter can move it anyway,
+            // so naming a side is a sign that tells you to run into the thing.
+            SignKind.Strafe => "OBSTRUCTION AHEAD",
+            SignKind.ExitAhead => "EXIT AHEAD",
             _ => string.Empty,
         };
     }
