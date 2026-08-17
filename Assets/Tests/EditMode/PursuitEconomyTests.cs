@@ -13,7 +13,8 @@ public class PursuitEconomyTests
             StartDistance = start,
             MaxDistance = start,
             CloseRate = attack.CloseRateDuringAttacks,
-            RecoverRate = 0f,       // the mirror buys nothing under attacks
+            RecoverRate = 0f,
+            IgnoreObservation = true,   // the mirror buys nothing under attacks
             SpeedRelief = attack.SpeedReliefDuringAttacks,
             LungeWithin = 12f,
             LungeMultiplier = 2.2f,
@@ -82,16 +83,29 @@ public class PursuitEconomyTests
         Assert.Less(fast, slow, "speed should still be worth something");
     }
 
-    // Belt and braces on the rule itself, in case a variant reintroduces recovery.
+    // Zeroing RecoverRate was not enough on its own: the observed branch also skips the
+    // close rate, so watching still bought a complete stop.
     [Test]
-    public void WatchingItBuysNothingWhenRecoveryIsOff()
+    public void WatchingBuysNothingWhenObservationIsIgnored()
     {
-        var attack = new PursuerAttackConfig();
-        var settings = Settings(attack, 45f);
+        var settings = Settings(new PursuerAttackConfig(), 45f);
 
-        var watched = PursuitModel.Step(45f, 1f, true, 0.5f, settings);
-        var ignored = PursuitModel.Step(45f, 1f, false, 0.5f, settings);
+        var watched = PursuitModel.Step(40f, 1f, true, 0.5f, settings);
+        var ignored = PursuitModel.Step(40f, 1f, false, 0.5f, settings);
 
         Assert.AreEqual(ignored, watched, 0.0001f, "holding the mirror must not change the distance");
+    }
+
+    [Test]
+    public void RecoveryStillWorksForTheVariantThatWantsIt()
+    {
+        var settings = Settings(new PursuerAttackConfig(), 45f);
+        settings.IgnoreObservation = false;
+        settings.RecoverRate = 6f;
+
+        var watched = PursuitModel.Step(40f, 1f, true, 0.5f, settings);
+        var ignored = PursuitModel.Step(40f, 1f, false, 0.5f, settings);
+
+        Assert.Greater(watched, ignored, "the no-attacks variant still holds it off by looking");
     }
 }

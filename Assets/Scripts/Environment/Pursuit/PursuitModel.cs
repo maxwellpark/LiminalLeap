@@ -13,6 +13,11 @@ public static class PursuitModel
         public float SpeedDraw;     // distance lost per second at full speed, the inverse
         public float LungeWithin;   // closes harder inside this distance
         public float LungeMultiplier;
+
+        // Zeroing RecoverRate was not enough to make watching neutral: the observed branch
+        // also skips the close rate, so the mirror still bought a full stop. This makes
+        // "the mirror changes nothing" a property of the model rather than of the caller.
+        public bool IgnoreObservation;
     }
 
     // Flat pursuit makes the endgame as tame as the opening. Past a threshold it commits.
@@ -42,7 +47,9 @@ public static class PursuitModel
         // Speed can buy room or cost it. Both terms exist so a variant can flip which.
         var draw = pace * Math.Max(0f, s.SpeedDraw) * dt;
 
-        distance += observed
+        var watched = observed && !s.IgnoreObservation;
+
+        distance += watched
             ? Math.Max(0f, s.RecoverRate) * dt + relief - draw
             : relief - draw - CloseRateAt(distance, s) * dt;
 

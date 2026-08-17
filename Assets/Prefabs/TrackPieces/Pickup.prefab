@@ -63,6 +63,7 @@ GameObject:
   - component: {fileID: 7266826178373860419}
   - component: {fileID: 8871546607122841822}
   - component: {fileID: 2163385032879627550}
+  - component: {fileID: 5779732805038258276}
   m_Layer: 0
   m_Name: SpeedPickup
   m_TagString: Untagged
@@ -179,6 +180,21 @@ MonoBehaviour:
   shakeSettings:
     Amplitude: 0.06
     Duration: 0.12
+--- !u!114 &5779732805038258276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5399308222045538305}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 325e745485d134684853669bb4e85f65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: LiminalLeap::PickupBob
+  height: 0.12
+  cyclesPerSecond: 1.1
+  spinDegreesPerSecond: 55
 --- !u!1 &6247277775087485950
 GameObject:
   m_ObjectHideFlags: 0

@@ -55,22 +55,36 @@ public class EndlessTests
         Features.ClearOverrides();
     }
 
+    // The opening pieces are forced plain for the floor signage, so nothing is worth
+    // announcing until the player is past them.
+    private IEnumerator PastTheLeadIn()
+    {
+        generator.ResetRun();
+        yield return null;
+
+        for (var step = 0; step < 40; step++)
+        {
+            player.position += Vector3.forward * 12f;
+            yield return null;
+        }
+    }
+
     [UnityTest]
     public IEnumerator SignsGetPaintedWhenTheFlagIsOn()
     {
         Features.Override(Feature.LyingSigns, true);
-        generator.ResetRun();
-        yield return null;
+        yield return PastTheLeadIn();
 
         Assert.Greater(root.GetComponentsInChildren<TrackSign>(true).Length, 0, "no signage was painted");
     }
 
+    // Runs the same distance as the passing case, or it would prove nothing but that the
+    // lead-in exists.
     [UnityTest]
     public IEnumerator NoSignsWhenTheFlagIsOff()
     {
         Features.Override(Feature.LyingSigns, false);
-        generator.ResetRun();
-        yield return null;
+        yield return PastTheLeadIn();
 
         Assert.AreEqual(0, root.GetComponentsInChildren<TrackSign>(true).Length, "a flag that is off should do nothing");
     }

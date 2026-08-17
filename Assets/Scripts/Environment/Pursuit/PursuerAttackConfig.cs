@@ -46,7 +46,9 @@ public class PursuerAttackConfig
     // uncatchable, which pinned Proximity at zero and muted the dread it drives.
     public float SpeedReliefDuringAttacks = 0.7f;
 
-    public float PursuerSetbackOnDodge = 10f;
+    // Has to clear a whole cycle's drift at a standstill, not just match it, or crawling
+    // along dodging perfectly still slowly loses.
+    public float PursuerSetbackOnDodge = 12f;
     public float ScoreRewardOnDodge = 250f;
 
     // One warning to the next, so the economy can be checked against it.

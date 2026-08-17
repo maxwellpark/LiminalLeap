@@ -184,12 +184,14 @@ public class ProceduralTrackGenerator : MonoBehaviour
         }
 
         var hazard = piece.GetComponentInChildren<Hazard>(true);
-        if (hazard == null)
+        if (hazard != null)
         {
-            return SignKind.Clear;
+            return hazard.Jumpable ? SignKind.Jump : SignKind.Strafe;
         }
 
-        return hazard.Jumpable ? SignKind.Jump : SignKind.Strafe;
+        // Flagged as a hazard piece but nothing found to inspect. Announce it anyway: a
+        // missed warning is worse than a vague one.
+        return piece.ContainsHazard ? SignKind.Strafe : SignKind.Clear;
     }
 
     private bool IsExit(int index)

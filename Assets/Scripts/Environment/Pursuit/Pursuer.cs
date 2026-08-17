@@ -68,6 +68,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             StartDistance = startDistance,
             CloseRate = attacks ? attack.CloseRateDuringAttacks : closeRate,
             RecoverRate = attacks ? 0f : recoverRate,
+            IgnoreObservation = attacks,
             MaxDistance = startDistance,
             SpeedRelief = summons ? 0f : attacks ? attack.SpeedReliefDuringAttacks : speedRelief,
             SpeedDraw = summons ? speedDraw : 0f,
@@ -150,8 +151,9 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             return;
         }
 
-        // Under attacks the mirror is never consulted, so holding it can't buy anything.
-        var observed = !Features.On(Feature.PursuerAttacks) && RearView.GetInstance().IsRaised;
+        // Passed straight through: IgnoreObservation is what decides whether it counts, so
+        // the rule lives in one place instead of depending on this caller remembering.
+        var observed = RearView.GetInstance().IsRaised;
         distance = PursuitModel.Step(distance, dt, observed, PlayerTrackMovement.SpeedFraction, settings);
 
         if (dodgeBonus > 0f)

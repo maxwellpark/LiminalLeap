@@ -69,6 +69,20 @@ public class PursuerAttackPlayTests
         yield return null;
     }
 
+    // It animates up over a fraction of a second, so setting the input is not the same as
+    // it being raised.
+    private IEnumerator RaiseMirror()
+    {
+        fixture.Input.LookingBack = true;
+
+        var guard = 0f;
+        while (!RearView.GetInstance().IsRaised && guard < 2f)
+        {
+            guard += Time.deltaTime;
+            yield return null;
+        }
+    }
+
     private IEnumerator ResolveAttack()
     {
         var guard = 0f;
@@ -121,6 +135,8 @@ public class PursuerAttackPlayTests
         fixture.Input.LookingBack = true;
 
         yield return MoveTo(0f);
+        yield return RaiseMirror();
+
         Assert.IsTrue(RearView.GetInstance().IsRaised, "the mirror needs to actually be up for this to prove anything");
 
         pursuer.ForceAttack(AttackLane.Centre);
