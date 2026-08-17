@@ -17,6 +17,14 @@ public class ProceduralTrackGenerator : MonoBehaviour
     [SerializeField] private float hazardMargin = 6f;
     [SerializeField] private int straightLeadIn = 6;    // opening stretch for the floor signage
 
+    [Header("Exits")]
+    [SerializeField] private int firstExitAfter = 22;
+    [SerializeField] private float exitGapGrowth = 1.5f; // the way out gets rarer the deeper you go
+
+    [Header("Signage")]
+    [SerializeField, Range(0f, 1f)] private float lieChance = 0.22f;
+    [SerializeField] private int signLeadPieces = 3;     // reading room before the thing arrives
+
     private readonly List<TrackPiece> active = new();
     private readonly Dictionary<int, Queue<TrackPiece>> pools = new();
     private Vector3 nextEnd;
@@ -26,6 +34,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private int repeats;
     private int spawned;
     private int lastHazardAt = int.MinValue / 2;
+    private int nextExitAt;
+    private int exitsSpawned;
 
     public IReadOnlyList<TrackPiece> ActivePieces => active;
 
@@ -47,6 +57,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
         repeats = 0;
         spawned = 0;
         lastHazardAt = int.MinValue / 2;
+        exitsSpawned = 0;
+        nextExitAt = firstExitAfter;
 
         nextEnd = startPosition;
         nextForward = startForward.sqrMagnitude > 0f ? startForward.normalized : Vector3.forward;
@@ -103,9 +115,22 @@ public class ProceduralTrackGenerator : MonoBehaviour
             lastHazardAt = spawned;
         }
 
+        if (IsExit(index))
+        {
+            exitsSpawned++;
+            nextExitAt = spawned + Mathf.RoundToInt(firstExitAfter * Mathf.Pow(exitGapGrowth, exitsSpawned));
+        }
+
         spawned++;
         piece.gameObject.SetActive(true);
         piece.Passed = false;
+
+        // A recycled piece still carries the last sign it was given.
+        var stale = piece.GetComponent<TrackSign>();
+        if (stale != null)
+        {
+            stale.Hide();
+        }
 
         // Pooling reuses the object, so a collected pickup stays collected without this.
         // That is why pickups ran out mid-run once every pooled one had been eaten.
@@ -119,8 +144,65 @@ public class ProceduralTrackGenerator : MonoBehaviour
             Quaternion.LookRotation(nextForward));
 
         active.Add(piece);
+        Announce(piece);
+
         nextEnd = piece.GetEndPosition();
         nextForward = piece.GetEndForward();
+    }
+
+    // Painted a few pieces back so it can be read before the thing it describes turns up.
+    private void Announce(TrackPiece piece)
+    {
+        if (!Features.On(Feature.LyingSigns) || active.Count <= signLeadPieces)
+        {
+            return;
+        }
+
+        var host = active[active.Count - 1 - signLeadPieces];
+        var sign = host.GetComponent<TrackSign>();
+        if (sign == null)
+        {
+            sign = host.gameObject.AddComponent<TrackSign>();
+        }
+
+        sign.Paint(SignText.Choose(TruthFor(piece), (float)rng.NextDouble(), lieChance));
+    }
+
+    private static SignKind TruthFor(TrackPiece piece)
+    {
+        if (piece.GetComponentInChildren<ExitDoor>(true) != null)
+        {
+            return SignKind.ExitAhead;
+        }
+
+        var hazard = piece.GetComponentInChildren<Hazard>(true);
+        if (hazard == null)
+        {
+            return SignKind.Clear;
+        }
+
+        return hazard.Jumpable ? SignKind.Jump : SignKind.Strafe;
+    }
+
+    private bool IsExit(int index)
+    {
+        return index >= 0
+            && index < piecePrefabs.Length
+            && piecePrefabs[index] != null
+            && piecePrefabs[index].GetComponentInChildren<ExitDoor>(true) != null;
+    }
+
+    private int FindExitIndex()
+    {
+        for (var i = 0; i < piecePrefabs.Length; i++)
+        {
+            if (IsExit(i))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private int HazardGap()
@@ -147,7 +229,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
     {
         for (var i = 0; i < piecePrefabs.Length; i++)
         {
-            if (piecePrefabs[i] != null && !piecePrefabs[i].ContainsHazard)
+            if (piecePrefabs[i] != null && !piecePrefabs[i].ContainsHazard && !IsExit(i))
             {
                 return i;
             }
@@ -172,12 +254,23 @@ public class ProceduralTrackGenerator : MonoBehaviour
             }
         }
 
+        if (Features.On(Feature.ExitDoors) && spawned >= nextExitAt)
+        {
+            var exit = FindExitIndex();
+            if (exit >= 0)
+            {
+                return exit;
+            }
+        }
+
+        // Exits are scheduled, never rolled, or the way out would turn up at random.
         int index;
+        var guard = 0;
         do
         {
             index = rng.Next(piecePrefabs.Length);
         }
-        while (index == lastIndex && repeats >= maxRepeats);
+        while (((index == lastIndex && repeats >= maxRepeats) || IsExit(index)) && guard++ < 16);
 
         repeats = index == lastIndex ? repeats + 1 : 0;
         lastIndex = index;

@@ -24,6 +24,7 @@ public static class TrackPiecePrefabs
         Build("Pickup", 0f, Decoration.Pickup);
         Build("Block", 0f, Decoration.Block);
         Build("Bar", 0f, Decoration.Bar);
+        Build("Exit", 0f, Decoration.Exit);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -36,6 +37,7 @@ public static class TrackPiecePrefabs
         Pickup,
         Block,
         Bar,
+        Exit,
     }
 
     private static void Build(string name, float yaw, Decoration decoration)
@@ -100,6 +102,24 @@ public static class TrackPiecePrefabs
                 // Spans the track, so this one has to be jumped.
                 AddHazard(piece, 0f, 0.6f, true);
                 break;
+
+            case Decoration.Exit:
+            {
+                // Off to one side, so leaving is a deliberate move rather than something
+                // you fall through by running straight.
+                var door = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                door.name = "ExitDoor";
+                door.transform.SetParent(piece, false);
+                door.transform.localPosition = new Vector3(2.3f, 1.1f, Length * 0.5f);
+                door.transform.localScale = new Vector3(1.5f, 2.2f, 0.6f);
+                door.GetComponent<Collider>().isTrigger = true;
+                door.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Exit);
+                door.AddComponent<ExitDoor>();
+
+                WorldSign.Floor(piece, "EXIT", new Vector3(2.3f, 0.02f, Length * 0.5f - 2.2f), 2.4f,
+                    new Color(0.4f, 0.95f, 0.55f, 0.9f));
+                break;
+            }
         }
     }
 

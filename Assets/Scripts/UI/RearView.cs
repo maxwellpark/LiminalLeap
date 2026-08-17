@@ -16,6 +16,11 @@ public class RearView : Singleton<RearView>
     [SerializeField] private float tiltDegrees = 5f;
     [SerializeField] private float overshoot = 1.7f;
 
+    [Header("Cost")]
+    [SerializeField] private Vector2 restSize = new(660f, 380f);
+    [SerializeField] private Vector2 raisedSize = new(1140f, 640f);
+    [SerializeField] private float raisedDrop = 250f;   // travels toward the middle of the screen
+
     [Header("Dread")]
     [SerializeField] private float shakeAtContact = 9f;
     [SerializeField] private Color calmTint = new(0.82f, 0.86f, 0.9f);
@@ -35,6 +40,9 @@ public class RearView : Singleton<RearView>
 
     public bool IsRaised => shown > 0.5f;
     public Camera MirrorCamera => mirrorCamera;
+
+    // How much of the way forward the mirror is currently costing you.
+    public float Blindness => Features.On(Feature.LookBackCost) ? Mathf.Clamp01(shown) : 0f;
 
     public override void Init()
     {
@@ -110,7 +118,12 @@ public class RearView : Singleton<RearView>
         var wobbleX = (Mathf.PerlinNoise(noiseSeed, Time.time * 18f) - 0.5f) * shake;
         var wobbleY = (Mathf.PerlinNoise(noiseSeed + 7f, Time.time * 18f) - 0.5f) * shake;
 
-        holder.anchoredPosition = new Vector2(wobbleX, -40f - slideDistance * (1f - settle) + wobbleY);
+        // Growing over the middle of the screen is the cost: you cannot watch both ways.
+        var cost = Features.On(Feature.LookBackCost) ? settle : 0f;
+        holder.sizeDelta = Vector2.Lerp(restSize, raisedSize, cost);
+
+        var drop = -40f - slideDistance * (1f - settle) - raisedDrop * cost;
+        holder.anchoredPosition = new Vector2(wobbleX, drop + wobbleY);
         holder.localScale = Vector3.one * Mathf.Lerp(restScale, 1f, settle);
         holder.localRotation = Quaternion.Euler(0f, 0f, tiltDegrees * (1f - settle));
 
@@ -150,7 +163,7 @@ public class RearView : Singleton<RearView>
         holder.anchorMin = new Vector2(0.5f, 1f);
         holder.anchorMax = new Vector2(0.5f, 1f);
         holder.pivot = new Vector2(0.5f, 1f);
-        holder.sizeDelta = new Vector2(660f, 380f);
+        holder.sizeDelta = restSize;
 
         // Bezel behind the image so it reads as a mirror rather than a floating rectangle.
         frame = new GameObject("Frame").AddComponent<Image>();

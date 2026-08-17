@@ -9,6 +9,7 @@ public class SpeedVignette : Singleton<SpeedVignette>
     [SerializeField, Range(0f, 1f)] private float restIntensity = 0.12f;
     [SerializeField, Range(0f, 1f)] private float fullIntensity = 0.55f;
     [SerializeField, Range(0f, 1f)] private float dreadIntensity = 0.35f;
+    [SerializeField, Range(0f, 1f)] private float blindIntensity = 0.5f;
     [SerializeField] private float responsiveness = 3f;
     [SerializeField] private int resolution = 256;
     [SerializeField, Range(0f, 1f)] private float clearRadius = 0.35f;
@@ -39,7 +40,12 @@ public class SpeedVignette : Singleton<SpeedVignette>
 
         var speed = Mathf.Lerp(restIntensity, fullIntensity, PlayerTrackMovement.SpeedFraction);
         var dread = Pursuer.GetInstance().Proximity * dreadIntensity;
-        var target = Mathf.Clamp01(speed + dread);
+
+        // Instance, not GetInstance: the vignette must never be what spawns the mirror.
+        var mirror = RearView.Instance;
+        var blind = mirror != null ? mirror.Blindness * blindIntensity : 0f;
+
+        var target = Mathf.Clamp01(speed + dread + blind);
         intensity = Mathf.Lerp(intensity, target, responsiveness * Time.deltaTime);
         Apply();
     }
