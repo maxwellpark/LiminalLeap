@@ -65,9 +65,9 @@ public class PursuerAttackPresenter : MonoBehaviour
         marker.SetPositionAndRotation(centre, Quaternion.LookRotation(forward, Vector3.up));
         marker.localScale = new Vector3(config.LaneHalfWidth * 2f, 0.05f, length);
 
-        // Locked is the last chance to move, so the flicker stops and it goes solid.
+        // Locked is the last chance to move, so the pulse stops and it goes solid.
         var locked = model.Phase == AttackPhase.Locked;
-        var pulse = locked ? 1f : 0.5f + 0.3f * Mathf.Sin(Time.time * 16f);
+        var pulse = locked ? 1f : 0.6f + 0.2f * Mathf.Sin(Time.time * 7f);
         Tint(markerRenderer, new Color(0.85f, 0.9f, 1f), pulse);
     }
 
@@ -78,13 +78,18 @@ public class PursuerAttackPresenter : MonoBehaviour
         var right = Vector3.Cross(Vector3.up, forward).normalized;
         var lane = model.LaneCentre(model.TargetLane);
 
-        var centre = player + right * lane + Vector3.up * 1f;
-        beam.SetPositionAndRotation(centre, Quaternion.LookRotation(forward, Vector3.up));
-        beam.localScale = new Vector3(config.LaneHalfWidth * 2f, 2.2f, 90f);
+        // Runs from behind you to a way ahead, rather than centred, so it reads as passing
+        // through rather than appearing on top of you.
+        const float length = 60f;
+        var centre = player + forward * (length * 0.25f) + right * lane + Vector3.up * 0.9f;
 
-        // Absence rather than a laser: it reads as the space along that line giving out.
-        var flicker = 0.7f + 0.3f * Mathf.Sin(Time.time * 90f);
-        Tint(beamRenderer, Color.white, flicker);
+        beam.SetPositionAndRotation(centre, Quaternion.LookRotation(forward, Vector3.up));
+        beam.localScale = new Vector3(config.LaneHalfWidth * 2f, 1.8f, length);
+
+        // Shallow and slow on purpose. A hard strobe filling the screen is the thing that
+        // made the lighting unpleasant last time.
+        var shimmer = 0.8f + 0.12f * Mathf.Sin(Time.time * 9f);
+        Tint(beamRenderer, new Color(0.88f, 0.92f, 1f), shimmer);
     }
 
     private static Vector3 Forward()

@@ -29,6 +29,7 @@ public static class Features
     private static readonly string[] Keys = BuildKeys();
 
     private static bool useStorage = true;
+    private static bool isolated;
 
     // Throws rather than falling through, so adding a feature without deciding fails loudly.
     public static bool DefaultFor(Feature feature)
@@ -97,12 +98,27 @@ public static class Features
     public static void IsolateForTests()
     {
         ClearOverrides();
+        isolated = true;
         useStorage = false;
         Invalidate();
     }
 
+    // A latch, because PlayMode tests spawn a GameManager and its Awake calls this. Without
+    // it, half the flags would quietly start reading the real prefs mid test.
     public static void UseStorage()
     {
+        if (isolated)
+        {
+            return;
+        }
+
+        useStorage = true;
+        Invalidate();
+    }
+
+    public static void EndIsolation()
+    {
+        isolated = false;
         useStorage = true;
         Invalidate();
     }

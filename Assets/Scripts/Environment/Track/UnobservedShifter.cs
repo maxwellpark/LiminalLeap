@@ -57,6 +57,11 @@ public class UnobservedShifter : Singleton<UnobservedShifter>
     // hand back a run you could not have survived.
     private void TryMove(Transform body)
     {
+        if (body.parent == null)
+        {
+            return;
+        }
+
         var local = body.localPosition;
         var half = body.localScale.x * 0.5f;
 
