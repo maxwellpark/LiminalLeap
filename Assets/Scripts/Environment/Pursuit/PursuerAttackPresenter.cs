@@ -2,16 +2,25 @@ using UnityEngine;
 
 // Everything you can see about an attack. Reads the model and never writes to it, so a
 // zone can re-skin the telegraph without the rules moving.
+//
+// Readability is the whole job here: the lane is only ever shown behind you, in a panel a
+// few hundred pixels wide, for about a second. A thin floor strip at 30m was a couple of
+// degrees of arc and easy to miss entirely.
 public class PursuerAttackPresenter : MonoBehaviour
 {
+    private const int Chevrons = 6;
+
+    private static readonly Color Charging = new(0.45f, 0.72f, 1f);
+    private static readonly Color Locked = new(1f, 0.72f, 0.32f);
+
     private PursuerAttackModel model;
     private PursuerAttackConfig config;
     private Transform pursuer;
 
-    private Transform marker;
-    private Renderer markerRenderer;
+    private Transform floor;
+    private Transform curtain;
     private Transform beam;
-    private Renderer beamRenderer;
+    private readonly Transform[] chevrons = new Transform[Chevrons];
 
     public void Bind(PursuerAttackModel model, PursuerAttackConfig config, Transform pursuer)
     {
@@ -19,16 +28,19 @@ public class PursuerAttackPresenter : MonoBehaviour
         this.config = config;
         this.pursuer = pursuer;
 
-        marker = BuildBar("AttackTelegraph");
-        markerRenderer = marker.GetComponent<Renderer>();
+        floor = BuildPart("AttackFloor", false);
+        curtain = BuildPart("AttackCurtain", true);
+        beam = BuildPart("AttackBeam", false);
 
-        beam = BuildBar("AttackBeam");
-        beamRenderer = beam.GetComponent<Renderer>();
+        for (var i = 0; i < Chevrons; i++)
+        {
+            chevrons[i] = BuildPart("AttackChevron" + i, true);
+        }
     }
 
     private void Update()
     {
-        if (model == null || marker == null)
+        if (model == null || floor == null)
         {
             return;
         }
@@ -36,49 +48,78 @@ public class PursuerAttackPresenter : MonoBehaviour
         var firing = model.Phase == AttackPhase.Fire;
         var telegraphing = model.TargetVisible && !firing;
 
-        marker.gameObject.SetActive(telegraphing);
+        floor.gameObject.SetActive(telegraphing);
+        curtain.gameObject.SetActive(telegraphing);
         beam.gameObject.SetActive(firing);
+
+        foreach (var chevron in chevrons)
+        {
+            chevron.gameObject.SetActive(telegraphing);
+        }
 
         if (telegraphing)
         {
-            PlaceMarker();
+            Telegraph();
         }
         else if (firing)
         {
-            PlaceBeam();
+            Fire();
         }
     }
 
     // Deliberately stops short of the player: the lane is only readable in the mirror,
     // otherwise there would be no reason to look back.
-    private void PlaceMarker()
+    private void Telegraph()
     {
         var player = PlayerTrackMovement.Position;
         var forward = Forward();
         var right = Vector3.Cross(Vector3.up, forward).normalized;
         var lane = model.LaneCentre(model.TargetLane);
+        var width = config.LaneHalfWidth * 2f;
 
         var behind = pursuer != null ? Mathf.Abs(Vector3.Dot(pursuer.position - player, forward)) : 20f;
-        var length = Mathf.Max(4f, behind - 4f);
-        var centre = player - forward * (length * 0.5f + 4f) + right * lane + Vector3.up * 0.03f;
+        var length = Mathf.Max(6f, behind - 4f);
+        var rotation = Quaternion.LookRotation(forward, Vector3.up);
+        var origin = player - forward * 4f + right * lane;
+        var centre = origin - forward * (length * 0.5f);
 
-        marker.SetPositionAndRotation(centre, Quaternion.LookRotation(forward, Vector3.up));
-        marker.localScale = new Vector3(config.LaneHalfWidth * 2f, 0.05f, length);
-
-        // Locked is the last chance to move, so the pulse stops and it goes solid.
+        // Locked is the last chance to move, so the colour changes and the pulse stops.
         var locked = model.Phase == AttackPhase.Locked;
-        var pulse = locked ? 1f : 0.6f + 0.2f * Mathf.Sin(Time.time * 7f);
-        Tint(markerRenderer, new Color(0.85f, 0.9f, 1f), pulse);
+        var colour = locked ? Locked : Charging;
+        var pulse = locked ? 1f : 0.65f + 0.2f * Mathf.Sin(Time.time * 6f);
+
+        floor.SetPositionAndRotation(centre + Vector3.up * 0.03f, rotation);
+        floor.localScale = new Vector3(width, 0.06f, length);
+        Tint(floor, colour, pulse, 1f);
+
+        // The part that actually reads at a glance: a wall of light down the lane.
+        curtain.SetPositionAndRotation(centre + Vector3.up * 1.7f, rotation);
+        curtain.localScale = new Vector3(width, 3.4f, length);
+        Tint(curtain, colour, pulse * 0.8f, 0.28f);
+
+        // Sweep toward the player so it reads as incoming rather than just present.
+        var sweep = Time.time * (locked ? 3.5f : 1.6f);
+        for (var i = 0; i < Chevrons; i++)
+        {
+            var t = (i + 0.5f) / Chevrons;
+            var bar = chevrons[i];
+
+            bar.SetPositionAndRotation(origin - forward * (length * t) + Vector3.up * 0.5f, rotation);
+            bar.localScale = new Vector3(width * 1.25f, 0.9f, 0.5f);
+
+            var wave = Mathf.Repeat(sweep + t, 1f);
+            Tint(bar, colour, 0.35f + 0.65f * wave, 0.5f * wave);
+        }
     }
 
-    private void PlaceBeam()
+    private void Fire()
     {
         var player = PlayerTrackMovement.Position;
         var forward = Forward();
         var right = Vector3.Cross(Vector3.up, forward).normalized;
         var lane = model.LaneCentre(model.TargetLane);
 
-        // Runs from behind you to a way ahead, rather than centred, so it reads as passing
+        // Runs from behind you to well ahead, rather than centred, so it reads as passing
         // through rather than appearing on top of you.
         const float length = 60f;
         var centre = player + forward * (length * 0.25f) + right * lane + Vector3.up * 0.9f;
@@ -89,7 +130,7 @@ public class PursuerAttackPresenter : MonoBehaviour
         // Shallow and slow on purpose. A hard strobe filling the screen is the thing that
         // made the lighting unpleasant last time.
         var shimmer = 0.8f + 0.12f * Mathf.Sin(Time.time * 9f);
-        Tint(beamRenderer, new Color(0.88f, 0.92f, 1f), shimmer);
+        Tint(beam, new Color(1f, 0.93f, 0.82f), shimmer, 1f);
     }
 
     private static Vector3 Forward()
@@ -99,19 +140,22 @@ public class PursuerAttackPresenter : MonoBehaviour
         return forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
     }
 
-    private static void Tint(Renderer target, Color colour, float strength)
+    private static void Tint(Transform target, Color colour, float strength, float alpha)
     {
-        if (target == null)
+        var renderer = target.GetComponent<Renderer>();
+        if (renderer == null)
         {
             return;
         }
 
         var lit = colour * Mathf.Clamp01(strength);
-        target.material.color = lit;
-        target.material.SetColor("_EmissionColor", lit * 2.2f);
+        lit.a = Mathf.Clamp01(alpha);
+
+        renderer.material.color = lit;
+        renderer.material.SetColor("_EmissionColor", lit * 2.4f);
     }
 
-    private Transform BuildBar(string name)
+    private Transform BuildPart(string name, bool transparent)
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.name = name;
@@ -122,8 +166,21 @@ public class PursuerAttackPresenter : MonoBehaviour
         var material = new Material(Shader.Find("Standard"));
         material.EnableKeyword("_EMISSION");
         material.SetFloat("_Glossiness", 0f);
-        go.GetComponent<Renderer>().material = material;
 
+        if (transparent)
+        {
+            // Standard needs all of this set by hand to blend rather than write depth.
+            material.SetFloat("_Mode", 3f);
+            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetInt("_ZWrite", 0);
+            material.DisableKeyword("_ALPHATEST_ON");
+            material.EnableKeyword("_ALPHABLEND_ON");
+            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            material.renderQueue = 3000;
+        }
+
+        go.GetComponent<Renderer>().material = material;
         go.transform.SetParent(transform, false);
         go.SetActive(false);
         return go.transform;

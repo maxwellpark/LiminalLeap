@@ -152,6 +152,20 @@ public class PursuerAttackPlayTests
             "watching it must not buy distance, or the mirror is a defence again");
     }
 
+    // A backwards camera renders the world reversed, so the telegraph pointed players into
+    // the beam rather than out of it. The panel has to be flipped to read like a mirror.
+    [UnityTest]
+    public IEnumerator TheMirrorReadsLikeAMirrorNotACamera()
+    {
+        yield return Settle();
+
+        fixture.Input.LookingBack = true;
+        yield return Settle(5);
+
+        Assert.IsTrue(RearView.GetInstance().Flipped,
+            "left and right in the mirror would be the wrong way round");
+    }
+
     [UnityTest]
     public IEnumerator TheLaneIsOnlyReadableOnceItIsChosen()
     {

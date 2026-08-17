@@ -41,6 +41,10 @@ public class RearView : Singleton<RearView>
     public bool IsRaised => shown > 0.5f;
     public Camera MirrorCamera => mirrorCamera;
 
+    // A backwards camera is not a mirror: it renders the world reversed, so something on
+    // your left came out on the right of the panel and the lane telegraph read inverted.
+    public bool Flipped => panel != null && panel.uvRect.width < 0f;
+
     // How much of the way forward the mirror is currently costing you.
     public float Blindness => Features.On(Feature.LookBackCost) ? Mathf.Clamp01(shown) : 0f;
 
@@ -177,6 +181,11 @@ public class RearView : Singleton<RearView>
         panel.texture = target;
         panel.color = calmTint;
         panel.raycastTarget = false;
+
+        // Flip horizontally so it reads like a mirror. Without this, left and right in the
+        // panel are the wrong way round and the attack telegraph points you into the beam.
+        panel.uvRect = new Rect(1f, 0f, -1f, 1f);
+
         Stretch(panel.rectTransform, 10f);
     }
 
