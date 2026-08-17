@@ -113,7 +113,13 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
         if (Features.On(Feature.PursuerAttacks))
         {
-            allowed = ScanLanes();
+            // The mask is only ever read when starting an attack or choosing its lane. Once
+            // locked it cannot change anything, so scanning then is a physics query wasted
+            // every frame of the run.
+            if (attackModel.Phase is AttackPhase.Idle or AttackPhase.Warning)
+            {
+                allowed = ScanLanes();
+            }
 
             if (!AttackFrozen)
             {
