@@ -12,6 +12,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
     [SerializeField] private Vector3 startForward = Vector3.forward;
     [SerializeField] private int seed = 12345;          // same seed, same track
     [SerializeField] private int maxRepeats = 2;        // stop one prefab running away with it
+    [SerializeField] private float playerMaxSpeed = 32f; // matches PlayerTrackMovement
+    [SerializeField] private float jumpAirtime = 0.64f;
+    [SerializeField] private float hazardMargin = 6f;
+    [SerializeField] private int straightLeadIn = 6;    // opening stretch for the floor signage
 
     private readonly List<TrackPiece> active = new();
     private readonly Dictionary<int, Queue<TrackPiece>> pools = new();
@@ -20,6 +24,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private System.Random rng;
     private int lastIndex = -1;
     private int repeats;
+    private int spawned;
+    private int lastHazardAt = int.MinValue / 2;
 
     public IReadOnlyList<TrackPiece> ActivePieces => active;
 
@@ -39,6 +45,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
         rng = new System.Random(seed);
         lastIndex = -1;
         repeats = 0;
+        spawned = 0;
+        lastHazardAt = int.MinValue / 2;
 
         nextEnd = startPosition;
         nextForward = startForward.sqrMagnitude > 0f ? startForward.normalized : Vector3.forward;
@@ -77,8 +85,34 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
         var index = PickIndex();
         var piece = Take(index);
+
+        // Back to back hazards are unavoidable: a jump covers more ground than one piece.
+        if (piece.ContainsHazard && spawned - lastHazardAt < HazardGap())
+        {
+            var clean = FindCleanIndex();
+            if (clean >= 0)
+            {
+                Recycle(piece);
+                index = clean;
+                piece = Take(index);
+            }
+        }
+
+        if (piece.ContainsHazard)
+        {
+            lastHazardAt = spawned;
+        }
+
+        spawned++;
         piece.gameObject.SetActive(true);
         piece.Passed = false;
+
+        // Pooling reuses the object, so a collected pickup stays collected without this.
+        // That is why pickups ran out mid-run once every pooled one had been eaten.
+        foreach (var resettable in piece.GetComponentsInChildren<IRunResettable>(true))
+        {
+            resettable.ResetForNewRun();
+        }
 
         piece.transform.SetPositionAndRotation(
             piece.HasEndAnchor ? nextEnd : TrackChainer.NextPiecePosition(nextEnd, nextForward, piece.Length()),
@@ -89,11 +123,53 @@ public class ProceduralTrackGenerator : MonoBehaviour
         nextForward = piece.GetEndForward();
     }
 
+    private int HazardGap()
+    {
+        var pieceLength = piecePrefabs.Length > 0 && piecePrefabs[0] != null ? piecePrefabs[0].Length() : 10f;
+        return HazardLanes.RequiredPieceGap(playerMaxSpeed, jumpAirtime, pieceLength, hazardMargin);
+    }
+
+    private int FindFlatIndex()
+    {
+        for (var i = 0; i < piecePrefabs.Length; i++)
+        {
+            var p = piecePrefabs[i];
+            if (p != null && p.IsPlain && p.TurnDegrees < 1f)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private int FindCleanIndex()
+    {
+        for (var i = 0; i < piecePrefabs.Length; i++)
+        {
+            if (piecePrefabs[i] != null && !piecePrefabs[i].ContainsHazard)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     private int PickIndex()
     {
         if (piecePrefabs.Length == 1)
         {
             return 0;
+        }
+
+        if (spawned < straightLeadIn)
+        {
+            var flat = FindFlatIndex();
+            if (flat >= 0)
+            {
+                return flat;
+            }
         }
 
         int index;

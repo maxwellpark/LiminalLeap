@@ -9,14 +9,11 @@ EditorBuildSettings:
     path: Assets/Scenes/TitleScreen.unity
     guid: 8806ffa8cd095472bb3460ca4962dd60
   - enabled: 1
-    path: Assets/Scenes/Generated/Seed1300.unity
-    guid: 6303273d9b2f549d49720c3e982d80e5
+    path: Assets/Scenes/Generated/Seed1600.unity
+    guid: e82cdbcdc4b3f49fd9203c345e00ea92
   - enabled: 1
-    path: Assets/Scenes/Generated/Seed1301.unity
-    guid: 0a4810307ecfb4c6c8cc7339a900970c
-  - enabled: 1
-    path: Assets/Scenes/Generated/Seed1302.unity
-    guid: 84ea2eea421214c6389a357dd81863c7
+    path: Assets/Scenes/Generated/Seed1601.unity
+    guid: 6039426c92ddd4926bec0441e7b10603
   - enabled: 1
     path: Assets/Scenes/MovementTestScene.unity
     guid: 7ba73ec8177efd64f9665a7e45697e2e

@@ -48,7 +48,7 @@ public static class TitleSceneGenerator
             slab.transform.SetParent(root.transform);
             slab.transform.localScale = new Vector3(8f, 0.5f, 10f);
             slab.transform.position = new Vector3(0f, -0.25f, i * 10f);
-            slab.GetComponent<Renderer>().sharedMaterial = MaterialLibrary.Get(Surface.Track);
+            slab.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Track);
             Object.DestroyImmediate(slab.GetComponent<Collider>());
         }
 
@@ -59,7 +59,7 @@ public static class TitleSceneGenerator
             pillar.transform.SetParent(root.transform);
             pillar.transform.localScale = new Vector3(1.2f, 9f, 1.2f);
             pillar.transform.position = new Vector3(i % 2 == 0 ? -6.5f : 6.5f, 4.5f, 12f + i * 22f);
-            pillar.GetComponent<Renderer>().sharedMaterial = MaterialLibrary.Get(Surface.Track);
+            pillar.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Track);
             Object.DestroyImmediate(pillar.GetComponent<Collider>());
         }
     }
