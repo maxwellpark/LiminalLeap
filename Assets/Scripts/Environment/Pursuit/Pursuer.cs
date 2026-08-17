@@ -66,10 +66,10 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         settings = new PursuitModel.Settings
         {
             StartDistance = startDistance,
-            CloseRate = closeRate,
+            CloseRate = attacks ? attack.CloseRateDuringAttacks : closeRate,
             RecoverRate = attacks ? 0f : recoverRate,
             MaxDistance = startDistance,
-            SpeedRelief = summons ? 0f : speedRelief,
+            SpeedRelief = summons ? 0f : attacks ? attack.SpeedReliefDuringAttacks : speedRelief,
             SpeedDraw = summons ? speedDraw : 0f,
             LungeWithin = lungeWithin,
             LungeMultiplier = lungeMultiplier,

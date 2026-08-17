@@ -250,6 +250,8 @@ public class DebugOverlay : Singleton<DebugOverlay>
         new(typeof(PlayerTrackMovement), "maxFovBoost", "fov boost", 0f, 45f),
         new(typeof(PlayerTrackMovement), "deathTimeScale", "death slowmo", 0.05f, 1f),
         new(typeof(PlayerTrackMovement), "deathPause", "death pause", 0.1f, 2f),
+        new(typeof(Pursuer), "startDistance", "pursuer start", 20f, 90f),
+        new(typeof(Pursuer), "closeRate", "close (no attacks)", 0f, 8f),
         new(typeof(MoodLighting), "fogDensity", "fog density", 0f, 0.06f),
         new(typeof(MoodLighting), "flickerDepth", "flicker", 0f, 0.6f),
         new(typeof(SpeedVignette), "fullIntensity", "vignette", 0f, 1f),

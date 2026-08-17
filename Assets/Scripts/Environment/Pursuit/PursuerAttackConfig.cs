@@ -37,8 +37,21 @@ public class PursuerAttackConfig
 
     public float[] LaneWeights = { 1f, 1f, 1f };
 
-    public float PursuerSetbackOnDodge = 6f;
+    // Once the mirror stopped being a defence, a steady close rate was an unwinnable timer:
+    // there was nothing left you could do about it. The fight is the attacks now, so it
+    // drifts in slowly and a dodge has to be worth more than a cycle's drift.
+    public float CloseRateDuringAttacks = 0.9f;
+
+    // Less than the close rate would cancel: at full speed the old relief made it literally
+    // uncatchable, which pinned Proximity at zero and muted the dread it drives.
+    public float SpeedReliefDuringAttacks = 0.7f;
+
+    public float PursuerSetbackOnDodge = 10f;
     public float ScoreRewardOnDodge = 250f;
+
+    // One warning to the next, so the economy can be checked against it.
+    public float CycleTime =>
+        (MinAttackInterval + MaxAttackInterval) * 0.5f + LeadTime + CooldownDuration;
 
     // Total time from the warning starting to the beam landing.
     public float LeadTime => WarningDuration + TelegraphDuration + LockDuration + FireDuration;
