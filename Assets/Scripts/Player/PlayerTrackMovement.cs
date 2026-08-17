@@ -124,6 +124,7 @@ public class PlayerTrackMovement : MonoBehaviour
         RearView.GetInstance();
         Pursuer.GetInstance();
         UnobservedShifter.GetInstance();
+        AttackPrompt.GetInstance();
         Onboarding.GetInstance();
     }
 

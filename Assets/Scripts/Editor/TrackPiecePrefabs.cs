@@ -90,6 +90,8 @@ public static class TrackPiecePrefabs
                 so.FindProperty("shakeSettings").FindPropertyRelative("Amplitude").floatValue = 0.06f;
                 so.FindProperty("shakeSettings").FindPropertyRelative("Duration").floatValue = 0.12f;
                 so.ApplyModifiedPropertiesWithoutUndo();
+
+                pickup.AddComponent<PickupBob>();
                 break;
             }
 

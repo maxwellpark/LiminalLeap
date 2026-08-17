@@ -451,6 +451,8 @@ public static class TestSceneGenerator
         so.FindProperty("shakeSettings").FindPropertyRelative("Amplitude").floatValue = 0.06f;
         so.FindProperty("shakeSettings").FindPropertyRelative("Duration").floatValue = 0.12f;
         so.ApplyModifiedPropertiesWithoutUndo();
+
+        pickup.AddComponent<PickupBob>();
     }
 
     private static int ArgInt(string[] args, string flag, int fallback)
