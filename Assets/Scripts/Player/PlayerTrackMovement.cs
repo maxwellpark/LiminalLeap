@@ -60,6 +60,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private readonly GhostRecorder ghostRecorder = new();
     private float runTime;
+    private int exitsInside;
     private float nearMissBonus;
 
     private static TrackManager trackManager;
@@ -153,6 +154,12 @@ public class PlayerTrackMovement : MonoBehaviour
 
         runTime += dt;
         ghostRecorder.Sample(runTime, DistanceCovered);
+
+        if (exitsInside > 0 && InputRouter.Source.BankPressed)
+        {
+            FinishRun(RunOutcome.Banked);
+            return;
+        }
 
         if (InputRouter.Source.RestartPressed)
         {
@@ -308,10 +315,12 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Leaving on your own terms is the only way the score survives.
+        // Standing in the doorway only offers the choice. Taking it needs a press, or you
+        // would bank the run by strafing to dodge, since the exit sits in a dodge lane.
         if (other.GetComponent<ExitDoor>() != null)
         {
-            FinishRun(RunOutcome.Banked);
+            exitsInside++;
+            ToastManager.GetInstance().Show($"E to leave with {Score:F0}");
             return;
         }
 
@@ -329,6 +338,14 @@ public class PlayerTrackMovement : MonoBehaviour
                 CurrentSpeed = Mathf.Clamp(CurrentSpeed + result, minSpeed, maxSpeed);
                 fovKick = pickupFovKick;
             }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<ExitDoor>() != null)
+        {
+            exitsInside = Mathf.Max(0, exitsInside - 1);
         }
     }
 
@@ -441,6 +458,7 @@ public class PlayerTrackMovement : MonoBehaviour
         Multiplier = 1f;
         Lane = 0f;
         runTime = 0f;
+        exitsInside = 0;
         ghostRecorder.Reset();
         CurrentSpeed = startingSpeed;
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);

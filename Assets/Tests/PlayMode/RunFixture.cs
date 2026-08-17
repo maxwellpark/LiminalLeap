@@ -121,6 +121,22 @@ public class RunFixture
         return hazard;
     }
 
+    // Matches the generated Exit piece: a wide zone spanning the piece, offer only.
+    public GameObject AddExit(float lane, int pieceIndex)
+    {
+        var zone = new GameObject("TestExit");
+        zone.transform.SetParent(Root.transform);
+        zone.transform.position = new Vector3(lane, 1.1f, pieceIndex * PieceLength + PieceLength * 0.5f);
+
+        var box = zone.AddComponent<BoxCollider>();
+        box.isTrigger = true;
+        box.size = new Vector3(2.2f, 2.4f, PieceLength);
+
+        zone.AddComponent<ExitDoor>();
+        spawned.Add(zone);
+        return zone;
+    }
+
     public SpeedTriggerable AddPickup(float lane, int pieceIndex)
     {
         var pickup = GameObject.CreatePrimitive(PrimitiveType.Sphere);

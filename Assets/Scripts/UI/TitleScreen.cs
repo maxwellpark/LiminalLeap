@@ -15,7 +15,7 @@ public class TitleScreen : MonoBehaviour
     [Header("Presentation")]
     [SerializeField] private string title = "LIMINAL LEAP";
     [SerializeField] private string subtitle = "keep running";
-    [SerializeField] private string controls = "A D  steer      SPACE  jump      SHIFT  look back";
+    [SerializeField] private string controls = "A D  steer     SPACE  jump     SHIFT  look back     E  leave";
     [SerializeField] private float driftSpeed = 1.6f;
     [SerializeField] private float startDelay = 0.6f;
 
