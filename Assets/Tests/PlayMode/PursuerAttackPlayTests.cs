@@ -13,10 +13,7 @@ public class PursuerAttackPlayTests
     [SetUp]
     public void SetUp()
     {
-        // Set before the fixture builds: Pursuer reads the flags in Init.
-        Features.IsolateForTests();
-        Features.Override(Feature.PursuerAttacks, true);
-        Features.Override(Feature.GhostPursuer, false);
+        RunFixture.IsolateFlags(attacks: true);
 
         hit = false;
         dodged = false;

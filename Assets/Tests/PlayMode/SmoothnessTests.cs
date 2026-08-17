@@ -10,6 +10,7 @@ public class SmoothnessTests
     [SetUp]
     public void SetUp()
     {
+        RunFixture.IsolateFlags();
         fixture = new RunFixture();
         fixture.Build();
     }

@@ -14,6 +14,8 @@ public class EndlessTests
     [SetUp]
     public void SetUp()
     {
+        RunFixture.IsolateFlags();
+
         // Built at runtime rather than loaded with AssetDatabase: PlayMode tests must not
         // reference the editor, and doing so silently emptied the whole suite.
         prefabHolder = new GameObject("Prefabs");
@@ -49,6 +51,28 @@ public class EndlessTests
         {
             Object.DestroyImmediate(player.gameObject);
         }
+
+        Features.ClearOverrides();
+    }
+
+    [UnityTest]
+    public IEnumerator SignsGetPaintedWhenTheFlagIsOn()
+    {
+        Features.Override(Feature.LyingSigns, true);
+        generator.ResetRun();
+        yield return null;
+
+        Assert.Greater(root.GetComponentsInChildren<TrackSign>(true).Length, 0, "no signage was painted");
+    }
+
+    [UnityTest]
+    public IEnumerator NoSignsWhenTheFlagIsOff()
+    {
+        Features.Override(Feature.LyingSigns, false);
+        generator.ResetRun();
+        yield return null;
+
+        Assert.AreEqual(0, root.GetComponentsInChildren<TrackSign>(true).Length, "a flag that is off should do nothing");
     }
 
     private TrackPiece MakePiece(string name, float yaw, bool hazard)

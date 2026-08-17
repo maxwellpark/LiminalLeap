@@ -10,6 +10,7 @@ public class RunTests
     [SetUp]
     public void SetUp()
     {
+        RunFixture.IsolateFlags();
         fixture = new RunFixture();
         fixture.Build();
     }
