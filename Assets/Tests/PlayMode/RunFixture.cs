@@ -13,6 +13,18 @@ public class RunFixture
 
     private readonly List<GameObject> spawned = new();
 
+    // Call before Build: Pursuer reads the flags in Init. Tests must not inherit whatever
+    // was toggled in the editor, and an attack going off mid test makes everything flaky.
+    public static void IsolateFlags(bool attacks = false)
+    {
+        Features.IsolateForTests();
+        Features.Override(Feature.PursuerAttacks, attacks);
+        Features.Override(Feature.GhostPursuer, false);
+        Features.Override(Feature.ShiftWhenUnobserved, false);
+        Features.Override(Feature.LyingSigns, false);
+        Features.Override(Feature.ExitDoors, false);
+    }
+
     // Built inactive and activated in order: Awake fires the moment a component is added.
     public void Build(int pieces = 30)
     {
@@ -107,6 +119,22 @@ public class RunFixture
         hazard.AddComponent<Hazard>();
         spawned.Add(hazard);
         return hazard;
+    }
+
+    // Matches the generated Exit piece: a wide zone spanning the piece, offer only.
+    public GameObject AddExit(float lane, int pieceIndex)
+    {
+        var zone = new GameObject("TestExit");
+        zone.transform.SetParent(Root.transform);
+        zone.transform.position = new Vector3(lane, 1.1f, pieceIndex * PieceLength + PieceLength * 0.5f);
+
+        var box = zone.AddComponent<BoxCollider>();
+        box.isTrigger = true;
+        box.size = new Vector3(2.2f, 2.4f, PieceLength);
+
+        zone.AddComponent<ExitDoor>();
+        spawned.Add(zone);
+        return zone;
     }
 
     public SpeedTriggerable AddPickup(float lane, int pieceIndex)

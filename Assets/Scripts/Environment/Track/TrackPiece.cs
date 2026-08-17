@@ -20,9 +20,11 @@ public class TrackPiece : MonoBehaviour
     public bool HasEndAnchor => endAnchor != null;
     public bool ContainsHazard => containsHazard;
 
-    // No hazard and nothing to collect. Used for the opening stretch under the signage.
+    // Nothing to hit, collect or leave through. Used for the stretch under the signage.
     public bool IsPlain =>
-        !containsHazard && GetComponentInChildren<SpeedTriggerable>(true) == null;
+        !containsHazard
+        && GetComponentInChildren<SpeedTriggerable>(true) == null
+        && GetComponentInChildren<ExitDoor>(true) == null;
 
     public float TurnDegrees =>
         endAnchor != null ? Mathf.Abs(Mathf.DeltaAngle(0f, endAnchor.localEulerAngles.y)) : 0f;

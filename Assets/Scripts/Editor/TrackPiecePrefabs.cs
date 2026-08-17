@@ -24,6 +24,7 @@ public static class TrackPiecePrefabs
         Build("Pickup", 0f, Decoration.Pickup);
         Build("Block", 0f, Decoration.Block);
         Build("Bar", 0f, Decoration.Bar);
+        Build("Exit", 0f, Decoration.Exit);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -36,6 +37,7 @@ public static class TrackPiecePrefabs
         Pickup,
         Block,
         Bar,
+        Exit,
     }
 
     private static void Build(string name, float yaw, Decoration decoration)
@@ -88,6 +90,8 @@ public static class TrackPiecePrefabs
                 so.FindProperty("shakeSettings").FindPropertyRelative("Amplitude").floatValue = 0.06f;
                 so.FindProperty("shakeSettings").FindPropertyRelative("Duration").floatValue = 0.12f;
                 so.ApplyModifiedPropertiesWithoutUndo();
+
+                pickup.AddComponent<PickupBob>();
                 break;
             }
 
@@ -100,6 +104,33 @@ public static class TrackPiecePrefabs
                 // Spans the track, so this one has to be jumped.
                 AddHazard(piece, 0f, 0.6f, true);
                 break;
+
+            case Decoration.Exit:
+            {
+                // The zone spans the whole piece so the offer lasts long enough to take.
+                // It only offers: banking needs a press, so strafing through costs nothing.
+                var zone = new GameObject("ExitZone");
+                zone.transform.SetParent(piece, false);
+                zone.transform.localPosition = new Vector3(2.8f, 1.1f, Length * 0.5f);
+
+                var box = zone.AddComponent<BoxCollider>();
+                box.isTrigger = true;
+                box.size = new Vector3(2.2f, 2.4f, Length);
+                zone.AddComponent<ExitDoor>();
+
+                // Child of the zone, so turning the feature off hides the door with it.
+                var frame = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                frame.name = "ExitFrame";
+                frame.transform.SetParent(zone.transform, false);
+                frame.transform.localPosition = new Vector3(0.6f, 0f, 0f);
+                frame.transform.localScale = new Vector3(0.35f, 2.4f, 2.8f);
+                frame.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Exit);
+                Object.DestroyImmediate(frame.GetComponent<Collider>());
+
+                WorldSign.Floor(piece, "EXIT", new Vector3(2.8f, 0.02f, Length * 0.5f - 2.6f), 2.4f,
+                    new Color(0.4f, 0.95f, 0.55f, 0.9f));
+                break;
+            }
         }
     }
 

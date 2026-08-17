@@ -7,6 +7,7 @@ public enum Surface
     Hazard,
     JumpBar,
     Pickup,
+    Exit,
 }
 
 // Generated materials cached per surface. Built-in pipeline, so Standard shader.
@@ -60,6 +61,16 @@ public static class MaterialLibrary
                 var stripes = ProceduralTextures.Grid(Size, 6, 0.4f);
                 var mixed = ProceduralTextures.Remap(ProceduralTextures.Multiply(grime, stripes, 0.6f), 0.35f, 1f);
                 return Make("JumpBarSurface", mixed, new Color(0.95f, 0.75f, 0.2f), 0.25f);
+            }
+
+            case Surface.Exit:
+            {
+                // Exit sign green, emissive so it carries down a dim corridor.
+                var glow = ProceduralTextures.Remap(ProceduralTextures.Noise(Size, 97, 3), 0.7f, 1f);
+                var material = Make("ExitSurface", glow, new Color(0.35f, 0.95f, 0.5f), 0.35f);
+                material.EnableKeyword("_EMISSION");
+                material.SetColor("_EmissionColor", new Color(0.25f, 0.8f, 0.4f));
+                return material;
             }
 
             default:

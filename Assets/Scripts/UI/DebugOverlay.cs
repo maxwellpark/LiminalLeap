@@ -25,6 +25,8 @@ public class DebugOverlay : Singleton<DebugOverlay>
     private float smoothedMs;
     private ProfilerRecorder gcRecorder;
     private Vector2 scroll;
+    private AttackLane forcedLane = AttackLane.Centre;
+    private bool showAttack = true;
 
     protected override void OnEnable()
     {
@@ -52,8 +54,41 @@ public class DebugOverlay : Singleton<DebugOverlay>
             }
         }
 
+        AttackKeys();
+
         // Unscaled: the death sequence slows time and would otherwise fake a frame spike.
         smoothedMs = Mathf.Lerp(smoothedMs, Time.unscaledDeltaTime * 1000f, 0.1f);
+    }
+
+    // F9 fire, F10 cycle lane, F11 freeze, F12 show the attack panel.
+    private void AttackKeys()
+    {
+        var pursuer = Pursuer.Instance;
+        if (pursuer == null)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.F9))
+        {
+            pursuer.ForceAttack(forcedLane);
+        }
+
+        if (Input.GetKeyDown(KeyCode.F10))
+        {
+            forcedLane = (AttackLane)(((int)forcedLane + 1) % 3);
+            pursuer.ForceAttack(forcedLane);
+        }
+
+        if (Input.GetKeyDown(KeyCode.F11))
+        {
+            pursuer.AttackFrozen = !pursuer.AttackFrozen;
+        }
+
+        if (Input.GetKeyDown(KeyCode.F12))
+        {
+            showAttack = !showAttack;
+        }
     }
 
     private void OnGUI()
@@ -77,6 +112,9 @@ public class DebugOverlay : Singleton<DebugOverlay>
         GUILayout.Label($"gc/frame   {GcPerFrame()}");
         GUILayout.Label($"pieces     {CountPieces()}");
 
+        DrawAttack();
+        DrawFlags();
+
         GUILayout.Space(6f);
         GUILayout.Label("<b>Tuning</b>", RichLabel());
 
@@ -93,6 +131,70 @@ public class DebugOverlay : Singleton<DebugOverlay>
 
         GUILayout.EndScrollView();
         GUILayout.EndArea();
+    }
+
+    private void DrawAttack()
+    {
+        var pursuer = Pursuer.Instance;
+        var model = pursuer != null ? pursuer.Attack : null;
+
+        if (!showAttack || model == null)
+        {
+            return;
+        }
+
+        GUILayout.Space(6f);
+        GUILayout.Label("<b>Attack</b>  (F9 fire, F10 lane, F11 freeze, F12 hide)", RichLabel());
+        GUILayout.Label($"state      {model.Phase}{(pursuer.AttackFrozen ? "  [frozen]" : string.Empty)}");
+        GUILayout.Label($"target     {(model.TargetVisible ? model.TargetLane.ToString() : "hidden")}");
+        GUILayout.Label($"phase t    {model.PhaseTime:F2} s");
+        GUILayout.Label($"to fire    {model.TimeUntilFire:F2} s");
+        GUILayout.Label($"allowed    {LaneMask(pursuer.AllowedLanes)}");
+        GUILayout.Label($"player     {PlayerTrackMovement.Lane:F2}");
+        GUILayout.Label($"forced     {forcedLane}");
+        GUILayout.Label($"last       {pursuer.LastAttackResult}");
+        GUILayout.Label($"pursuer    {pursuer.Distance:F1} m");
+    }
+
+    private static string LaneMask(int mask)
+    {
+        if (mask == 0)
+        {
+            return "none (postponing)";
+        }
+
+        var text = string.Empty;
+        foreach (var lane in new[] { AttackLane.Left, AttackLane.Centre, AttackLane.Right })
+        {
+            if (PursuerSafety.LaneAllowed(mask, lane))
+            {
+                text += lane.ToString()[0];
+            }
+        }
+
+        return text;
+    }
+
+    // Toggling here is in memory only, so an experiment can't quietly become your save.
+    private void DrawFlags()
+    {
+        GUILayout.Space(6f);
+        GUILayout.Label($"<b>Flags</b>  variant {Features.VariantKey()}", RichLabel());
+
+        foreach (var feature in Features.All)
+        {
+            var on = Features.On(feature);
+            var next = GUILayout.Toggle(on, "  " + feature);
+            if (next != on)
+            {
+                Features.Override(feature, next);
+            }
+        }
+
+        if (GUILayout.Button("reset flags to defaults"))
+        {
+            Features.ClearOverrides();
+        }
     }
 
     private string GcPerFrame()
@@ -148,6 +250,8 @@ public class DebugOverlay : Singleton<DebugOverlay>
         new(typeof(PlayerTrackMovement), "maxFovBoost", "fov boost", 0f, 45f),
         new(typeof(PlayerTrackMovement), "deathTimeScale", "death slowmo", 0.05f, 1f),
         new(typeof(PlayerTrackMovement), "deathPause", "death pause", 0.1f, 2f),
+        new(typeof(Pursuer), "startDistance", "pursuer start", 20f, 90f),
+        new(typeof(Pursuer), "closeRate", "close (no attacks)", 0f, 8f),
         new(typeof(MoodLighting), "fogDensity", "fog density", 0f, 0.06f),
         new(typeof(MoodLighting), "flickerDepth", "flicker", 0f, 0.6f),
         new(typeof(SpeedVignette), "fullIntensity", "vignette", 0f, 1f),

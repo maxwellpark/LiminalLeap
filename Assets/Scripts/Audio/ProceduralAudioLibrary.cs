@@ -171,6 +171,77 @@ public class ProceduralAudioLibrary : IAudioLibrary
             case Sound.Confirm:
                 return Shaped(Synth.Sweep(520f, 1040f, 0.16f, 4f), 0.55f);
 
+            case Sound.AttackWarning:
+            {
+                // Distant and vague on purpose. It says something is coming, never which lane.
+                var boom = Synth.Sweep(58f, 44f, 1.1f, 1.4f);
+                var swell = Synth.Noise(1.1f, 307, 0.02f);
+                Synth.Modulate(swell, 1.6f, 0.6f, 0f);
+                Synth.Decay(swell, 1.2f);
+                return Shaped(Synth.Mix(boom, 0.7f, swell, 0.5f), 0.5f);
+            }
+
+            case Sound.AttackCharge:
+            {
+                // Strip lights finding a common note. Beating pair climbing over mains hum.
+                var a = Synth.Sweep(120f, 300f, 0.9f, 0.6f);
+                var b = Synth.Sweep(126f, 309f, 0.9f, 0.6f);
+                var hum = Synth.Sweep(100f, 100f, 0.9f, 0f);
+                Synth.Modulate(hum, 50f, 0.35f, 0f);
+                return Shaped(Synth.Mix(Synth.Mix(a, 0.5f, b, 0.5f), 1f, hum, 0.3f), 0.55f);
+            }
+
+            case Sound.AttackImminent:
+            {
+                // Two hard ticks. A rhythm reads as a countdown where a swell does not.
+                var buf = new float[Synth.Samples(0.5f)];
+                var tick = Synth.Sweep(1600f, 900f, 0.06f, 22f);
+                Synth.MixAt(buf, tick, 0, 0.9f);
+                Synth.MixAt(buf, tick, Synth.Samples(0.16f), 0.9f);
+                Synth.MixAt(buf, Synth.Sweep(300f, 520f, 0.5f, 1.2f), 0, 0.3f);
+                return Shaped(buf, 0.6f);
+            }
+
+            case Sound.AttackFire:
+            {
+                // Space tearing, not a weapon firing. Broadband rip with the bottom dropping out.
+                var rip = Synth.Noise(0.45f, 401, 0.5f);
+                Synth.Decay(rip, 7f);
+                var drop = Synth.Sweep(900f, 40f, 0.45f, 4f);
+                var ring = Synth.Sweep(1500f, 1500f, 0.25f, 12f);
+                return Shaped(Synth.Mix(Synth.Mix(rip, 0.7f, drop, 0.6f), 1f, ring, 0.2f), 0.8f);
+            }
+
+            case Sound.AttackDodge:
+            {
+                // Air closing behind the miss. Relief, not a fanfare.
+                var whoosh = Synth.Noise(0.3f, 419, 0.35f);
+                Synth.Decay(whoosh, 6f);
+                var lift = Synth.Sweep(400f, 900f, 0.28f, 5f);
+                return Shaped(Synth.Mix(whoosh, 0.6f, lift, 0.45f), 0.5f);
+            }
+
+            case Sound.ExitNear:
+            {
+                // Soft institutional chime. Enough to look up, not enough to decide for you.
+                var bell = Synth.Sweep(880f, 880f, 0.6f, 3f);
+                var under = Synth.Sweep(587.3f, 587.3f, 0.6f, 3.2f);
+                return Shaped(Synth.Mix(bell, 0.4f, under, 0.3f), 0.35f);
+            }
+
+            case Sound.Bank:
+            {
+                // A door shutting behind you. Warmer than Success and much shorter.
+                var thunk = Synth.Sweep(160f, 70f, 0.35f, 5f);
+                var chord = Synth.Sweep(392f, 392f, 0.8f, 2.5f);
+                var fifth = Synth.Sweep(587.3f, 587.3f, 0.8f, 2.6f);
+                var air = Synth.Noise(0.4f, 433, 0.2f);
+                Synth.Decay(air, 5f);
+
+                var body = Synth.Mix(chord, 0.45f, fifth, 0.35f);
+                return Shaped(Synth.Mix(Synth.Mix(thunk, 0.7f, body, 1f), 1f, air, 0.25f), 0.65f);
+            }
+
             default:
                 return new float[Synth.Samples(0.01f)];
         }

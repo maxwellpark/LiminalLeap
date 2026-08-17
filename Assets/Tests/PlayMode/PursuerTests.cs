@@ -7,9 +7,12 @@ public class PursuerTests
 {
     private RunFixture fixture;
 
+    // Covers the variant with attacks off, where watching it is still what holds it off.
+    // The attacks variant deliberately breaks that rule and is covered separately.
     [SetUp]
     public void SetUp()
     {
+        RunFixture.IsolateFlags(attacks: false);
         fixture = new RunFixture();
         fixture.Build();
     }
@@ -18,6 +21,7 @@ public class PursuerTests
     public void TearDown()
     {
         fixture.Teardown();
+        Features.ClearOverrides();
     }
 
     private IEnumerator Seconds(float seconds)
@@ -42,9 +46,10 @@ public class PursuerTests
         Assert.Less(Pursuer.GetInstance().Distance, start, "pursuer never closed");
     }
 
-    // The whole mechanic: looking back has to actually hold it off, not just render a mirror.
+    // True only with attacks off. Under PursuerAttacks the mirror is information and buys
+    // nothing, which PursuerAttackPlayTests asserts instead.
     [UnityTest]
-    public IEnumerator LookingBackHoldsItOff()
+    public IEnumerator LookingBackHoldsItOffWithoutAttacks()
     {
         yield return Seconds(0.5f);
 
