@@ -134,9 +134,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
         // Pooling reuses the object, so a collected pickup stays collected without this.
         // That is why pickups ran out mid-run once every pooled one had been eaten.
-        foreach (var resettable in piece.GetComponentsInChildren<IRunResettable>(true))
+        var resettables = piece.Resettables;
+        for (var i = 0; i < resettables.Length; i++)
         {
-            resettable.ResetForNewRun();
+            resettables[i].ResetForNewRun();
         }
 
         piece.transform.SetPositionAndRotation(

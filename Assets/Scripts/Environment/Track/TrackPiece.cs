@@ -16,6 +16,12 @@ public class TrackPiece : MonoBehaviour
 
     private Renderer cachedRenderer;
     private bool rendererLookedUp;
+    private IRunResettable[] resettables;
+
+    // Cached: the generator resets these on every spawn, and GetComponentsInChildren
+    // allocates a fresh array each call.
+    public IRunResettable[] Resettables =>
+        resettables ??= GetComponentsInChildren<IRunResettable>(true);
 
     public bool HasEndAnchor => endAnchor != null;
     public bool ContainsHazard => containsHazard;

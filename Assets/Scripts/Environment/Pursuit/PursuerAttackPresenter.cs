@@ -12,15 +12,26 @@ public class PursuerAttackPresenter : MonoBehaviour
 
     private static readonly Color Charging = new(0.45f, 0.72f, 1f);
     private static readonly Color Locked = new(1f, 0.72f, 0.32f);
+    private static readonly int Emission = Shader.PropertyToID("_EmissionColor");
+
+    // Renderer and material held from build time. Looking them up in the tint ran eight
+    // GetComponent calls a frame for the length of every telegraph.
+    private class Part
+    {
+        public GameObject Go;
+        public Transform Transform;
+        public Material Material;
+        public bool Visible;
+    }
 
     private PursuerAttackModel model;
     private PursuerAttackConfig config;
     private Transform pursuer;
 
-    private Transform floor;
-    private Transform curtain;
-    private Transform beam;
-    private readonly Transform[] chevrons = new Transform[Chevrons];
+    private Part floor;
+    private Part curtain;
+    private Part beam;
+    private readonly Part[] chevrons = new Part[Chevrons];
 
     public void Bind(PursuerAttackModel model, PursuerAttackConfig config, Transform pursuer)
     {
@@ -48,13 +59,13 @@ public class PursuerAttackPresenter : MonoBehaviour
         var firing = model.Phase == AttackPhase.Fire;
         var telegraphing = model.TargetVisible && !firing;
 
-        floor.gameObject.SetActive(telegraphing);
-        curtain.gameObject.SetActive(telegraphing);
-        beam.gameObject.SetActive(firing);
+        Show(floor, telegraphing);
+        Show(curtain, telegraphing);
+        Show(beam, firing);
 
-        foreach (var chevron in chevrons)
+        for (var i = 0; i < Chevrons; i++)
         {
-            chevron.gameObject.SetActive(telegraphing);
+            Show(chevrons[i], telegraphing);
         }
 
         if (telegraphing)
@@ -65,6 +76,19 @@ public class PursuerAttackPresenter : MonoBehaviour
         {
             Fire();
         }
+    }
+
+    // Only on change. SetActive is a native call, and nine of them a frame for a whole run
+    // is a lot to pay for a thing that is off almost all of the time.
+    private static void Show(Part part, bool visible)
+    {
+        if (part.Visible == visible)
+        {
+            return;
+        }
+
+        part.Visible = visible;
+        part.Go.SetActive(visible);
     }
 
     // Deliberately stops short of the player: the lane is only readable in the mirror,
@@ -88,13 +112,13 @@ public class PursuerAttackPresenter : MonoBehaviour
         var colour = locked ? Locked : Charging;
         var pulse = locked ? 1f : 0.65f + 0.2f * Mathf.Sin(Time.time * 6f);
 
-        floor.SetPositionAndRotation(centre + Vector3.up * 0.03f, rotation);
-        floor.localScale = new Vector3(width, 0.06f, length);
+        floor.Transform.SetPositionAndRotation(centre + Vector3.up * 0.03f, rotation);
+        floor.Transform.localScale = new Vector3(width, 0.06f, length);
         Tint(floor, colour, pulse, 1f);
 
         // The part that actually reads at a glance: a wall of light down the lane.
-        curtain.SetPositionAndRotation(centre + Vector3.up * 1.7f, rotation);
-        curtain.localScale = new Vector3(width, 3.4f, length);
+        curtain.Transform.SetPositionAndRotation(centre + Vector3.up * 1.7f, rotation);
+        curtain.Transform.localScale = new Vector3(width, 3.4f, length);
         Tint(curtain, colour, pulse * 0.8f, 0.28f);
 
         // Sweep toward the player so it reads as incoming rather than just present.
@@ -104,8 +128,8 @@ public class PursuerAttackPresenter : MonoBehaviour
             var t = (i + 0.5f) / Chevrons;
             var bar = chevrons[i];
 
-            bar.SetPositionAndRotation(origin - forward * (length * t) + Vector3.up * 0.5f, rotation);
-            bar.localScale = new Vector3(width * 1.25f, 0.9f, 0.5f);
+            bar.Transform.SetPositionAndRotation(origin - forward * (length * t) + Vector3.up * 0.5f, rotation);
+            bar.Transform.localScale = new Vector3(width * 1.25f, 0.9f, 0.5f);
 
             var wave = Mathf.Repeat(sweep + t, 1f);
             Tint(bar, colour, 0.35f + 0.65f * wave, 0.5f * wave);
@@ -124,8 +148,8 @@ public class PursuerAttackPresenter : MonoBehaviour
         const float length = 60f;
         var centre = player + forward * (length * 0.25f) + right * lane + Vector3.up * 0.9f;
 
-        beam.SetPositionAndRotation(centre, Quaternion.LookRotation(forward, Vector3.up));
-        beam.localScale = new Vector3(config.LaneHalfWidth * 2f, 1.8f, length);
+        beam.Transform.SetPositionAndRotation(centre, Quaternion.LookRotation(forward, Vector3.up));
+        beam.Transform.localScale = new Vector3(config.LaneHalfWidth * 2f, 1.8f, length);
 
         // Shallow and slow on purpose. A hard strobe filling the screen is the thing that
         // made the lighting unpleasant last time.
@@ -140,10 +164,9 @@ public class PursuerAttackPresenter : MonoBehaviour
         return forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
     }
 
-    private static void Tint(Transform target, Color colour, float strength, float alpha)
+    private static void Tint(Part part, Color colour, float strength, float alpha)
     {
-        var renderer = target.GetComponent<Renderer>();
-        if (renderer == null)
+        if (part.Material == null)
         {
             return;
         }
@@ -151,11 +174,11 @@ public class PursuerAttackPresenter : MonoBehaviour
         var lit = colour * Mathf.Clamp01(strength);
         lit.a = Mathf.Clamp01(alpha);
 
-        renderer.material.color = lit;
-        renderer.material.SetColor("_EmissionColor", lit * 2.4f);
+        part.Material.color = lit;
+        part.Material.SetColor(Emission, lit * 2.4f);
     }
 
-    private Transform BuildPart(string name, bool transparent)
+    private Part BuildPart(string name, bool transparent)
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.name = name;
@@ -180,9 +203,18 @@ public class PursuerAttackPresenter : MonoBehaviour
             material.renderQueue = 3000;
         }
 
-        go.GetComponent<Renderer>().material = material;
+        var renderer = go.GetComponent<Renderer>();
+        renderer.material = material;
+
         go.transform.SetParent(transform, false);
         go.SetActive(false);
-        return go.transform;
+
+        return new Part
+        {
+            Go = go,
+            Transform = go.transform,
+            Material = renderer.material,
+            Visible = false,
+        };
     }
 }
