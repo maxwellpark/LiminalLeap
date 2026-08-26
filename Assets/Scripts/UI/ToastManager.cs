@@ -37,6 +37,12 @@ public class ToastManager : Singleton<ToastManager>
         showing = true;
     }
 
+    public void Clear()
+    {
+        showing = false;
+        SetAlpha(0f);
+    }
+
     private void Update()
     {
         if (label == null)
@@ -62,9 +68,10 @@ public class ToastManager : Singleton<ToastManager>
         SetAlpha(elapsed <= holdSeconds ? 1f : 1f - (elapsed - holdSeconds) / fadeSeconds);
     }
 
+    // RunSummary reports the run now, so a lingering near miss toast would just sit over it.
     protected override void OnDeath(OnDeathEvent evt)
     {
-        Show($"Run ended  {evt.DistanceCovered:F0}m");
+        Clear();
     }
 
     private void SetAlpha(float a)

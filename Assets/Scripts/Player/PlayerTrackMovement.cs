@@ -125,6 +125,7 @@ public class PlayerTrackMovement : MonoBehaviour
         Pursuer.GetInstance();
         UnobservedShifter.GetInstance();
         AttackPrompt.GetInstance();
+        RunSummary.GetInstance();
         Onboarding.GetInstance();
     }
 
@@ -389,15 +390,8 @@ public class PlayerTrackMovement : MonoBehaviour
 
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered, outcome));
 
-        if (outcome == RunOutcome.Banked)
-        {
-            ToastManager.GetInstance().Show($"BANKED   {Score:F0}");
-        }
-        else if (outcome == RunOutcome.Completed)
-        {
-            ToastManager.GetInstance().Show($"TRACK COMPLETE   {Score:F0}");
-        }
-        else
+        // The outcome is reported by RunSummary, so no toast for it here.
+        if (outcome == RunOutcome.Died)
         {
             CameraManager.GetInstance().Shake(deathShake);
             Time.timeScale = deathTimeScale; // slow motion is a death beat, not a win
@@ -410,6 +404,15 @@ public class PlayerTrackMovement : MonoBehaviour
         yield return new WaitForSecondsRealtime(pause);
 
         Time.timeScale = 1f;
+
+        // Hold on the summary until they ask for another go. A runner that restarts itself
+        // never gives you the moment where you decide to try again.
+        var summary = RunSummary.GetInstance();
+        while (summary != null && summary.WaitingForInput)
+        {
+            yield return null;
+        }
+
         ResetRun();
         ScreenFade.GetInstance().To(0f, 0.35f);
         dying = false;

@@ -95,6 +95,12 @@ public class PursuerTests
         var deadline = Time.realtimeSinceStartup + 4f;
         while (PlayerTrackMovement.DistanceCovered > 1f && Time.realtimeSinceStartup < deadline)
         {
+            // The run waits on the summary before resetting; this test is about the pursuer.
+            if (RunSummary.Instance != null)
+            {
+                RunSummary.Instance.Dismiss();
+            }
+
             fixture.Input.Tick();
             yield return null;
         }
