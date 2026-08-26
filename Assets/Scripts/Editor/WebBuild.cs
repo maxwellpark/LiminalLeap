@@ -80,6 +80,10 @@ public static class WebBuild
             ? WebGLExceptionSupport.FullWithStacktrace
             : WebGLExceptionSupport.None;
         PlayerSettings.WebGL.dataCaching = true;
+
+        // The stock template pins the canvas at 960x600, which leaves the game in a small
+        // box inside whatever frame itch gives it.
+        PlayerSettings.WebGL.template = "PROJECT:LiminalLeap";
         PlayerSettings.runInBackground = false;
         PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.WebGL, Il2CppCompilerConfiguration.Release);
     }
