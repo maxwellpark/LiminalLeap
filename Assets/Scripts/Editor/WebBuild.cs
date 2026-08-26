@@ -76,9 +76,13 @@ public static class WebBuild
         // that send the wrong content-encoding, which is the usual cause of a blank page.
         PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
         PlayerSettings.WebGL.decompressionFallback = true;
+        // None means a thrown exception silently corrupts state instead of surfacing, which
+        // is exactly what made a suspected failure impossible to diagnose in the browser.
+        // Allocation measurement says the run loop costs about 577 B/frame, so there is
+        // plenty of headroom to spend on being able to see what went wrong.
         PlayerSettings.WebGL.exceptionSupport = development
             ? WebGLExceptionSupport.FullWithStacktrace
-            : WebGLExceptionSupport.None;
+            : WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly;
         PlayerSettings.WebGL.dataCaching = true;
 
         // The stock template pins the canvas at 960x600, which leaves the game in a small
