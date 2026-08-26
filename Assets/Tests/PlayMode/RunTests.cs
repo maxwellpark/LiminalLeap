@@ -37,6 +37,13 @@ public class RunTests
         var deadline = Time.realtimeSinceStartup + timeoutSeconds;
         while (PlayerTrackMovement.DistanceCovered > 1f && Time.realtimeSinceStartup < deadline)
         {
+            // The run holds on the summary now, so nothing resets until it is dismissed.
+            // RunSummaryTests covers the input path; this just gets out of the way.
+            if (RunSummary.Instance != null)
+            {
+                RunSummary.Instance.Dismiss();
+            }
+
             fixture.Input.Tick();
             yield return null;
         }
