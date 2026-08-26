@@ -27,6 +27,8 @@ public class DebugOverlay : Singleton<DebugOverlay>
     private Vector2 scroll;
     private AttackLane forcedLane = AttackLane.Centre;
     private bool showAttack = true;
+    private int pieceCount;
+    private float nextPieceCountAt;
 
     protected override void OnEnable()
     {
@@ -208,9 +210,17 @@ public class DebugOverlay : Singleton<DebugOverlay>
         return bytes <= 0 ? "0 B" : bytes < 1024 ? bytes + " B" : (bytes / 1024f).ToString("F1") + " KB";
     }
 
-    private static int CountPieces()
+    // Sampled rather than counted every OnGUI. A scene wide search allocating an array on
+    // every repaint made the overlay show a frame cost it had caused itself.
+    private int CountPieces()
     {
-        return FindObjectsByType<TrackPiece>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length;
+        if (Time.unscaledTime >= nextPieceCountAt)
+        {
+            nextPieceCountAt = Time.unscaledTime + 0.5f;
+            pieceCount = FindObjectsByType<TrackPiece>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length;
+        }
+
+        return pieceCount;
     }
 
     private static GUIStyle RichLabel()
