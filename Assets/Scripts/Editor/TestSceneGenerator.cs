@@ -288,8 +288,8 @@ public static class TestSceneGenerator
     private static void PaintOpeningSigns(Transform parent, Settings settings)
     {
         var faded = new Color(0.78f, 0.78f, 0.74f, 0.55f);
-        string[] lines = { "A   D    STEER", "SPACE    JUMP", "SHIFT    LOOK BACK", "R    RESTART" };
-        float[] at = { 15f, 25f, 35f, 55f };
+        var lines = Controls.FloorLines;
+        float[] at = { 15f, 25f, 35f, 45f, 60f };
 
         for (var i = 0; i < lines.Length; i++)
         {
@@ -319,12 +319,14 @@ public static class TestSceneGenerator
     // what these spaces look like.
     private static void PaintControlSign(Transform piece, Settings settings, int index)
     {
+        var lines = Controls.FloorLines;
         string text = index switch
         {
-            1 => "A   D    STEER",
-            2 => "SPACE    JUMP",
-            3 => "SHIFT    LOOK BACK",
-            5 => "R    RESTART",
+            1 => lines[0],
+            2 => lines[1],
+            3 => lines[2],
+            4 => lines[3],
+            6 => lines[4],
             _ => null,
         };
 

@@ -15,7 +15,8 @@ public class TitleScreen : MonoBehaviour
     [Header("Presentation")]
     [SerializeField] private string title = "LIMINAL LEAP";
     [SerializeField] private string subtitle = "keep running";
-    [SerializeField] private string controls = "A D  steer     SPACE  jump     SHIFT  look back     E  leave";
+    // Controls are derived, not serialised. The old copy lived in the scene, so adding the
+    // leave key changed the code and left the title screen teaching the previous set.
     [SerializeField] private float driftSpeed = 1.6f;
     [SerializeField] private float startDelay = 0.6f;
 
@@ -143,7 +144,7 @@ public class TitleScreen : MonoBehaviour
         column.Add("Subtitle", RuntimeUi.Body, RuntimeUi.Muted, 0.15f, 14f).text = subtitle;
         column.Space(90f);
 
-        column.Add("Controls", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = controls;
+        column.Add("Controls", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = Controls.Summary;
         column.Space(40f);
 
         prompt = column.Add("Prompt", RuntimeUi.Caption, RuntimeUi.Accent, 0.15f, 10f);

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <style>
+    /* The stock template pins the canvas to 960x600, which on itch leaves the game in a
+       small box inside whatever frame the page gives it. This fills the frame instead. */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0f0f11;
+      color: #9aa0a8;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    #unity-container {
+      position: absolute;
+      inset: 0;
+    }
+
+    #unity-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #0f0f11;
+      outline: none;
+    }
+
+    #loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      letter-spacing: 0.35em;
+      font-size: 13px;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    #bar {
+      width: 220px;
+      height: 2px;
+      background: #24262b;
+    }
+
+    #bar-fill {
+      width: 0;
+      height: 100%;
+      background: #6fb7c9;
+      transition: width 0.2s ease;
+    }
+
+    #error {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #d98b84;
+    }
+  </style>
+</head>
+<body>
+  <div id="unity-container">
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="loading">
+      <div>{{{ PRODUCT_NAME }}}</div>
+      <div id="bar"><div id="bar-fill"></div></div>
+    </div>
+    <div id="error"></div>
+  </div>
+
+  <script>
+    var canvas = document.querySelector("#unity-canvas");
+    var loading = document.querySelector("#loading");
+    var fill = document.querySelector("#bar-fill");
+    var error = document.querySelector("#error");
+
+    var config = {
+      dataUrl: "Build/{{{ DATA_FILENAME }}}",
+      frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+      codeUrl: "Build/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+      memoryUrl: "Build/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+      symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
+#endif
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+      productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+      productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+      showBanner: function (msg, type) {
+        if (type === "error") {
+          error.textContent = msg;
+          error.style.display = "flex";
+        }
+      },
+    };
+
+    var script = document.createElement("script");
+    script.src = "Build/{{{ LOADER_FILENAME }}}";
+    script.onload = function () {
+      createUnityInstance(canvas, config, function (progress) {
+        fill.style.width = 100 * progress + "%";
+      }).then(function () {
+        loading.style.display = "none";
+        // Keyboard input goes nowhere until the canvas has focus, and a player who has
+        // to work that out for themselves reads it as the game being broken.
+        canvas.focus();
+      }).catch(function (message) {
+        error.textContent = message;
+        error.style.display = "flex";
+      });
+    };
+    document.body.appendChild(script);
+
+    // Clicking anywhere hands focus back, for the same reason.
+    document.addEventListener("pointerdown", function () { canvas.focus(); });
+    window.addEventListener("keydown", function (e) {
+      // Stop the page scrolling out from under the game on space and arrows.
+      if ([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.key) >= 0) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  </script>
+</body>
+</html>
