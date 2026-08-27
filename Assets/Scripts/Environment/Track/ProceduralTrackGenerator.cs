@@ -21,6 +21,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
     [SerializeField] private int firstExitAfter = 22;
     [SerializeField] private float exitGapGrowth = 1.5f; // the way out gets rarer the deeper you go
 
+    [Header("Calm")]
+    [SerializeField] private int busyPieces = 22;   // stretch of ordinary track
+    [SerializeField] private int calmPieces = 6;    // breath between them
+
     [Header("Signage")]
     [SerializeField, Range(0f, 1f)] private float lieChance = 0.22f;
     [SerializeField] private int signLeadPieces = 3;     // reading room before the thing arrives
@@ -124,6 +128,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
             exitsSpawned++;
             nextExitAt = spawned + Mathf.RoundToInt(firstExitAfter * Mathf.Pow(exitGapGrowth, exitsSpawned));
         }
+
+        piece.Calm = Calm(spawned);
 
         spawned++;
         piece.gameObject.SetActive(true);
@@ -246,6 +252,47 @@ public class ProceduralTrackGenerator : MonoBehaviour
         return -1;
     }
 
+    private bool Calm(int piece)
+    {
+        return Features.On(Feature.CalmSections) && CalmRhythm.IsCalm(piece, busyPieces, calmPieces);
+    }
+
+    // Random among the safe pieces rather than the first one, or every breath would be the
+    // same prefab repeated and read as the track having broken.
+    private int PickCleanIndex()
+    {
+        var options = 0;
+        for (var i = 0; i < piecePrefabs.Length; i++)
+        {
+            if (Safe(i))
+            {
+                options++;
+            }
+        }
+
+        if (options == 0)
+        {
+            return -1;
+        }
+
+        var wanted = rng.Next(options);
+        for (var i = 0; i < piecePrefabs.Length; i++)
+        {
+            if (Safe(i) && wanted-- == 0)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private bool Safe(int index)
+    {
+        var piece = piecePrefabs[index];
+        return piece != null && !piece.ContainsHazard && !IsExit(index);
+    }
+
     private int FindCleanIndex()
     {
         for (var i = 0; i < piecePrefabs.Length; i++)
@@ -272,6 +319,16 @@ public class ProceduralTrackGenerator : MonoBehaviour
             if (flat >= 0)
             {
                 return flat;
+            }
+        }
+
+        // A breath means nothing to survive, so nothing that can kill you goes in it.
+        if (Calm(spawned))
+        {
+            var clean = PickCleanIndex();
+            if (clean >= 0)
+            {
+                return clean;
             }
         }
 

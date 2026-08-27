@@ -12,6 +12,10 @@ public class PlayerTrackMovement : MonoBehaviour
     [SerializeField] private float acceleration = 1.4f;   // ramp toward maxSpeed, units/s^2
     [SerializeField] private float turnResponse = 6f;     // heading ease rate, higher is snappier
 
+    [Header("Calm")]
+    [SerializeField] private float calmSpeed = 7f;   // below minSpeed on purpose: the floor drops
+    [SerializeField] private float calmEase = 5f;
+
     [Header("Strafe")]
     [SerializeField] private float strafeSpeed = 8f;
     [SerializeField] private float strafeAccel = 60f;     // units/s^2, ramp in and out
@@ -57,6 +61,9 @@ public class PlayerTrackMovement : MonoBehaviour
 
     // Where you sit across the track, so the pursuer can aim at a lane without a reference.
     public static float Lane { get; private set; }
+
+    // Read by the pursuer and the lighting, so a breath is one fact rather than three.
+    public static bool InCalm { get; private set; }
 
     private readonly GhostRecorder ghostRecorder = new();
     private float runTime;
@@ -105,6 +112,7 @@ public class PlayerTrackMovement : MonoBehaviour
         Multiplier = 1f;
         SpeedFraction = 0f;
         Lane = 0f;
+        InCalm = false;
         runTime = 0f;
         ghostRecorder.Reset();
 
@@ -223,7 +231,13 @@ public class PlayerTrackMovement : MonoBehaviour
 
         hadPiece = true;
 
-        CurrentSpeed = Mathf.Clamp(Mathf.MoveTowards(CurrentSpeed, maxSpeed, acceleration * dt), minSpeed, maxSpeed);
+        InCalm = Features.On(Feature.CalmSections) && piece.Calm;
+
+        // The floor is deliberately bypassed here. Clamping to minSpeed would stop the pace
+        // dropping at all, which is the entire point of the stretch.
+        CurrentSpeed = InCalm
+            ? Mathf.MoveTowards(CurrentSpeed, calmSpeed, calmEase * dt)
+            : Mathf.Clamp(Mathf.MoveTowards(CurrentSpeed, maxSpeed, acceleration * dt), minSpeed, maxSpeed);
 
         // Spill leftover into the next piece. MoveTowards clamps at its target, so stopping
         // at a boundary silently dropped the rest of the frame's movement and read as jitter.
@@ -461,6 +475,7 @@ public class PlayerTrackMovement : MonoBehaviour
         nearMissBonus = 0f;
         Multiplier = 1f;
         Lane = 0f;
+        InCalm = false;
         runTime = 0f;
         exitsInside = 0;
         ghostRecorder.Reset();
