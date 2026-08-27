@@ -85,3 +85,6 @@ crashlytics-build.properties
 
 # Web build output
 /Build/
+
+# Rendered stills, regenerate with SceneShot
+Build/Shots/

@@ -64,6 +64,7 @@ public static class TrackPiecePrefabs
         so.ApplyModifiedPropertiesWithoutUndo();
 
         Decorate(root.transform, decoration);
+        AddScenery(root.transform);
 
         var path = Path.Combine(Folder, name + ".prefab");
         PrefabUtility.SaveAsPrefabAsset(root, path);
@@ -131,6 +132,50 @@ public static class TrackPiecePrefabs
                     new Color(0.4f, 0.95f, 0.55f, 0.9f));
                 break;
             }
+        }
+    }
+
+    // Built into every piece and toggled per spawn by TrackScenery, so the corridor varies
+    // without the generator instantiating anything at runtime.
+    private static void AddScenery(Transform piece)
+    {
+        var scenery = piece.gameObject.AddComponent<TrackScenery>();
+
+        var pillars = new GameObject(TrackScenery.PillarHolder).transform;
+        pillars.SetParent(piece, false);
+
+        // Outside the deck, which is 8 wide, so they frame the run rather than block it.
+        float[] lanes = { -6.5f, 6.5f };
+        float[] along = { Length * 0.25f, Length * 0.75f };
+
+        for (var l = 0; l < lanes.Length; l++)
+        {
+            for (var a = 0; a < along.Length; a++)
+            {
+                var pillar = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                pillar.name = $"Pillar{l}{a}";
+                pillar.transform.SetParent(pillars, false);
+                pillar.transform.localPosition = new Vector3(lanes[l], 4f, along[a]);
+                pillar.transform.localScale = new Vector3(1.2f, 8f, 1.2f);
+                pillar.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Track);
+                Object.DestroyImmediate(pillar.GetComponent<Collider>());
+            }
+        }
+
+        var lights = new GameObject(TrackScenery.LightHolder).transform;
+        lights.SetParent(piece, false);
+
+        // Overhead strips. The corridor had no ceiling at all, so there was nothing above
+        // the horizon and nothing to explain where the light was coming from.
+        for (var a = 0; a < along.Length; a++)
+        {
+            var strip = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            strip.name = $"Strip{a}";
+            strip.transform.SetParent(lights, false);
+            strip.transform.localPosition = new Vector3(0f, 5.6f, along[a]);
+            strip.transform.localScale = new Vector3(2.6f, 0.14f, 2.4f);
+            strip.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Light);
+            Object.DestroyImmediate(strip.GetComponent<Collider>());
         }
     }
 

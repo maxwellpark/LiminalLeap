@@ -8,6 +8,7 @@ public enum Surface
     JumpBar,
     Pickup,
     Exit,
+    Light,
 }
 
 // Generated materials cached per surface. Built-in pipeline, so Standard shader.
@@ -61,6 +62,17 @@ public static class MaterialLibrary
                 var stripes = ProceduralTextures.Grid(Size, 6, 0.4f);
                 var mixed = ProceduralTextures.Remap(ProceduralTextures.Multiply(grime, stripes, 0.6f), 0.35f, 1f);
                 return Make("JumpBarSurface", mixed, new Color(0.95f, 0.75f, 0.2f), 0.25f);
+            }
+
+            case Surface.Light:
+            {
+                // Strip lighting. Emissive and near white, so it reads as the source of the
+                // corridor's glow rather than one more painted surface.
+                var even = ProceduralTextures.Remap(ProceduralTextures.Noise(Size, 131, 2), 0.85f, 1f);
+                var lit = Make("LightSurface", even, new Color(0.93f, 0.95f, 1f), 0.2f);
+                lit.EnableKeyword("_EMISSION");
+                lit.SetColor("_EmissionColor", new Color(0.8f, 0.85f, 0.95f));
+                return lit;
             }
 
             case Surface.Exit:
