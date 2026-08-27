@@ -64,18 +64,55 @@ public class VariantStatsTests
     }
 
     [Test]
+    public void EachDayGetsItsOwnBest()
+    {
+        var save = SaveData.Fresh();
+        save.Daily("2026-08-27").Record(500f, 200f);
+        save.Daily("2026-08-28").Record(100f, 50f);
+
+        Assert.AreEqual(2, save.Dailies.Count);
+        Assert.AreEqual(500f, save.Daily("2026-08-27").BestScore);
+        Assert.AreEqual(100f, save.Daily("2026-08-28").BestScore);
+    }
+
+    [Test]
+    public void ADayKeepsItsBestRatherThanItsLast()
+    {
+        var day = SaveData.Fresh().Daily("2026-08-27");
+
+        Assert.IsTrue(day.Record(500f, 200f));
+        Assert.IsFalse(day.Record(100f, 50f), "a worse run is not an improvement");
+        Assert.AreEqual(500f, day.BestScore);
+        Assert.AreEqual(200f, day.BestDistance);
+        Assert.AreEqual(2, day.Runs, "every attempt still counts");
+    }
+
+    [Test]
+    public void DistanceAndScoreImproveIndependentlyWithinADay()
+    {
+        var day = SaveData.Fresh().Daily("2026-08-27");
+        day.Record(500f, 10f);
+
+        Assert.IsTrue(day.Record(1f, 900f), "beating distance alone still counts");
+        Assert.AreEqual(500f, day.BestScore);
+        Assert.AreEqual(900f, day.BestDistance);
+    }
+
+    [Test]
     public void MigratingAnOldSaveFillsInTheNewFields()
     {
         var save = SaveData.Fresh();
         save.Version = 1;
         save.Ghost = null;
         save.Variants = null;
+        save.Dailies = null;
         save.HighScore = 4321f;
 
         Assert.IsTrue(save.Migrate());
         Assert.AreEqual(SaveData.CurrentVersion, save.Version);
         Assert.IsNotNull(save.Ghost, "a null ghost would throw on the next run");
         Assert.IsNotNull(save.Variants);
+        Assert.IsNotNull(save.Dailies);
         Assert.AreEqual(4321f, save.HighScore, "upgrading must not cost the player their score");
     }
 

@@ -43,12 +43,43 @@ public class VariantRecord
     }
 }
 
+// Best per day, so a daily run has something to beat that is not your all time best.
+[Serializable]
+public class DailyRecord
+{
+    public string Day;
+    public int Runs;
+    public float BestScore;
+    public float BestDistance;
+
+    public bool Record(float score, float distance)
+    {
+        Runs++;
+
+        var improved = false;
+
+        if (score > BestScore)
+        {
+            BestScore = score;
+            improved = true;
+        }
+
+        if (distance > BestDistance)
+        {
+            BestDistance = distance;
+            improved = true;
+        }
+
+        return improved;
+    }
+}
+
 // Plain serialisable state. Versioned from the start so an old save can be migrated
 // rather than binned when fields change.
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
 
     public int Version = CurrentVersion;
     public float HighScore;
@@ -57,6 +88,7 @@ public class SaveData
 
     public GhostTrace Ghost = new();
     public List<VariantRecord> Variants = new();
+    public List<DailyRecord> Dailies = new();
 
     public static SaveData Fresh()
     {
@@ -73,7 +105,8 @@ public class SaveData
             return false;
         }
 
-        // v2 added the ghost trace and per variant stats, both of which start empty.
+        // v2 added the ghost trace and per variant stats, v3 the per day bests. All start
+        // empty, so there is nothing to move across, only fields to make sure exist.
         Version = CurrentVersion;
         return true;
     }
@@ -109,6 +142,23 @@ public class SaveData
         return improved;
     }
 
+    public DailyRecord Daily(string day)
+    {
+        EnsureFields();
+
+        for (var i = 0; i < Dailies.Count; i++)
+        {
+            if (Dailies[i].Day == day)
+            {
+                return Dailies[i];
+            }
+        }
+
+        var record = new DailyRecord { Day = day };
+        Dailies.Add(record);
+        return record;
+    }
+
     public VariantRecord Variant(string key)
     {
         EnsureFields();
@@ -132,5 +182,6 @@ public class SaveData
     {
         Ghost ??= new GhostTrace();
         Variants ??= new List<VariantRecord>();
+        Dailies ??= new List<DailyRecord>();
     }
 }
