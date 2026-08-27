@@ -53,6 +53,58 @@ public class EndlessTests
         }
 
         Features.ClearOverrides();
+        RunMode.ChooseFree();
+    }
+
+    private string Layout()
+    {
+        var names = string.Empty;
+        foreach (var piece in generator.ActivePieces)
+        {
+            names += piece.name + ",";
+        }
+
+        return names;
+    }
+
+    // The whole point of a daily: the same date has to lay out the same corridor, or
+    // comparing scores against anyone else is meaningless.
+    [UnityTest]
+    public IEnumerator TheDailyRunIsTheSameEveryTime()
+    {
+        RunMode.ChooseDaily();
+
+        generator.ResetRun();
+        yield return null;
+        var first = Layout();
+
+        generator.ResetRun();
+        yield return null;
+        var second = Layout();
+
+        Assert.IsNotEmpty(first, "no track spawned, so this proves nothing");
+        Assert.AreEqual(first, second);
+    }
+
+    [UnityTest]
+    public IEnumerator AFreeRunIgnoresTheDailySeed()
+    {
+        RunMode.ChooseFree();
+        generator.ResetRun();
+        yield return null;
+        var free = Layout();
+
+        RunMode.ChooseDaily();
+        generator.ResetRun();
+        yield return null;
+        var daily = Layout();
+
+        RunMode.ChooseFree();
+        generator.ResetRun();
+        yield return null;
+
+        Assert.AreEqual(free, Layout(), "a free run should still follow the scene's own seed");
+        Assert.IsNotEmpty(daily);
     }
 
     // The opening pieces are forced plain for the floor signage, so nothing is worth

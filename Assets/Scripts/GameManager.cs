@@ -41,6 +41,11 @@ public class GameManager : Singleton<GameManager>
         var improved = SaveStore.Data.RecordRun(
             score, evt.DistanceCovered, evt.Outcome, Features.VariantKey());
 
+        if (RunMode.Daily && !string.IsNullOrEmpty(RunMode.Day))
+        {
+            SaveStore.Data.Daily(RunMode.Day).Record(score, evt.DistanceCovered);
+        }
+
         SaveStore.Save();
 
         data.HighScore = SaveStore.Data.HighScore;

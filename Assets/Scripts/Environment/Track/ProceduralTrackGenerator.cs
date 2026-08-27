@@ -39,6 +39,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
     public IReadOnlyList<TrackPiece> ActivePieces => active;
 
+    // A daily run overrides whatever the scene was authored with, so everyone gets the
+    // same corridor on a given date.
+    private int ActiveSeed => RunMode.Daily ? RunMode.Seed : seed;
+
     private void Start()
     {
         ResetRun();
@@ -52,7 +56,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         }
         active.Clear();
 
-        rng = new System.Random(seed);
+        rng = new System.Random(ActiveSeed);
         lastIndex = -1;
         repeats = 0;
         spawned = 0;
@@ -147,7 +151,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         // Seeded off the ordinal, so the same seed lays out the same corridor.
         if (piece.Scenery != null)
         {
-            piece.Scenery.Vary(seed + spawned);
+            piece.Scenery.Vary(ActiveSeed + spawned);
         }
 
         active.Add(piece);

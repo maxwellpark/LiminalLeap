@@ -92,10 +92,16 @@ public class RunSummary : Singleton<RunSummary>
             ? $"{evt.DistanceCovered:N0} m"
             : $"{evt.DistanceCovered:N0} m     lost {run:N0}";
 
-        var record = SaveStore.Data.HighScore;
+        // A daily run is measured against today, not against your all time best, or the
+        // number it shows you is one you cannot beat on this corridor.
+        var daily = RunMode.Daily && !string.IsNullOrEmpty(RunMode.Day);
+        var record = daily ? SaveStore.Data.Daily(RunMode.Day).BestScore : SaveStore.Data.HighScore;
         var beaten = kept && run > 0f && run >= record;
 
-        best.text = beaten ? "NEW BEST" : $"best  {record:N0}";
+        headline.text += daily ? "   DAILY" : string.Empty;
+        best.text = beaten
+            ? (daily ? "BEST TODAY" : "NEW BEST")
+            : $"{(daily ? "today" : "best")}  {record:N0}";
         best.color = beaten ? RuntimeUi.Accent : RuntimeUi.Muted;
 
         prompt.text = "press SPACE to run again";

@@ -55,8 +55,20 @@ public class TitleScreen : MonoBehaviour
             prompt.color = new Color(c.r, c.g, c.b, pulse);
         }
 
-        if (!starting && elapsed > startDelay && Input.anyKeyDown)
+        if (starting || elapsed <= startDelay)
         {
+            return;
+        }
+
+        // D before anyKeyDown, or the daily key would just start a free run.
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            RunMode.ChooseDaily();
+            StartGame();
+        }
+        else if (Input.anyKeyDown)
+        {
+            RunMode.ChooseFree();
             StartGame();
         }
     }
@@ -133,6 +145,17 @@ public class TitleScreen : MonoBehaviour
         return found;
     }
 
+    // Same corridor for everyone on a given date, and something of your own to beat.
+    private static string DailyLine()
+    {
+        var day = DailySeed.TodayKey();
+        var record = SaveStore.Data.Daily(day);
+
+        return record.Runs > 0
+            ? $"D   today's run  {day}      your best  {record.BestScore:N0}"
+            : $"D   today's run  {day}";
+    }
+
     private void BuildUi()
     {
         var canvas = RuntimeUi.CreateCanvas("TitleCanvas", 120);
@@ -149,6 +172,9 @@ public class TitleScreen : MonoBehaviour
 
         prompt = column.Add("Prompt", RuntimeUi.Caption, RuntimeUi.Accent, 0.15f, 10f);
         prompt.text = "press any key";
+
+        column.Space(26f);
+        column.Add("Daily", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = DailyLine();
 
         ScreenFade.GetInstance().To(1f, 0f);
     }
