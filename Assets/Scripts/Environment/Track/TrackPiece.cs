@@ -5,6 +5,10 @@ public class TrackPiece : MonoBehaviour
 {
     public bool Passed { get; set; }
 
+    // Set by the generator at spawn. The player and the pursuer both read it, so the
+    // stretch is a property of the track rather than a timer running alongside it.
+    public bool Calm { get; set; }
+
     // Which prefab this came from, so the pool hands back the same kind of piece.
     public int PrefabIndex { get; set; } = -1;
 

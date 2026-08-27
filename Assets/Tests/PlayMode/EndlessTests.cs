@@ -67,6 +67,55 @@ public class EndlessTests
         return names;
     }
 
+    private IEnumerator Advance(int steps)
+    {
+        for (var i = 0; i < steps; i++)
+        {
+            player.position += Vector3.forward * 12f;
+            yield return null;
+        }
+    }
+
+    // A breath is meant to be a beat with nothing to survive. A hazard in one would be
+    // worse than having no breath at all, because the player has already relaxed.
+    [UnityTest]
+    public IEnumerator NothingCanKillYouInACalmStretch()
+    {
+        Features.Override(Feature.CalmSections, true);
+        generator.ResetRun();
+        yield return null;
+        yield return Advance(60);
+
+        var calm = 0;
+
+        foreach (var piece in root.GetComponentsInChildren<TrackPiece>(true))
+        {
+            if (!piece.Calm)
+            {
+                continue;
+            }
+
+            calm++;
+            Assert.IsFalse(piece.ContainsHazard, "a calm piece carried a hazard");
+        }
+
+        Assert.Greater(calm, 0, "no calm stretch spawned, so this proves nothing");
+    }
+
+    [UnityTest]
+    public IEnumerator NoCalmStretchesWhenTheFlagIsOff()
+    {
+        Features.Override(Feature.CalmSections, false);
+        generator.ResetRun();
+        yield return null;
+        yield return Advance(60);
+
+        foreach (var piece in root.GetComponentsInChildren<TrackPiece>(true))
+        {
+            Assert.IsFalse(piece.Calm, "a flag that is off should do nothing");
+        }
+    }
+
     // The whole point of a daily: the same date has to lay out the same corridor, or
     // comparing scores against anyone else is meaningless.
     [UnityTest]

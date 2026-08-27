@@ -110,15 +110,27 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         var dt = Time.deltaTime;
         runTime += dt;
 
-        StepDistance(dt);
+        // A breath means it holds station and starts nothing new. An attack already in
+        // flight still resolves, because vanishing mid telegraph would read as a bug.
+        var calm = PlayerTrackMovement.InCalm;
+
+        if (!calm)
+        {
+            StepDistance(dt);
+        }
 
         if (Features.On(Feature.PursuerAttacks))
         {
-            // The mask is only ever read when starting an attack or choosing its lane. Once
-            // locked it cannot change anything, so scanning then is a physics query wasted
-            // every frame of the run.
-            if (attackModel.Phase is AttackPhase.Idle or AttackPhase.Warning)
+            // An empty mask is how the model already postpones for fairness, so calm reuses
+            // that rather than introducing a second way to say "not now".
+            if (calm)
             {
+                allowed = 0;
+            }
+            else if (attackModel.Phase is AttackPhase.Idle or AttackPhase.Warning)
+            {
+                // Only read when starting an attack or choosing its lane. Once locked it
+                // cannot change anything, so scanning then is a physics query wasted.
                 allowed = ScanLanes();
             }
 

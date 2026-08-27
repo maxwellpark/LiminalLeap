@@ -10,6 +10,7 @@ public enum Feature
     LyingSigns,
     SpeedSummons,
     PursuerAttacks,
+    CalmSections,
 }
 
 // Experiment toggles. Default is the shipped variant, prefs hold a manual override, and
@@ -40,6 +41,7 @@ public static class Features
             Feature.ExitDoors => true,
             Feature.LyingSigns => true,
             Feature.PursuerAttacks => true,
+            Feature.CalmSections => true,
             Feature.GhostPursuer => false,
             Feature.ShiftWhenUnobserved => false,
             Feature.SpeedSummons => false,

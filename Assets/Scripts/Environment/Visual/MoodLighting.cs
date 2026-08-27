@@ -15,6 +15,10 @@ public class MoodLighting : Singleton<MoodLighting>
     [SerializeField] private float flickerSpeed = 3f;
     [SerializeField] private float responsiveness = 9f;     // how fast intensity chases its target
 
+    [Header("Calm")]
+    [SerializeField] private float calmLift = 1.5f;      // brighter through a breath
+    [SerializeField] private float calmSettle = 1.2f;    // how fast it eases either way
+
     [Header("Dropouts")]
     [SerializeField] private float dropoutsPerSecond = 0.08f; // roughly one every 12s
     [SerializeField] private float dropoutSeconds = 0.12f;
@@ -22,6 +26,7 @@ public class MoodLighting : Singleton<MoodLighting>
     [SerializeField] private float dropoutCooldown = 4f;      // never two in quick succession
 
     private Light key;
+    private float calm;
     private float dropoutRemaining;
     private float nextDropoutAllowed;
     private float noiseSeed;
@@ -68,11 +73,19 @@ public class MoodLighting : Singleton<MoodLighting>
         var dt = Time.deltaTime;
 
         // Perlin rather than Random per frame: strobing reads as a bug, drift reads as dread.
-        var wobble = Mathf.PerlinNoise(noiseSeed, Time.time * flickerSpeed) - 0.5f;
-        var depth = reducedFlashing ? flickerDepth * 0.4f : flickerDepth;
-        var target = keyIntensity * (1f + wobble * depth * 2f);
+        // Eased rather than switched, or the stretch would announce itself with a snap.
+        var wanted = PlayerTrackMovement.InCalm ? 1f : 0f;
+        calm = Mathf.MoveTowards(calm, wanted, calmSettle * dt);
 
-        if (!reducedFlashing)
+        var wobble = Mathf.PerlinNoise(noiseSeed, Time.time * flickerSpeed) - 0.5f;
+
+        // Steadier through a breath as well as brighter: the flicker is the dread, and the
+        // point of the stretch is that there is nothing to dread for a moment.
+        var depth = (reducedFlashing ? flickerDepth * 0.4f : flickerDepth) * Mathf.Lerp(1f, 0.25f, calm);
+        var target = keyIntensity * Mathf.Lerp(1f, calmLift, calm) * (1f + wobble * depth * 2f);
+
+        // No dropouts mid breath, for the same reason.
+        if (!reducedFlashing && calm < 0.5f)
         {
             target *= DropoutMultiplier(dt);
         }
