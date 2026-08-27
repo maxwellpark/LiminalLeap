@@ -20,6 +20,24 @@ public class TrackPiece : MonoBehaviour
 
     // Cached: the generator resets these on every spawn, and GetComponentsInChildren
     // allocates a fresh array each call.
+    private TrackScenery scenery;
+    private bool sceneryLookedUp;
+
+    // Cached like the resettables: this is read on every spawn.
+    public TrackScenery Scenery
+    {
+        get
+        {
+            if (!sceneryLookedUp)
+            {
+                sceneryLookedUp = true;
+                scenery = GetComponent<TrackScenery>();
+            }
+
+            return scenery;
+        }
+    }
+
     public IRunResettable[] Resettables =>
         resettables ??= GetComponentsInChildren<IRunResettable>(true);
 

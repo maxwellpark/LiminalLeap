@@ -144,6 +144,12 @@ public class ProceduralTrackGenerator : MonoBehaviour
             piece.HasEndAnchor ? nextEnd : TrackChainer.NextPiecePosition(nextEnd, nextForward, piece.Length()),
             Quaternion.LookRotation(nextForward));
 
+        // Seeded off the ordinal, so the same seed lays out the same corridor.
+        if (piece.Scenery != null)
+        {
+            piece.Scenery.Vary(seed + spawned);
+        }
+
         active.Add(piece);
         Announce(piece);
 
