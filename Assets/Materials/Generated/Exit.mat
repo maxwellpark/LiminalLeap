@@ -44,7 +44,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 8721989025301934343}
+        m_Texture: {fileID: 3276753674263199133}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -82,7 +82,7 @@ Material:
     - _EmissionColor: {r: 0.25, g: 0.8, b: 0.4, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!28 &8721989025301934343
+--- !u!28 &3276753674263199133
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

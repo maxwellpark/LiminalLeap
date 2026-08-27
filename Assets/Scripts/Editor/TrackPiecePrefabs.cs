@@ -174,7 +174,13 @@ public static class TrackPiecePrefabs
             strip.transform.SetParent(lights, false);
             strip.transform.localPosition = new Vector3(0f, 5.6f, along[a]);
             strip.transform.localScale = new Vector3(2.6f, 0.14f, 2.4f);
-            strip.GetComponent<Renderer>().sharedMaterial = MaterialAssets.Load(Surface.Light);
+            var stripRenderer = strip.GetComponent<Renderer>();
+            stripRenderer.sharedMaterial = MaterialAssets.Load(Surface.Light);
+
+            // A light fixture casting a shadow is both wrong and paid for. The pillars keep
+            // theirs, since those floor patterns are most of what the scenery buys.
+            stripRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            stripRenderer.receiveShadows = false;
             Object.DestroyImmediate(strip.GetComponent<Collider>());
         }
     }

@@ -24,6 +24,8 @@ public class DebugOverlay : Singleton<DebugOverlay>
     private bool visible;
     private float smoothedMs;
     private ProfilerRecorder gcRecorder;
+    private ProfilerRecorder drawRecorder;
+    private ProfilerRecorder triangleRecorder;
     private Vector2 scroll;
     private AttackLane forcedLane = AttackLane.Centre;
     private bool showAttack = true;
@@ -34,6 +36,11 @@ public class DebugOverlay : Singleton<DebugOverlay>
     {
         base.OnEnable();
         gcRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame");
+
+        // Allocation is only one axis. Draw cost is the one that actually decides whether a
+        // web build holds 60, and it was not observable anywhere until now.
+        drawRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Draw Calls Count");
+        triangleRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Triangles Count");
     }
 
     protected override void OnDisable()
@@ -42,6 +49,16 @@ public class DebugOverlay : Singleton<DebugOverlay>
         if (gcRecorder.Valid)
         {
             gcRecorder.Dispose();
+        }
+
+        if (drawRecorder.Valid)
+        {
+            drawRecorder.Dispose();
+        }
+
+        if (triangleRecorder.Valid)
+        {
+            triangleRecorder.Dispose();
         }
     }
 
@@ -113,6 +130,8 @@ public class DebugOverlay : Singleton<DebugOverlay>
         GUILayout.Label($"frame      {smoothedMs:F2} ms  ({(smoothedMs > 0f ? 1000f / smoothedMs : 0f):F0} fps)");
         GUILayout.Label($"gc/frame   {GcPerFrame()}");
         GUILayout.Label($"pieces     {CountPieces()}");
+        GUILayout.Label($"draws      {Counter(drawRecorder)}");
+        GUILayout.Label($"tris       {Counter(triangleRecorder)}");
 
         DrawAttack();
         DrawFlags();
@@ -197,6 +216,11 @@ public class DebugOverlay : Singleton<DebugOverlay>
         {
             Features.ClearOverrides();
         }
+    }
+
+    private static string Counter(ProfilerRecorder recorder)
+    {
+        return recorder.Valid ? recorder.LastValue.ToString() : "unavailable";
     }
 
     private string GcPerFrame()
