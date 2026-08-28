@@ -177,6 +177,34 @@ public class RunTests
     }
 
     [UnityTest]
+    public IEnumerator TheLightsStayOnWhenTheFlagIsOff()
+    {
+        Features.Override(Feature.LightAsResource, false);
+        MoodLighting.GetInstance().ResetForNewRun();
+
+        yield return Seconds(3f);
+
+        Assert.AreEqual(0f, MoodLighting.GetInstance().Darkness,
+            "a flag that is off should leave the corridor alone");
+    }
+
+    // You are meant to begin inside the lit stretch, so the head start has to actually
+    // cover the opening rather than dropping you straight into the dark.
+    [UnityTest]
+    public IEnumerator YouStartInsideTheLight()
+    {
+        Features.Override(Feature.LightAsResource, true);
+        MoodLighting.GetInstance().ResetForNewRun();
+
+        yield return Seconds(3f);
+
+        Assert.AreEqual(0f, MoodLighting.GetInstance().Darkness,
+            "went dark during the opening stretch");
+
+        Features.Override(Feature.LightAsResource, false);
+    }
+
+    [UnityTest]
     public IEnumerator RestartResetsDistance()
     {
         yield return Seconds(1f);

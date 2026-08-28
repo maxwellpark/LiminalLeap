@@ -10,6 +10,7 @@ public class SpeedVignette : Singleton<SpeedVignette>
     [SerializeField, Range(0f, 1f)] private float fullIntensity = 0.55f;
     [SerializeField, Range(0f, 1f)] private float dreadIntensity = 0.35f;
     [SerializeField, Range(0f, 1f)] private float blindIntensity = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float darkIntensity = 0.35f;
     [SerializeField] private float responsiveness = 3f;
     [SerializeField] private int resolution = 256;
     [SerializeField, Range(0f, 1f)] private float clearRadius = 0.35f;
@@ -45,7 +46,10 @@ public class SpeedVignette : Singleton<SpeedVignette>
         var mirror = RearView.Instance;
         var blind = mirror != null ? mirror.Blindness * blindIntensity : 0f;
 
-        var target = Mathf.Clamp01(speed + dread + blind);
+        var lighting = MoodLighting.Instance;
+        var dark = lighting != null ? lighting.Darkness * darkIntensity : 0f;
+
+        var target = Mathf.Clamp01(speed + dread + blind + dark);
         intensity = Mathf.Lerp(intensity, target, responsiveness * Time.deltaTime);
         Apply();
     }

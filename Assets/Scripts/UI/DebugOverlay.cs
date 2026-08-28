@@ -124,6 +124,8 @@ public class DebugOverlay : Singleton<DebugOverlay>
         GUILayout.Label($"speed      {PlayerTrackMovement.CurrentSpeed:F2}  ({PlayerTrackMovement.SpeedFraction:P0})");
         GUILayout.Label($"distance   {PlayerTrackMovement.DistanceCovered:F1} m");
         GUILayout.Label($"score      {PlayerTrackMovement.Score:F0}  x{PlayerTrackMovement.Multiplier:F2}");
+        GUILayout.Label($"dark       {(MoodLighting.Instance != null ? MoodLighting.Instance.Darkness : 0f):P0}"
+            + (PlayerTrackMovement.InCalm ? "   [calm]" : string.Empty));
 
         GUILayout.Space(6f);
         GUILayout.Label("<b>Frame</b>", RichLabel());
