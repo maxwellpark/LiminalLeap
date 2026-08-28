@@ -88,3 +88,6 @@ crashlytics-build.properties
 
 # Rendered stills, regenerate with SceneShot
 Build/Shots/
+
+# Packaged uploads, regenerate with scripts/package-itch.sh
+Build/dist/
