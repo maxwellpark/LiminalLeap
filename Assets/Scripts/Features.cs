@@ -11,6 +11,7 @@ public enum Feature
     SpeedSummons,
     PursuerAttacks,
     CalmSections,
+    LightAsResource,
 }
 
 // Experiment toggles. Default is the shipped variant, prefs hold a manual override, and
@@ -45,6 +46,7 @@ public static class Features
             Feature.GhostPursuer => false,
             Feature.ShiftWhenUnobserved => false,
             Feature.SpeedSummons => false,
+            Feature.LightAsResource => false,
             _ => throw new ArgumentOutOfRangeException(nameof(feature), feature, "no default set"),
         };
     }

@@ -19,6 +19,8 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     [Header("Warnings")]
     [SerializeField] private float[] warnAt = { 0.3f, 0.55f, 0.75f };
 
+    [SerializeField] private float darkCloseBoost = 1.4f;  // how much bolder it is unlit
+
     [Header("Attacks")]
     [SerializeField] private PursuerAttackConfig attack = new();
     [SerializeField] private int attackSeed = 7;
@@ -166,7 +168,18 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         // Passed straight through: IgnoreObservation is what decides whether it counts, so
         // the rule lives in one place instead of depending on this caller remembering.
         var observed = RearView.GetInstance().IsRaised;
-        distance = PursuitModel.Step(distance, dt, observed, PlayerTrackMovement.SpeedFraction, settings);
+
+        // Outrunning the lights has to cost more than visibility, or the dark is only ever
+        // an inconvenience rather than a reason to slow down.
+        var step = settings;
+        var lighting = MoodLighting.Instance;
+
+        if (lighting != null && lighting.Darkness > 0f)
+        {
+            step.CloseRate *= 1f + lighting.Darkness * Mathf.Max(0f, darkCloseBoost);
+        }
+
+        distance = PursuitModel.Step(distance, dt, observed, PlayerTrackMovement.SpeedFraction, step);
 
         if (dodgeBonus > 0f)
         {

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // Fog, ambient and a flickering key light. Self-provisioning like the other managers.
-public class MoodLighting : Singleton<MoodLighting>
+public class MoodLighting : Singleton<MoodLighting>, IRunResettable
 {
     [SerializeField] private Color fogColour = new(0.08f, 0.09f, 0.11f);
     [SerializeField] private float fogDensity = 0.018f;
@@ -15,6 +15,11 @@ public class MoodLighting : Singleton<MoodLighting>
     [SerializeField] private float flickerSpeed = 3f;
     [SerializeField] private float responsiveness = 9f;     // how fast intensity chases its target
 
+    [Header("Light as a resource")]
+    [SerializeField] private LightFront.Settings lightFront = new();
+    [SerializeField, Range(0f, 1f)] private float darkFloor = 0.12f;   // key light left in the dark
+    [SerializeField] private float darkFog = 2.6f;                     // fog multiplier when fully dark
+
     [Header("Calm")]
     [SerializeField] private float calmLift = 1.5f;      // brighter through a breath
     [SerializeField] private float calmSettle = 1.2f;    // how fast it eases either way
@@ -26,13 +31,26 @@ public class MoodLighting : Singleton<MoodLighting>
     [SerializeField] private float dropoutCooldown = 4f;      // never two in quick succession
 
     private Light key;
+    private float front;
     private float calm;
     private float dropoutRemaining;
     private float nextDropoutAllowed;
     private float noiseSeed;
 
+    // Read by the vignette and the pursuer. The dark is meant to be felt in more than one
+    // place, or it is just a dimmer switch.
+    public float Darkness { get; private set; }
+
+    public void ResetForNewRun()
+    {
+        front = LightFront.Start(lightFront);
+        Darkness = 0f;
+    }
+
     public override void Init()
     {
+        ResetForNewRun();
+
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.ExponentialSquared;
         RenderSettings.fogColor = fogColour;
@@ -82,7 +100,10 @@ public class MoodLighting : Singleton<MoodLighting>
         // Steadier through a breath as well as brighter: the flicker is the dread, and the
         // point of the stretch is that there is nothing to dread for a moment.
         var depth = (reducedFlashing ? flickerDepth * 0.4f : flickerDepth) * Mathf.Lerp(1f, 0.25f, calm);
-        var target = keyIntensity * Mathf.Lerp(1f, calmLift, calm) * (1f + wobble * depth * 2f);
+        var target = keyIntensity
+            * Mathf.Lerp(1f, calmLift, calm)
+            * Mathf.Lerp(1f, darkFloor, Darkness)
+            * (1f + wobble * depth * 2f);
 
         // No dropouts mid breath, for the same reason.
         if (!reducedFlashing && calm < 0.5f)
@@ -92,6 +113,30 @@ public class MoodLighting : Singleton<MoodLighting>
 
         // Chased, not assigned: snapping to the floor was the strobe that felt epileptic.
         key.intensity = Mathf.Lerp(key.intensity, target, responsiveness * dt);
+    }
+
+    private void StepLight(float dt)
+    {
+        if (!Features.On(Feature.LightAsResource))
+        {
+            Darkness = 0f;
+            RenderSettings.fogDensity = fogDensity;
+            return;
+        }
+
+        var travelled = PlayerTrackMovement.DistanceCovered;
+
+        if (front <= 0f)
+        {
+            front = LightFront.Start(lightFront);
+        }
+
+        front = LightFront.Advance(front, dt, travelled, lightFront);
+        Darkness = LightFront.Darkness(travelled, front, lightFront);
+
+        // Fog closes in as well as the light going: losing the corridor is the point, not
+        // just losing brightness.
+        RenderSettings.fogDensity = Mathf.Lerp(fogDensity, fogDensity * darkFog, Darkness);
     }
 
     private float DropoutMultiplier(float dt)
