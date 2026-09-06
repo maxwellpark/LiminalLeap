@@ -22,7 +22,7 @@ if ! command -v op >/dev/null 2>&1; then
   cat <<'EOF'
 1Password CLI not installed.
 
-  brew install 1password-cli
+  brew install --cask 1password-cli
 
 Then either:
   - Desktop app: enable Settings > Developer > "Integrate with 1Password CLI".
