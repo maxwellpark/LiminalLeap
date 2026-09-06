@@ -11,9 +11,12 @@ TARGET="${1:-${ITCH_TARGET:-maxwellpark/liminal-leap:html5}}"
 
 if ! command -v butler >/dev/null 2>&1; then
   cat <<'EOF'
-butler is not installed.
+butler is not installed, or is not on PATH.
 
-  brew install butler          # or download from https://itch.io/docs/butler/
+Do NOT use `brew install butler`. That cask is Butler by Many Tricks, a macOS
+launcher app with no relation to itch.io. itch's butler is not in Homebrew.
+
+  scripts/install-butler.sh    # official itch CDN -> ~/.local/bin
   butler login                 # opens a browser, stores credentials
 
 CI instead wants BUTLER_API_KEY set, from https://itch.io/user/settings/api-keys
