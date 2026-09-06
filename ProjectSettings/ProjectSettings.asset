@@ -863,6 +863,7 @@ PlayerSettings:
   platformArchitecture: {}
   scriptingBackend: {}
   il2cppCompilerConfiguration:
+    Standalone: 1
     WebGL: 1
   il2cppCodeGeneration: {}
   il2cppStacktraceInformation: {}
