@@ -37,7 +37,8 @@ public class AttackPrompt : Singleton<AttackPrompt>
 
         pursuer = pursuer != null ? pursuer : Pursuer.Instance;
         var model = pursuer != null ? pursuer.Attack : null;
-        var live = model != null && Features.On(Feature.PursuerAttacks) && model.InFlight;
+        var live = model != null && Features.On(Feature.PursuerAttacks) && model.InFlight
+            && PlayerTrackMovement.Running;
 
         shown = Mathf.MoveTowards(shown, live ? 1f : 0f, fadeSpeed * Time.deltaTime);
 

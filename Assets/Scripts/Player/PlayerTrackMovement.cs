@@ -53,6 +53,14 @@ public class PlayerTrackMovement : MonoBehaviour
     public static float DistanceCovered { get; private set; }
     public static Vector3 Position { get; private set; }
 
+    // The point on the centreline you are running along, before strafe, jump and bob. Lane
+    // is measured from here, so anything comparing a world position against Lane has to be too.
+    public static Vector3 TrackCentre { get; private set; }
+
+    // False from the moment a run ends until the next one starts. The summary now waits on
+    // you indefinitely, and everything that ticks on its own kept playing the run behind it.
+    public static bool Running { get; private set; }
+
     // 0 at starting speed, 1 at the cap. Saves everything else hardcoding maxSpeed.
     public static float SpeedFraction { get; private set; }
 
@@ -115,6 +123,8 @@ public class PlayerTrackMovement : MonoBehaviour
         InCalm = false;
         runTime = 0f;
         ghostRecorder.Reset();
+        TrackCentre = basePos;
+        Running = true;
 
         if (Camera.main != null)
         {
@@ -159,6 +169,7 @@ public class PlayerTrackMovement : MonoBehaviour
         ApplyFeel(dt);
 
         Position = transform.position;
+        TrackCentre = basePos;
         SpeedFraction = SpeedT;
         Lane = strafeOffset;
 
@@ -398,6 +409,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private System.Collections.IEnumerator EndSequence(RunOutcome outcome)
     {
         dying = true;
+        Running = false;
 
         // Written before the dispatch, so whoever saves on death writes this run's ghost.
         SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
@@ -430,6 +442,7 @@ public class PlayerTrackMovement : MonoBehaviour
         ResetRun();
         ScreenFade.GetInstance().To(0f, 0.35f);
         dying = false;
+        Running = true;
     }
 
     private void OnEnable()
@@ -441,6 +454,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private void OnDisable()
     {
         GameManager.EventService.Remove<OnAttackDodgedEvent>(OnDodged);
+        Running = false;
 
         if (dying)
         {
@@ -464,6 +478,7 @@ public class PlayerTrackMovement : MonoBehaviour
     {
         trackManager.ResetRun();
         basePos = startingPosition;
+        TrackCentre = basePos;
         trackRot = Quaternion.identity;
         strafeOffset = 0f;
         jumpOffset = 0f;
