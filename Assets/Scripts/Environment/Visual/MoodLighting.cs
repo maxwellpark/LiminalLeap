@@ -83,12 +83,16 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
 
     private void Update()
     {
+        var dt = Time.deltaTime;
+
+        // Ahead of the key light check, because the pursuer and vignette read Darkness too.
+        // Nothing called this for a while, so the whole feature sat inert.
+        StepLight(dt);
+
         if (key == null)
         {
             return;
         }
-
-        var dt = Time.deltaTime;
 
         // Perlin rather than Random per frame: strobing reads as a bug, drift reads as dread.
         // Eased rather than switched, or the stretch would announce itself with a snap.

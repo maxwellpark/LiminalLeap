@@ -68,12 +68,16 @@ public class TrackManager : Singleton<TrackManager>
         currentTrack = track;
     }
 
+    // In running order, passed ones included. For anything that has to look down the track
+    // rather than straight along the camera, which stops being the track a few turns out.
+    public IReadOnlyList<TrackPiece> Pieces => generator != null
+        ? generator.ActivePieces
+        : currentTrack != null ? currentTrack.Pieces : NoPieces;
+
     // Runs every frame from the player, so no LINQ and no sqrt.
     public TrackPiece GetClosestPiece(Vector3 position)
     {
-        IReadOnlyList<TrackPiece> pieces = generator != null
-            ? generator.ActivePieces
-            : currentTrack != null ? currentTrack.Pieces : NoPieces;
+        var pieces = Pieces;
 
         TrackPiece closest = null;
         var bestSqr = float.MaxValue;

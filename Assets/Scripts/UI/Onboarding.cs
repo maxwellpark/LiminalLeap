@@ -14,6 +14,11 @@ public class Onboarding : Singleton<Onboarding>
 
     private void Update()
     {
+        if (!PlayerTrackMovement.Running)
+        {
+            return;
+        }
+
         pursuer = pursuer != null ? pursuer : Pursuer.Instance;
         if (pursuer == null)
         {

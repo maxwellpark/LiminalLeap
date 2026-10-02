@@ -108,4 +108,27 @@ public class PursuerTests
         yield return Seconds(0.2f);
         Assert.AreEqual(start, Pursuer.GetInstance().Distance, 2f, "pursuer did not reset with the run");
     }
+
+    // The summary waits on you now, so anything still ticking plays out behind it: closing,
+    // attacking, and once it arrived, searching the scene for the player every frame.
+    [UnityTest]
+    public IEnumerator NothingMovesBehindTheSummary()
+    {
+        yield return Seconds(0.5f);
+        Assert.IsTrue(PlayerTrackMovement.Running);
+
+        fixture.Input.LookingBack = false;
+        fixture.Input.PressRestart();
+        yield return Seconds(0.1f);
+
+        Assert.IsFalse(PlayerTrackMovement.Running, "the run should be over");
+        Assert.IsTrue(RunSummary.GetInstance().WaitingForInput, "needs to be sat on the summary");
+
+        var held = Pursuer.GetInstance().Distance;
+        fixture.Input.LookingBack = true;
+        yield return Seconds(2f);
+
+        Assert.AreEqual(held, Pursuer.GetInstance().Distance, 0.001f, "it kept closing behind the summary");
+        Assert.IsFalse(RearView.GetInstance().IsRaised, "the mirror came up over the summary");
+    }
 }

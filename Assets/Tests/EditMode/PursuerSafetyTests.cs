@@ -117,4 +117,39 @@ public class PursuerSafetyTests
             }
         }
     }
+
+    // The regression: at the cap the beam lands over fifty units out, and the old fixed
+    // thirty unit lookahead never saw the stretch that decides whether a dodge is possible.
+    [Test]
+    public void AtFullSpeedTheWindowReachesWhereTheBeamLands()
+    {
+        var config = new PursuerAttackConfig();
+        var afterLanePicked = config.TelegraphDuration + config.LockDuration + config.FireDuration;
+
+        PursuerSafety.ResolveWindow(32f, afterLanePicked, 15f, out var near, out var far);
+
+        var landing = 32f * afterLanePicked;
+        Assert.LessOrEqual(near, landing);
+        Assert.GreaterOrEqual(far, landing);
+        Assert.Greater(far, 30f, "no further than the old lookahead, so nothing was fixed");
+    }
+
+    // At a jog the beam lands close, so the window still starts at your feet like it used to.
+    [Test]
+    public void AtLowSpeedTheWindowStartsWhereYouAre()
+    {
+        PursuerSafety.ResolveWindow(8f, 1.75f, 15f, out var near, out var far);
+
+        Assert.AreEqual(0f, near);
+        Assert.AreEqual(8f * 1.75f + 15f, far, 0.001f);
+    }
+
+    [Test]
+    public void TheWindowNeverReachesBehindYou()
+    {
+        PursuerSafety.ResolveWindow(-5f, -1f, -3f, out var near, out var far);
+
+        Assert.AreEqual(0f, near);
+        Assert.AreEqual(0f, far);
+    }
 }

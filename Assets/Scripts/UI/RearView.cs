@@ -91,7 +91,8 @@ public class RearView : Singleton<RearView>
             return;
         }
 
-        var raised = InputRouter.Source.LookingBack;
+        // Dropped with the run, so holding the key over the summary isn't still swishing it up.
+        var raised = InputRouter.Source.LookingBack && PlayerTrackMovement.Running;
         var speed = raised ? raiseSpeed : dropSpeed;
         shown = Mathf.MoveTowards(shown, raised ? 1f : 0f, speed * Time.deltaTime);
 

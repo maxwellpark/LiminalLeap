@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 // Decides which lanes are fair game. Postponing an attack is always allowed, inventing an
@@ -26,6 +27,23 @@ public static class PursuerSafety
 
         // Taking the last open lane leaves no legal response, so wait for a cleaner stretch.
         return count >= 2 ? open : 0;
+    }
+
+    // The stretch of track worth checking, as distances ahead along it. Centred on where you
+    // will be when the beam lands rather than on where you are: at full speed that is over
+    // fifty units out, and a fixed thirty unit lookahead never saw that far.
+    public static void ResolveWindow(
+        float speed,
+        float secondsUntilResolve,
+        float margin,
+        out float near,
+        out float far)
+    {
+        var landing = Math.Max(0f, speed) * Math.Max(0f, secondsUntilResolve);
+        var spread = Math.Max(0f, margin);
+
+        near = Math.Max(0f, landing - spread);
+        far = landing + spread;
     }
 
     public static bool LaneAllowed(int mask, AttackLane lane)
