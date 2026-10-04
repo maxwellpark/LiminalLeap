@@ -37,6 +37,9 @@ public class PlayerTrackMovement : MonoBehaviour
     [SerializeField] private float nearMissDecayPerSecond = 0.25f;
     [SerializeField] private float maxNearMissBonus = 3f;
 
+    [Header("Restart")]
+    [SerializeField] private float restartHold = 0.6f;    // held, because R sits next to E
+
     [Header("Juice")]
     [SerializeField] private float pickupFovKick = 7f;
     [SerializeField] private float fovKickDecay = 4f;
@@ -44,6 +47,7 @@ public class PlayerTrackMovement : MonoBehaviour
     [SerializeField] private float deathTimeScale = 0.25f;
     [SerializeField] private float deathPause = 0.75f;
     [SerializeField] private float completePause = 1.3f;  // long enough for the sting to land
+    [SerializeField] private float abandonPause = 0.35f;  // a restart is a cut, not a beat
     [SerializeField] private float bobHeight = 0.07f;
     [SerializeField] private float bobStridesPerSecond = 3.4f; // at full speed
     [SerializeField] private float bobRollDegrees = 0.9f;
@@ -57,9 +61,11 @@ public class PlayerTrackMovement : MonoBehaviour
     // is measured from here, so anything comparing a world position against Lane has to be too.
     public static Vector3 TrackCentre { get; private set; }
 
-    // False from the moment a run ends until the next one starts. The summary now waits on
-    // you indefinitely, and everything that ticks on its own kept playing the run behind it.
-    public static bool Running { get; private set; }
+    // False from the moment a run ends until the next one starts, and while paused. The
+    // summary waits on you indefinitely, and everything that ticks on its own kept playing
+    // the run behind it.
+    public static bool Running => live && !PauseMenu.Paused;
+    private static bool live;
 
     // 0 at starting speed, 1 at the cap. Saves everything else hardcoding maxSpeed.
     public static float SpeedFraction { get; private set; }
@@ -101,6 +107,8 @@ public class PlayerTrackMovement : MonoBehaviour
     private float jumpVy;
     private bool airborne;
     private float bufferedJumpAt = -999f;
+    private float restartHeldFor;
+    private bool restartArmed = true;
 
     private float Gravity => (2f * jumpHeight) / (jumpUpTime * jumpUpTime);
     private float InitialJumpVy => Gravity * jumpUpTime;
@@ -124,7 +132,7 @@ public class PlayerTrackMovement : MonoBehaviour
         runTime = 0f;
         ghostRecorder.Reset();
         TrackCentre = basePos;
-        Running = true;
+        live = true;
 
         if (Camera.main != null)
         {
@@ -145,11 +153,13 @@ public class PlayerTrackMovement : MonoBehaviour
         AttackPrompt.GetInstance();
         RunSummary.GetInstance();
         Onboarding.GetInstance();
+        PauseMenu.GetInstance();
     }
 
     private void Update()
     {
-        if (dying)
+        // Paused too: time stops, but a press would still buffer a jump or bank the run.
+        if (dying || PauseMenu.Paused)
         {
             return;
         }
@@ -182,10 +192,39 @@ public class PlayerTrackMovement : MonoBehaviour
             return;
         }
 
-        if (InputRouter.Source.RestartPressed)
+        HandleRestart(dt);
+    }
+
+    // Held rather than tapped: a tap next to E in a doorway threw the whole run away. It has
+    // to be let go between restarts, or holding through one starts the next.
+    private void HandleRestart(float dt)
+    {
+        if (!InputRouter.Source.RestartHeld)
         {
-            KillPlayer();
+            restartHeldFor = 0f;
+            restartArmed = true;
+            return;
         }
+
+        if (!restartArmed)
+        {
+            return;
+        }
+
+        if (restartHeldFor <= 0f)
+        {
+            ToastManager.GetInstance().Show($"hold {Controls.Restart} to restart");
+        }
+
+        restartHeldFor += dt;
+        if (restartHeldFor < restartHold)
+        {
+            return;
+        }
+
+        restartArmed = false;
+        restartHeldFor = 0f;
+        FinishRun(RunOutcome.Abandoned);
     }
 
     private void HandleJump(float dt)
@@ -409,7 +448,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private System.Collections.IEnumerator EndSequence(RunOutcome outcome)
     {
         dying = true;
-        Running = false;
+        live = false;
 
         // Written before the dispatch, so whoever saves on death writes this run's ghost.
         SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
@@ -423,7 +462,12 @@ public class PlayerTrackMovement : MonoBehaviour
             Time.timeScale = deathTimeScale; // slow motion is a death beat, not a win
         }
 
-        var pause = outcome == RunOutcome.Died ? deathPause : completePause;
+        var pause = outcome switch
+        {
+            RunOutcome.Died => deathPause,
+            RunOutcome.Abandoned => abandonPause,
+            _ => completePause,
+        };
         ScreenFade.GetInstance().To(1f, pause * 0.8f);
 
         // Realtime, or the pause would stretch by however much we slowed the game.
@@ -442,7 +486,7 @@ public class PlayerTrackMovement : MonoBehaviour
         ResetRun();
         ScreenFade.GetInstance().To(0f, 0.35f);
         dying = false;
-        Running = true;
+        live = true;
     }
 
     private void OnEnable()
@@ -454,7 +498,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private void OnDisable()
     {
         GameManager.EventService.Remove<OnAttackDodgedEvent>(OnDodged);
-        Running = false;
+        live = false;
 
         if (dying)
         {
@@ -493,6 +537,8 @@ public class PlayerTrackMovement : MonoBehaviour
         InCalm = false;
         runTime = 0f;
         exitsInside = 0;
+        restartHeldFor = 0f;
+        restartArmed = false; // R also dismisses the summary, so it must come up before it counts
         ghostRecorder.Reset();
         CurrentSpeed = startingSpeed;
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);

@@ -86,7 +86,8 @@ public class RearView : Singleton<RearView>
 
     private void Update()
     {
-        if (panel == null)
+        // Paused, the key still flips raised and queues a swish that plays on resume.
+        if (panel == null || PauseMenu.Paused)
         {
             return;
         }

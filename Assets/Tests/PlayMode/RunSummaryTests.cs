@@ -52,7 +52,7 @@ public class RunSummaryTests
     {
         yield return Seconds(0.6f);
 
-        fixture.Input.PressRestart(); // ends the run
+        fixture.AddHazardAhead();
         yield return UntilSummaryOr(3f);
 
         Assert.IsTrue(RunSummary.GetInstance().WaitingForInput, "no summary after the run ended");
@@ -64,13 +64,13 @@ public class RunSummaryTests
     public IEnumerator TheRunDoesNotRestartOnItsOwn()
     {
         yield return Seconds(0.6f);
-        var reached = PlayerTrackMovement.DistanceCovered;
-        Assert.Greater(reached, 1f, "the player needs to have actually run for this to prove anything");
+        Assert.Greater(PlayerTrackMovement.DistanceCovered, 1f, "the player needs to have actually run for this to prove anything");
 
-        fixture.Input.PressRestart();
+        fixture.AddHazardAhead();
         yield return UntilSummaryOr(3f);
         Assert.IsTrue(RunSummary.GetInstance().WaitingForInput);
 
+        var reached = PlayerTrackMovement.DistanceCovered;
         yield return Seconds(2f);
 
         Assert.IsTrue(RunSummary.GetInstance().WaitingForInput, "the summary let go without being asked");
@@ -82,7 +82,7 @@ public class RunSummaryTests
     {
         yield return Seconds(0.6f);
 
-        fixture.Input.PressRestart();
+        fixture.AddHazardAhead();
         yield return UntilSummaryOr(3f);
         Assert.IsTrue(RunSummary.GetInstance().WaitingForInput);
 
@@ -108,7 +108,7 @@ public class RunSummaryTests
     {
         yield return Seconds(0.6f);
 
-        fixture.Input.PressRestart();
+        fixture.AddHazardAhead();
         yield return UntilSummaryOr(3f);
 
         // Mashing from the frame it appears should still leave it up briefly.

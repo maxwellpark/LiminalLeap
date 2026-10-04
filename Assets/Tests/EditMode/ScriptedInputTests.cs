@@ -43,6 +43,19 @@ public class ScriptedInputTests
         Assert.IsFalse(input.RestartPressed);
     }
 
+    // Restart is a hold now, so this one is a state rather than an edge.
+    [Test]
+    public void RestartHeldHoldsUntilChanged()
+    {
+        var input = new ScriptedInput { RestartHeld = true };
+        input.Tick();
+        input.Tick();
+        Assert.IsTrue(input.RestartHeld);
+
+        input.RestartHeld = false;
+        Assert.IsFalse(input.RestartHeld);
+    }
+
     [Test]
     public void NothingIsPressedBeforeATick()
     {

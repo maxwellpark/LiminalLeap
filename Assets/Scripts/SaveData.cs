@@ -8,6 +8,7 @@ public enum RunOutcome
     Died,
     Completed,
     Banked,
+    Abandoned,  // restarted on purpose, which is neither a death nor a result
 }
 
 // Per flag combination, so two variants can be compared instead of guessed at.

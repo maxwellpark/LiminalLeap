@@ -135,25 +135,51 @@ public class EndlessTests
         Assert.AreEqual(first, second);
     }
 
+    // Past the forced straight lead-in, which is the same on every seed.
+    private IEnumerator FreshRunPastTheLeadIn()
+    {
+        player.position = Vector3.zero;
+        generator.ResetRun();
+        yield return null;
+        yield return Advance(20);
+    }
+
+    // Free mode followed the scene's seed, so it was one fixed corridor you could learn.
     [UnityTest]
-    public IEnumerator AFreeRunIgnoresTheDailySeed()
+    public IEnumerator EveryFreeRunIsANewCorridor()
     {
         RunMode.ChooseFree();
-        generator.ResetRun();
-        yield return null;
-        var free = Layout();
 
-        RunMode.ChooseDaily();
-        generator.ResetRun();
-        yield return null;
-        var daily = Layout();
+        yield return FreshRunPastTheLeadIn();
+        var first = Layout();
 
+        yield return FreshRunPastTheLeadIn();
+        var second = Layout();
+
+        Assert.IsNotEmpty(first, "no track spawned, so this proves nothing");
+        Assert.AreNotEqual(first, second, "two free runs laid out the same corridor");
+    }
+
+    // Opening a scene straight from the editor, or shooting one headlessly, keeps it stable.
+    [UnityTest]
+    public IEnumerator WithNoModeChosenTheSceneKeepsItsSeed()
+    {
+        SetRunModeUnchosen();
+
+        yield return FreshRunPastTheLeadIn();
+        var first = Layout();
+
+        yield return FreshRunPastTheLeadIn();
+
+        Assert.AreEqual(first, Layout());
+    }
+
+    // ChooseFree and ChooseDaily both pick a mode, and nothing in the game unpicks one.
+    private static void SetRunModeUnchosen()
+    {
         RunMode.ChooseFree();
-        generator.ResetRun();
-        yield return null;
-
-        Assert.AreEqual(free, Layout(), "a free run should still follow the scene's own seed");
-        Assert.IsNotEmpty(daily);
+        typeof(RunMode).GetProperty("FreshEachRun", BindingFlags.Static | BindingFlags.Public)
+            .SetValue(null, false);
     }
 
     // The opening pieces are forced plain for the floor signage, so nothing is worth

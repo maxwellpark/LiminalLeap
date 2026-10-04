@@ -8,6 +8,7 @@ public class ScriptedInput : IInputSource
 
     public float Horizontal { get; set; }
     public bool LookingBack { get; set; }
+    public bool RestartHeld { get; set; }
     public bool JumpPressed { get; private set; }
     public bool JumpReleased { get; private set; }
     public bool RestartPressed { get; private set; }

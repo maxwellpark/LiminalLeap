@@ -70,9 +70,7 @@ public static class MaterialLibrary
                 // corridor's glow rather than one more painted surface.
                 var even = ProceduralTextures.Remap(ProceduralTextures.Noise(Size, 131, 2), 0.85f, 1f);
                 var lit = Make("LightSurface", even, new Color(0.93f, 0.95f, 1f), 0.2f);
-                lit.EnableKeyword("_EMISSION");
-                lit.SetColor("_EmissionColor", new Color(0.8f, 0.85f, 0.95f));
-                return lit;
+                return Emissive(lit, new Color(0.8f, 0.85f, 0.95f));
             }
 
             case Surface.Exit:
@@ -80,20 +78,27 @@ public static class MaterialLibrary
                 // Exit sign green, emissive so it carries down a dim corridor.
                 var glow = ProceduralTextures.Remap(ProceduralTextures.Noise(Size, 97, 3), 0.7f, 1f);
                 var material = Make("ExitSurface", glow, new Color(0.35f, 0.95f, 0.5f), 0.35f);
-                material.EnableKeyword("_EMISSION");
-                material.SetColor("_EmissionColor", new Color(0.25f, 0.8f, 0.4f));
-                return material;
+                return Emissive(material, new Color(0.25f, 0.8f, 0.4f));
             }
 
             default:
             {
                 var glow = ProceduralTextures.Remap(ProceduralTextures.Noise(Size, 71, 4), 0.6f, 1f);
                 var material = Make("PickupSurface", glow, new Color(0.4f, 0.85f, 0.95f), 0.5f);
-                material.EnableKeyword("_EMISSION");
-                material.SetColor("_EmissionColor", new Color(0.2f, 0.6f, 0.75f));
-                return material;
+                return Emissive(material, new Color(0.2f, 0.6f, 0.75f));
             }
         }
+    }
+
+    // The keyword alone did not survive baking: the Standard shader's validation strips
+    // _EMISSION while the GI flags still say EmissiveIsBlack, which is the default. So the
+    // strip lights, exits and pickups were saved without their glow.
+    private static Material Emissive(Material material, Color emission)
+    {
+        material.SetColor("_EmissionColor", emission);
+        material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+        material.EnableKeyword("_EMISSION");
+        return material;
     }
 
     private static Material Make(string name, float[] greyscale, Color tint, float smoothness)

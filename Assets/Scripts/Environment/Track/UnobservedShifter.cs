@@ -3,16 +3,31 @@ using UnityEngine;
 
 // The track ahead only rearranges while you are looking the other way. Extends the pursuer's
 // observed rule to the world, which is what makes looking back cost something real.
-public class UnobservedShifter : Singleton<UnobservedShifter>
+public class UnobservedShifter : Singleton<UnobservedShifter>, IRunResettable
 {
+    private const int ShiftSalt = 0x5417;
+
     [SerializeField] private float minDistanceAhead = 34f;  // never rearrange in your face
     [SerializeField] private float shiftInterval = 0.35f;
     [SerializeField] private float trackHalfWidth = 3f;
     [SerializeField] private float playerHalfWidth = 0.6f;
     [SerializeField] private float[] lanes = { -2f, 0f, 2f };
+    [SerializeField] private int shiftSeed = 3;     // used when no run mode has been chosen
 
     private readonly List<HazardLanes.Span> row = new();
+    private System.Random rng;
     private float nextShiftAt;
+
+    public override void Init()
+    {
+        ResetForNewRun();
+    }
+
+    // Seeded with the run, or a daily stopped being the same run the moment you looked back.
+    public void ResetForNewRun()
+    {
+        rng = new System.Random(RunMode.SeedFor(shiftSeed, ShiftSalt));
+    }
 
     private void Update()
     {
@@ -48,11 +63,11 @@ public class UnobservedShifter : Singleton<UnobservedShifter>
     private void Shift()
     {
         var player = PlayerTrackMovement.Position;
-        var hazards = FindObjectsByType<Hazard>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        var hazards = Hazard.Live;
 
-        foreach (var hazard in hazards)
+        for (var i = 0; i < hazards.Count; i++)
         {
-            var body = hazard.transform;
+            var body = hazards[i].transform;
             if (Vector3.Distance(body.position, player) < minDistanceAhead)
             {
                 continue;
@@ -85,7 +100,7 @@ public class UnobservedShifter : Singleton<UnobservedShifter>
             row.Add(new HazardLanes.Span(sibling.localPosition.x, sibling.localScale.x * 0.5f));
         }
 
-        var start = Random.Range(0, lanes.Length);
+        var start = rng.Next(lanes.Length);
 
         for (var i = 0; i < lanes.Length; i++)
         {

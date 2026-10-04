@@ -23,9 +23,11 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
     [Header("Attacks")]
     [SerializeField] private PursuerAttackConfig attack = new();
-    [SerializeField] private int attackSeed = 7;
+    [SerializeField] private int attackSeed = 7;        // used when no run mode has been chosen
     [SerializeField] private float resolveMargin = 15f; // track checked either side of where the beam lands
     [SerializeField] private float playerHalfWidth = 0.6f;
+
+    private const int AttackSalt = 0x5A17;
 
     private readonly Collider[] overlaps = new Collider[32];
     private readonly List<HazardLanes.Span> blocked = new();
@@ -78,7 +80,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             LungeMultiplier = lungeMultiplier,
         };
 
-        attackModel = new PursuerAttackModel(attack, attackSeed);
+        attackModel = new PursuerAttackModel(attack, RunMode.SeedFor(attackSeed, AttackSalt));
         ghost = SaveStore.Data.Ghost;
 
         distance = startDistance;
@@ -96,7 +98,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         warningsGiven = 0;
         lunging = false;
         allowed = PursuerAttackModel.AllLanes;
-        attackModel?.Reset();
+        attackModel?.Reset(RunMode.SeedFor(attackSeed, AttackSalt));
 
         // The last run just became the ghost, so pick it up rather than replaying the old one.
         ghost = SaveStore.Data.Ghost;

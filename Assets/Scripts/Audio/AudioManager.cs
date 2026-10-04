@@ -35,6 +35,7 @@ public class AudioManager : Singleton<AudioManager>
     public override void Init()
     {
         library = authored != null ? authored : new ProceduralAudioLibrary();
+        PlayerOptions.ApplyVolume();
 
         EnsureListener();
 
@@ -84,6 +85,11 @@ public class AudioManager : Singleton<AudioManager>
     {
         combo = 0;
         lastPickupAt = -999f;
+
+        if (evt.Outcome == RunOutcome.Abandoned)
+        {
+            return;
+        }
 
         Play(evt.Outcome switch
         {

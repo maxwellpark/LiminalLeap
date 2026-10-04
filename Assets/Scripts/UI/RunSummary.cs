@@ -9,7 +9,7 @@ public class RunSummary : Singleton<RunSummary>
 {
     protected override EventType[] EventTypes => new[] { EventType.Death };
 
-    [SerializeField] private float minimumSeconds = 0.5f; // stops a held key skipping it
+    [SerializeField] private float minimumSeconds = 0.6f; // once fully shown, so a panic jump can't skip it
     [SerializeField] private float fadeSpeed = 6f;
 
     private CanvasGroup group;
@@ -19,7 +19,7 @@ public class RunSummary : Singleton<RunSummary>
     private TextMeshProUGUI best;
     private TextMeshProUGUI prompt;
 
-    private float shownAt;
+    private float visibleAt = -1f;
     private float alpha;
 
     // PlayerTrackMovement holds the reset until this clears, so the run waits for you.
@@ -30,9 +30,13 @@ public class RunSummary : Singleton<RunSummary>
         Build();
     }
 
+    // Not for a restart: you already decided to go again, so there is nothing to decide.
     protected override void OnDeath(OnDeathEvent evt)
     {
-        Show(evt);
+        if (evt.Outcome != RunOutcome.Abandoned)
+        {
+            Show(evt);
+        }
     }
 
     public void Dismiss()
@@ -50,7 +54,19 @@ public class RunSummary : Singleton<RunSummary>
         alpha = Mathf.MoveTowards(alpha, WaitingForInput ? 1f : 0f, fadeSpeed * Time.unscaledDeltaTime);
         group.alpha = alpha;
 
-        if (!WaitingForInput || Time.unscaledTime - shownAt < minimumSeconds)
+        // Counted from fully visible rather than from the death. From the death, a jump
+        // mashed through the death pause dismissed it before it had been seen.
+        if (WaitingForInput && alpha >= 1f && visibleAt < 0f)
+        {
+            visibleAt = Time.unscaledTime;
+        }
+
+        var ready = WaitingForInput && visibleAt >= 0f && Time.unscaledTime - visibleAt >= minimumSeconds;
+
+        // The prompt only shows once a press will count, so it never asks for one it ignores.
+        prompt.alpha = ready ? 1f : 0f;
+
+        if (!ready)
         {
             return;
         }
@@ -106,7 +122,7 @@ public class RunSummary : Singleton<RunSummary>
 
         prompt.text = "press SPACE to run again";
 
-        shownAt = Time.unscaledTime;
+        visibleAt = -1f;
         WaitingForInput = true;
     }
 

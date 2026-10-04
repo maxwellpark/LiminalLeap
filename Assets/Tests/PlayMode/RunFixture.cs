@@ -122,6 +122,13 @@ public class RunFixture
         return hazard;
     }
 
+    // A hazard in the centre lane of the next piece, for tests that need the run to end in a
+    // death. Restart used to stand in for that, but it no longer counts as one.
+    public GameObject AddHazardAhead()
+    {
+        return AddHazard(0f, (int)(PlayerTrackMovement.DistanceCovered / PieceLength) + 1);
+    }
+
     // Matches the generated Exit piece: a wide zone spanning the piece, offer only.
     public GameObject AddExit(float lane, int pieceIndex)
     {

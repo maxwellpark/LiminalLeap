@@ -32,6 +32,16 @@ public class DebugOverlay : Singleton<DebugOverlay>
     private int pieceCount;
     private float nextPieceCountAt;
 
+    // Dev builds and the editor only. In a release build F9 to F11 fired and froze attacks,
+    // which is a cheat on a daily, and the flags could be flipped mid run.
+    public override void Init()
+    {
+        if (!Debug.isDebugBuild)
+        {
+            enabled = false;
+        }
+    }
+
     protected override void OnEnable()
     {
         base.OnEnable();

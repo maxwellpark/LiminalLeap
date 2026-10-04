@@ -275,6 +275,33 @@ public class PursuerAttackModelTests
         Assert.AreEqual(a.TargetLane, b.TargetLane);
     }
 
+    // A daily reseeds every run, so the same date gives the same attacks however many came
+    // before in the session.
+    [Test]
+    public void ReseedingReplaysTheSameAttacks()
+    {
+        var model = new PursuerAttackModel(Config(), 9);
+        var first = Lanes(model);
+        Assert.IsNotEmpty(first, "no attacks in the window, so this proves nothing");
+
+        model.Reset(9);
+        Assert.AreEqual(first, Lanes(model));
+    }
+
+    private static string Lanes(PursuerAttackModel model)
+    {
+        var lanes = string.Empty;
+        for (var i = 0; i < 40; i++)
+        {
+            if (model.Tick(1f, 0f, All).TelegraphReady)
+            {
+                lanes += model.TargetLane;
+            }
+        }
+
+        return lanes;
+    }
+
     [Test]
     public void ResetPutsItBackToIdle()
     {

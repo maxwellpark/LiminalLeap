@@ -43,14 +43,21 @@ public static class DailySeed
 // Which run you asked for. Static because it has to survive the load into the game scene.
 public static class RunMode
 {
+    private static readonly Random Rolls = new();
+
     public static bool Daily { get; private set; }
     public static int Seed { get; private set; }
 
     public static string Day { get; private set; } = string.Empty;
 
+    // Set once a free run is chosen. Left unset, as when a scene is opened straight from the
+    // editor or shot headlessly, a scene keeps its own seed and stays reproducible.
+    public static bool FreshEachRun { get; private set; }
+
     public static void ChooseDaily()
     {
         Daily = true;
+        FreshEachRun = false;
         Seed = DailySeed.Today();
         Day = DailySeed.TodayKey();
     }
@@ -58,6 +65,21 @@ public static class RunMode
     public static void ChooseFree()
     {
         Daily = false;
+        FreshEachRun = true;
         Day = string.Empty;
+    }
+
+    // Everything seeded asks here, salted so the track and the attacks don't share a stream.
+    // A daily derives it all from the date, attacks included, or the "same" run differed by
+    // how many attacks your session had already seen. A free run rolls a new corridor, where
+    // it used to be one fixed track you could learn.
+    public static int SeedFor(int authored, int salt)
+    {
+        if (Daily)
+        {
+            return Seed ^ salt;
+        }
+
+        return FreshEachRun ? Rolls.Next() : authored;
     }
 }
