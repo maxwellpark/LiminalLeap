@@ -29,9 +29,7 @@ public static class PursuerSafety
         return count >= 2 ? open : 0;
     }
 
-    // The stretch of track worth checking, as distances ahead along it. Centred on where you
-    // will be when the beam lands rather than on where you are: at full speed that is over
-    // fifty units out, and a fixed thirty unit lookahead never saw that far.
+    // Centred on where the beam lands, which is over 50 units out at full speed.
     public static void ResolveWindow(
         float speed,
         float secondsUntilResolve,

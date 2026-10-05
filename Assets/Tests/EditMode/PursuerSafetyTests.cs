@@ -118,8 +118,7 @@ public class PursuerSafetyTests
         }
     }
 
-    // The regression: at the cap the beam lands over fifty units out, and the old fixed
-    // thirty unit lookahead never saw the stretch that decides whether a dodge is possible.
+    // The old lookahead was a fixed 30.
     [Test]
     public void AtFullSpeedTheWindowReachesWhereTheBeamLands()
     {
@@ -134,7 +133,6 @@ public class PursuerSafetyTests
         Assert.Greater(far, 30f, "no further than the old lookahead, so nothing was fixed");
     }
 
-    // At a jog the beam lands close, so the window still starts at your feet like it used to.
     [Test]
     public void AtLowSpeedTheWindowStartsWhereYouAre()
     {

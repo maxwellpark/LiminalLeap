@@ -50,8 +50,7 @@ public static class RunMode
 
     public static string Day { get; private set; } = string.Empty;
 
-    // Set once a free run is chosen. Left unset, as when a scene is opened straight from the
-    // editor or shot headlessly, a scene keeps its own seed and stays reproducible.
+    // Unset when a scene is opened directly, so it keeps its own seed.
     public static bool FreshEachRun { get; private set; }
 
     public static void ChooseDaily()
@@ -69,10 +68,7 @@ public static class RunMode
         Day = string.Empty;
     }
 
-    // Everything seeded asks here, salted so the track and the attacks don't share a stream.
-    // A daily derives it all from the date, attacks included, or the "same" run differed by
-    // how many attacks your session had already seen. A free run rolls a new corridor, where
-    // it used to be one fixed track you could learn.
+    // Dailies derive everything from the date. Free runs roll a new seed every time.
     public static int SeedFor(int authored, int salt)
     {
         if (Daily)

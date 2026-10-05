@@ -1,7 +1,6 @@
 using UnityEngine;
 
-// Choices the player makes, kept apart from Features: those are experiments, these are not.
-// Cached because MoodLighting reads one every frame.
+// Player choices, kept apart from Features. Cached, as MoodLighting reads one every frame.
 public static class PlayerOptions
 {
     private const string Prefix = "liminalleap.option.";
@@ -9,7 +8,6 @@ public static class PlayerOptions
     private static int reducedFlashing = -1;
     private static int muted = -1;
 
-    // The flicker and dropouts are the mood, and also exactly what some people can't look at.
     public static bool ReducedFlashing
     {
         get => Read(ref reducedFlashing, "reducedFlashing");

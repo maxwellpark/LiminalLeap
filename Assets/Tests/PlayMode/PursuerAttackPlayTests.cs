@@ -197,9 +197,6 @@ public class PursuerAttackPlayTests
         Assert.AreEqual(AttackLane.Right, pursuer.Attack.TargetLane);
     }
 
-    // Lanes are measured from the track centre, the same frame the hit test uses. Measured
-    // from the player instead, strafing to the right made a centre hazard read as blocking
-    // the left, and the fairness rule could aim at the lane that was actually closed.
     [UnityTest]
     public IEnumerator TheLaneScanIsMeasuredFromTheTrackNotFromYou()
     {
@@ -211,8 +208,7 @@ public class PursuerAttackPlayTests
         yield return MoveTo(2f);
         fixture.AddHazard(0f, 3);
 
-        // On time, not frames: batchmode runs uncapped, and the new collider is only queryable
-        // once physics has synced it. Stops early once the centre reads as blocked.
+        // Time, not frames: the collider needs a physics sync first.
         var guard = 0f;
         while (PursuerSafety.LaneAllowed(pursuer.AllowedLanes, AttackLane.Centre) && guard < 0.5f)
         {

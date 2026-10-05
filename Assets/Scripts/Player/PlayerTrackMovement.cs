@@ -57,13 +57,10 @@ public class PlayerTrackMovement : MonoBehaviour
     public static float DistanceCovered { get; private set; }
     public static Vector3 Position { get; private set; }
 
-    // The point on the centreline you are running along, before strafe, jump and bob. Lane
-    // is measured from here, so anything comparing a world position against Lane has to be too.
+    // Centreline position, before strafe, jump and bob. Lane is measured from here.
     public static Vector3 TrackCentre { get; private set; }
 
-    // False from the moment a run ends until the next one starts, and while paused. The
-    // summary waits on you indefinitely, and everything that ticks on its own kept playing
-    // the run behind it.
+    // False between runs and while paused.
     public static bool Running => live && !PauseMenu.Paused;
     private static bool live;
 
@@ -158,9 +155,15 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void Update()
     {
-        // Paused too: time stops, but a press would still buffer a jump or bank the run.
+        // Input still arrives while paused.
         if (dying || PauseMenu.Paused)
         {
+            // Release can't be seen while paused, so drop the hold.
+            if (PauseMenu.Paused)
+            {
+                restartHeldFor = 0f;
+            }
+
             return;
         }
 
@@ -195,8 +198,7 @@ public class PlayerTrackMovement : MonoBehaviour
         HandleRestart(dt);
     }
 
-    // Held rather than tapped: a tap next to E in a doorway threw the whole run away. It has
-    // to be let go between restarts, or holding through one starts the next.
+    // Held, since R is next to E. Has to be let go between restarts.
     private void HandleRestart(float dt)
     {
         if (!InputRouter.Source.RestartHeld)
@@ -451,7 +453,11 @@ public class PlayerTrackMovement : MonoBehaviour
         live = false;
 
         // Written before the dispatch, so whoever saves on death writes this run's ghost.
-        SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
+        // Not for restarts.
+        if (outcome != RunOutcome.Abandoned)
+        {
+            SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
+        }
 
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered, outcome));
 

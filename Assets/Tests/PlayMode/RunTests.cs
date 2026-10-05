@@ -217,7 +217,6 @@ public class RunTests
         Assert.Less(PlayerTrackMovement.DistanceCovered, 1f, "restart did not reset the run");
     }
 
-    // R sits next to E, so a tap in a doorway threw the whole run away.
     [UnityTest]
     public IEnumerator TappingRestartDoesNothing()
     {
@@ -234,8 +233,6 @@ public class RunTests
         Assert.Greater(PlayerTrackMovement.DistanceCovered, 10f, "a tap reset the run");
     }
 
-    // A restart is a choice, not a death. Counted as one it zeroed the score in the stats and
-    // dragged down whichever variant was being tested.
     [UnityTest]
     public IEnumerator RestartingIsNotRecordedAsARun()
     {
@@ -260,7 +257,6 @@ public class RunTests
         Assert.AreEqual(runs, SaveStore.Data.Runs, "the restart was recorded as a run");
     }
 
-    // The shifter moves hazards, and pooling handed the piece back with them still moved.
     [UnityTest]
     public IEnumerator AMovedHazardGoesBackWithTheRun()
     {
@@ -277,7 +273,6 @@ public class RunTests
         Assert.AreEqual(home, hazard.transform.localPosition, "the hazard kept where it was moved to");
     }
 
-    // Time stops, but input doesn't, so a press while paused could still bank or jump.
     [UnityTest]
     public IEnumerator PausingHoldsTheRunStill()
     {
@@ -306,14 +301,13 @@ public class RunTests
         Assert.Greater(PlayerTrackMovement.DistanceCovered, held, "the run never resumed");
     }
 
-    // Nothing called the step that moves the light for a while, so Darkness sat at zero and
-    // both tests above passed against a feature that did nothing. This one has to go dark.
+    // The tests above passed while the light never moved.
     [UnityTest]
     public IEnumerator RunningPastTheLightGoesDark()
     {
         Features.Override(Feature.LightAsResource, true);
 
-        // No head start and a front that never moves, so any distance at all is past it.
+        // No head start and a still front, so any distance is past it.
         var lighting = MoodLighting.GetInstance();
         var field = typeof(MoodLighting).GetField("lightFront",
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
@@ -329,5 +323,121 @@ public class RunTests
         Assert.Greater(lighting.Darkness, 0.1f, "ran well past the front and the corridor stayed lit");
 
         Features.Override(Feature.LightAsResource, false);
+    }
+
+    [UnityTest]
+    public IEnumerator ARestartDoesNotBecomeTheGhost()
+    {
+        var original = SaveStore.Data.Ghost;
+        var weak = new GhostTrace { Times = new[] { 0f, 1f } };
+        SaveStore.Data.Ghost = weak;
+
+        try
+        {
+            yield return Seconds(1f);
+            Assert.Greater(PlayerTrackMovement.DistanceCovered, weak.TotalDistance,
+                "needs to have outrun the ghost for this to prove anything");
+
+            fixture.Input.RestartHeld = true;
+            yield return UntilResetOr(4f);
+            fixture.Input.RestartHeld = false;
+
+            Assert.Less(PlayerTrackMovement.DistanceCovered, 1f, "never restarted");
+            Assert.AreSame(weak, SaveStore.Data.Ghost, "the restarted run replaced the ghost");
+        }
+        finally
+        {
+            SaveStore.Data.Ghost = original;
+        }
+    }
+
+    // 0.4s before plus 0.3s after is past the 0.6s hold.
+    [UnityTest]
+    public IEnumerator RestartProgressDoesNotSurviveAPause()
+    {
+        yield return Seconds(0.5f);
+
+        fixture.Input.RestartHeld = true;
+        yield return Seconds(0.4f);
+
+        var menu = PauseMenu.GetInstance();
+        menu.Pause();
+
+        fixture.Input.RestartHeld = false;
+        yield return Frames(5);
+        fixture.Input.RestartHeld = true;
+        yield return Frames(5);
+
+        menu.Resume();
+        yield return Seconds(0.3f);
+        fixture.Input.RestartHeld = false;
+
+        Assert.IsTrue(PlayerTrackMovement.Running, "the hold from before the pause carried on and restarted the run");
+        Assert.Greater(PlayerTrackMovement.DistanceCovered, 5f, "the run was reset");
+    }
+
+    // The mirror stays up while paused, so only the Running gate can stop it.
+    [UnityTest]
+    public IEnumerator TheShifterHoldsStillWhilePaused()
+    {
+        Features.Override(Feature.ShiftWhenUnobserved, true);
+        var hazard = fixture.AddHazard(0f, 12);
+
+        yield return Seconds(0.3f);
+
+        fixture.Input.LookingBack = true;
+        var guard = 0f;
+        while (!RearView.GetInstance().IsRaised && guard < 2f)
+        {
+            guard += Time.deltaTime;
+            fixture.Input.Tick();
+            yield return null;
+        }
+
+        Assert.IsTrue(RearView.GetInstance().IsRaised, "the mirror needs to be up for this to prove anything");
+
+        var menu = PauseMenu.GetInstance();
+        menu.Pause();
+        var held = hazard.transform.localPosition;
+        NextShiftAt().SetValue(UnobservedShifter.GetInstance(), 0f);
+
+        yield return Frames(10);
+
+        Assert.AreEqual(held, hazard.transform.localPosition, "a hazard moved while paused");
+
+        menu.Resume();
+        fixture.Input.LookingBack = false;
+        Features.Override(Feature.ShiftWhenUnobserved, false);
+    }
+
+    [UnityTest]
+    public IEnumerator AResetDoesNotInheritTheShifterDeadline()
+    {
+        yield return Seconds(0.2f);
+
+        var shifter = UnobservedShifter.GetInstance();
+        NextShiftAt().SetValue(shifter, Time.time + 1000f);
+        shifter.ResetForNewRun();
+
+        Assert.LessOrEqual((float)NextShiftAt().GetValue(shifter), Time.time + 1f,
+            "the next run waited on a deadline left by the last one");
+    }
+
+    // Frames, not Seconds, wherever time is stopped.
+    private IEnumerator Frames(int count)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            fixture.Input.Tick();
+            yield return null;
+        }
+    }
+
+    private static System.Reflection.FieldInfo NextShiftAt()
+    {
+        var field = typeof(UnobservedShifter).GetField("nextShiftAt",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        Assert.IsNotNull(field, "no nextShiftAt on UnobservedShifter");
+        return field;
     }
 }

@@ -1,9 +1,5 @@
-# Off until Unity can be licensed. Without the secrets the licence job leaves a notice and
-# the tests skip, rather than every PR going red on activation. Adding them turns it on.
-#
-#   Personal seat:  UNITY_EMAIL + UNITY_PASSWORD
-#   Pro or Plus:    the above plus UNITY_SERIAL
-#   .ulf file:      UNITY_LICENSE
+# Skips until the Unity secrets exist: UNITY_EMAIL + UNITY_PASSWORD for a Personal seat,
+# plus UNITY_SERIAL for Pro, or UNITY_LICENSE for a .ulf.
 name: Tests
 
 on:

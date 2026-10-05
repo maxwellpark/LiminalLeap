@@ -4,12 +4,10 @@ using UnityEngine;
 
 public class GeneratedMaterialTests
 {
-    // MaterialAssets.Folder, which lives in the editor assembly this one can't see.
+    // MaterialAssets.Folder, which this assembly can't see.
     private const string Folder = "Assets/Materials/Generated";
 
-    // An emission colour with the keyword off renders nothing, and that is exactly how the
-    // strip lights, exits and pickups shipped. Checks the baked assets, since that is what a
-    // build actually uses.
+    // The baked assets, since that's what a build uses.
     [Test]
     public void EverythingMeantToGlowHasEmissionOn()
     {

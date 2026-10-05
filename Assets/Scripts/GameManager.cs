@@ -33,8 +33,7 @@ public class GameManager : Singleton<GameManager>
 
     protected override void OnDeath(OnDeathEvent evt)
     {
-        // A restart is a choice, not a result. Counted as a death it zeroed the score and
-        // dragged down whichever variant you happened to be testing.
+        // Restarts aren't results, so they stay out of the stats.
         if (evt.Outcome == RunOutcome.Abandoned)
         {
             return;

@@ -275,8 +275,6 @@ public class PursuerAttackModelTests
         Assert.AreEqual(a.TargetLane, b.TargetLane);
     }
 
-    // A daily reseeds every run, so the same date gives the same attacks however many came
-    // before in the session.
     [Test]
     public void ReseedingReplaysTheSameAttacks()
     {

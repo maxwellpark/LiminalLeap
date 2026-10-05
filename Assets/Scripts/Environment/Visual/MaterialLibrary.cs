@@ -90,9 +90,7 @@ public static class MaterialLibrary
         }
     }
 
-    // The keyword alone did not survive baking: the Standard shader's validation strips
-    // _EMISSION while the GI flags still say EmissiveIsBlack, which is the default. So the
-    // strip lights, exits and pickups were saved without their glow.
+    // The GI flag too, or validation strips _EMISSION on save.
     private static Material Emissive(Material material, Color emission)
     {
         material.SetColor("_EmissionColor", emission);

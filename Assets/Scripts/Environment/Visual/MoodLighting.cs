@@ -85,8 +85,7 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
     {
         var dt = Time.deltaTime;
 
-        // Ahead of the key light check, because the pursuer and vignette read Darkness too.
-        // Nothing called this for a while, so the whole feature sat inert.
+        // Before the key check, since the pursuer and vignette read Darkness too.
         StepLight(dt);
 
         if (key == null)
@@ -101,7 +100,7 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
 
         var wobble = Mathf.PerlinNoise(noiseSeed, Time.time * flickerSpeed) - 0.5f;
 
-        // The scene can force it on, but never override the player's own choice.
+        // Either the scene or the player can turn it on.
         var reduced = reducedFlashing || PlayerOptions.ReducedFlashing;
 
         // Steadier through a breath as well as brighter: the flicker is the dread, and the
