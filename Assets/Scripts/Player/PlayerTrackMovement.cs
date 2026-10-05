@@ -161,6 +161,13 @@ public class PlayerTrackMovement : MonoBehaviour
         // Paused too: time stops, but a press would still buffer a jump or bank the run.
         if (dying || PauseMenu.Paused)
         {
+            // A hold doesn't carry across a pause. Release can't be seen from in here, so
+            // let go and press again while paused used to pick up where it left off.
+            if (PauseMenu.Paused)
+            {
+                restartHeldFor = 0f;
+            }
+
             return;
         }
 
@@ -450,8 +457,13 @@ public class PlayerTrackMovement : MonoBehaviour
         dying = true;
         live = false;
 
-        // Written before the dispatch, so whoever saves on death writes this run's ghost.
-        SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
+        // Written before the dispatch, so whoever saves on death writes this run's ghost. Not
+        // for a restart: it isn't a result, but it could still replace the best and get saved
+        // along with the next real run.
+        if (outcome != RunOutcome.Abandoned)
+        {
+            SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
+        }
 
         GameManager.EventService.Dispatch(new OnDeathEvent(DistanceCovered, outcome));
 
