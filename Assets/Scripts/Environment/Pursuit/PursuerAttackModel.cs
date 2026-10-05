@@ -19,7 +19,7 @@ public class PursuerAttackModel
     public const int AllLanes = 0b111;
 
     private readonly PursuerAttackConfig config;
-    private readonly Random rng;
+    private Random rng;
 
     private float phaseTime;
     private float idleWait;
@@ -42,6 +42,13 @@ public class PursuerAttackModel
         this.config = config ?? new PursuerAttackConfig();
         rng = new Random(seed);
         idleWait = NextInterval();
+    }
+
+    // Reseeded per run, or the sequence carried on from however many attacks came before.
+    public void Reset(int seed)
+    {
+        rng = new Random(seed);
+        Reset();
     }
 
     public void Reset()

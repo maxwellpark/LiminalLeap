@@ -210,10 +210,100 @@ public class RunTests
         yield return Seconds(1f);
         Assert.Greater(PlayerTrackMovement.DistanceCovered, 1f);
 
-        fixture.Input.PressRestart();
+        fixture.Input.RestartHeld = true;
         yield return UntilResetOr(4f);
+        fixture.Input.RestartHeld = false;
 
         Assert.Less(PlayerTrackMovement.DistanceCovered, 1f, "restart did not reset the run");
+    }
+
+    // R sits next to E, so a tap in a doorway threw the whole run away.
+    [UnityTest]
+    public IEnumerator TappingRestartDoesNothing()
+    {
+        yield return Seconds(1f);
+
+        fixture.Input.PressRestart();
+        fixture.Input.RestartHeld = true;
+        yield return Seconds(0.1f);
+        fixture.Input.RestartHeld = false;
+
+        yield return Seconds(1f);
+
+        Assert.IsTrue(PlayerTrackMovement.Running, "a tap ended the run");
+        Assert.Greater(PlayerTrackMovement.DistanceCovered, 10f, "a tap reset the run");
+    }
+
+    // A restart is a choice, not a death. Counted as one it zeroed the score in the stats and
+    // dragged down whichever variant was being tested.
+    [UnityTest]
+    public IEnumerator RestartingIsNotRecordedAsARun()
+    {
+        yield return Seconds(1f);
+        var runs = SaveStore.Data.Runs;
+
+        // Not UntilResetOr: that dismisses the summary, which is the thing being checked.
+        fixture.Input.RestartHeld = true;
+        var sawSummary = false;
+        var deadline = Time.realtimeSinceStartup + 4f;
+        while (PlayerTrackMovement.DistanceCovered > 1f && Time.realtimeSinceStartup < deadline)
+        {
+            sawSummary |= RunSummary.GetInstance().WaitingForInput;
+            fixture.Input.Tick();
+            yield return null;
+        }
+
+        fixture.Input.RestartHeld = false;
+
+        Assert.IsFalse(sawSummary, "a restart should go straight back in, not stop on the summary");
+        Assert.Less(PlayerTrackMovement.DistanceCovered, 1f, "never restarted");
+        Assert.AreEqual(runs, SaveStore.Data.Runs, "the restart was recorded as a run");
+    }
+
+    // The shifter moves hazards, and pooling handed the piece back with them still moved.
+    [UnityTest]
+    public IEnumerator AMovedHazardGoesBackWithTheRun()
+    {
+        var hazard = fixture.AddHazard(-2f, 20);
+        var home = hazard.transform.localPosition;
+
+        yield return Seconds(0.5f);
+        hazard.transform.localPosition = home + Vector3.right * 4f;
+
+        fixture.Input.RestartHeld = true;
+        yield return UntilResetOr(4f);
+        fixture.Input.RestartHeld = false;
+
+        Assert.AreEqual(home, hazard.transform.localPosition, "the hazard kept where it was moved to");
+    }
+
+    // Time stops, but input doesn't, so a press while paused could still bank or jump.
+    [UnityTest]
+    public IEnumerator PausingHoldsTheRunStill()
+    {
+        yield return Seconds(0.5f);
+
+        var menu = PauseMenu.GetInstance();
+        menu.Pause();
+        Assert.IsFalse(PlayerTrackMovement.Running);
+
+        var held = PlayerTrackMovement.DistanceCovered;
+
+        // Frames, not Seconds: Time.time stands still while paused.
+        for (var i = 0; i < 30; i++)
+        {
+            fixture.Input.PressJump();
+            fixture.Input.Tick();
+            yield return null;
+        }
+
+        Assert.AreEqual(held, PlayerTrackMovement.DistanceCovered, "the run moved while paused");
+
+        menu.Resume();
+        Assert.IsTrue(PlayerTrackMovement.Running);
+
+        yield return Seconds(0.5f);
+        Assert.Greater(PlayerTrackMovement.DistanceCovered, held, "the run never resumed");
     }
 
     // Nothing called the step that moves the light for a while, so Darkness sat at zero and

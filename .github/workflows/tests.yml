@@ -1,13 +1,41 @@
-# Manual for now. Switch to push once UNITY_LICENSE is set and this goes green,
-# otherwise every push fails red on a missing licence.
+# Off until Unity can be licensed. Without the secrets the licence job leaves a notice and
+# the tests skip, rather than every PR going red on activation. Adding them turns it on.
+#
+#   Personal seat:  UNITY_EMAIL + UNITY_PASSWORD
+#   Pro or Plus:    the above plus UNITY_SERIAL
+#   .ulf file:      UNITY_LICENSE
 name: Tests
 
 on:
   workflow_dispatch:
+  pull_request:
+  push:
+    branches: [master]
 
 jobs:
+  licence:
+    name: Unity licence
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          if [ -n "$UNITY_LICENSE" ] || { [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; }; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Tests skipped: add UNITY_EMAIL and UNITY_PASSWORD to the repo's Actions secrets to turn them on."
+          fi
+
   tests:
     name: EditMode and PlayMode
+    needs: licence
+    if: needs.licence.outputs.ready == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +55,7 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
           unityVersion: 6000.2.15f1
           testMode: all

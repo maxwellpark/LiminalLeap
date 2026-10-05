@@ -47,7 +47,7 @@ public class UIManager : Singleton<UIManager>
 
         // SetText with args formats into TMP's own buffer, string interpolation allocates every frame
         distanceText.SetText("{0:1} m", PlayerTrackMovement.DistanceCovered);
-        speedText.SetText("{0:1} u/s", PlayerTrackMovement.CurrentSpeed);
+        speedText.SetText("{0:1} m/s", PlayerTrackMovement.CurrentSpeed);
 
         if (scoreText != null)
         {

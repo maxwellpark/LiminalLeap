@@ -8,9 +8,11 @@ public static class Controls
     public const string LookBack = "SHIFT";
     public const string Leave = "E";
     public const string Restart = "R";
+    public const string Pause = "P";
+    public const string Daily = "ENTER";
 
     public static string Summary =>
-        $"{Steer}  steer     {Jump}  jump     {LookBack}  look back     {Leave}  leave";
+        $"{Steer}  steer     {Jump}  jump     {LookBack}  look back     {Leave}  leave     {Pause}  pause";
 
     // Floor signage takes them one per stripe, in the order you meet them.
     public static readonly string[] FloorLines =
@@ -19,6 +21,6 @@ public static class Controls
         $"{Jump}    JUMP",
         $"{LookBack}    LOOK BACK",
         $"{Leave}    LEAVE",
-        $"{Restart}    RESTART",
+        $"HOLD {Restart}    RESTART",
     };
 }

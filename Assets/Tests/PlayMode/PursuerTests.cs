@@ -91,7 +91,7 @@ public class PursuerTests
         yield return Seconds(2f);
         Assert.Less(Pursuer.GetInstance().Distance, start);
 
-        fixture.Input.PressRestart();
+        fixture.Input.RestartHeld = true;
         var deadline = Time.realtimeSinceStartup + 4f;
         while (PlayerTrackMovement.DistanceCovered > 1f && Time.realtimeSinceStartup < deadline)
         {
@@ -105,6 +105,7 @@ public class PursuerTests
             yield return null;
         }
 
+        fixture.Input.RestartHeld = false;
         yield return Seconds(0.2f);
         Assert.AreEqual(start, Pursuer.GetInstance().Distance, 2f, "pursuer did not reset with the run");
     }
@@ -118,8 +119,14 @@ public class PursuerTests
         Assert.IsTrue(PlayerTrackMovement.Running);
 
         fixture.Input.LookingBack = false;
-        fixture.Input.PressRestart();
-        yield return Seconds(0.1f);
+        fixture.AddHazardAhead();
+
+        var deadline = Time.realtimeSinceStartup + 4f;
+        while (PlayerTrackMovement.Running && Time.realtimeSinceStartup < deadline)
+        {
+            fixture.Input.Tick();
+            yield return null;
+        }
 
         Assert.IsFalse(PlayerTrackMovement.Running, "the run should be over");
         Assert.IsTrue(RunSummary.GetInstance().WaitingForInput, "needs to be sat on the summary");

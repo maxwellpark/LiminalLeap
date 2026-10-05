@@ -60,8 +60,9 @@ public class TitleScreen : MonoBehaviour
             return;
         }
 
-        // D before anyKeyDown, or the daily key would just start a free run.
-        if (Input.GetKeyDown(KeyCode.D))
+        // Before anyKeyDown, or the daily key would just start a free run. Was D, which is
+        // also steer right, so the key the screen teaches started the wrong mode.
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
             RunMode.ChooseDaily();
             StartGame();
@@ -152,8 +153,8 @@ public class TitleScreen : MonoBehaviour
         var record = SaveStore.Data.Daily(day);
 
         return record.Runs > 0
-            ? $"D   today's run  {day}      your best  {record.BestScore:N0}"
-            : $"D   today's run  {day}";
+            ? $"{Controls.Daily}   today's run  {day}      your best  {record.BestScore:N0}"
+            : $"{Controls.Daily}   today's run  {day}";
     }
 
     private void BuildUi()

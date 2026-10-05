@@ -33,12 +33,19 @@ public class GameManager : Singleton<GameManager>
 
     protected override void OnDeath(OnDeathEvent evt)
     {
+        // A restart is a choice, not a result. Counted as a death it zeroed the score and
+        // dragged down whichever variant you happened to be testing.
+        if (evt.Outcome == RunOutcome.Abandoned)
+        {
+            return;
+        }
+
         // Dying costs you the score, but only once there was a way to bank it. Without
         // exits, death is the only ending, so taking the score away would just be a bug.
         var kept = evt.Outcome != RunOutcome.Died || !Features.On(Feature.ExitDoors);
         var score = kept ? PlayerTrackMovement.Score : 0f;
 
-        var improved = SaveStore.Data.RecordRun(
+        SaveStore.Data.RecordRun(
             score, evt.DistanceCovered, evt.Outcome, Features.VariantKey());
 
         if (RunMode.Daily && !string.IsNullOrEmpty(RunMode.Day))
@@ -49,11 +56,6 @@ public class GameManager : Singleton<GameManager>
         SaveStore.Save();
 
         data.HighScore = SaveStore.Data.HighScore;
-
-        if (improved)
-        {
-            ToastManager.GetInstance().Show($"New best  {data.HighScore:F0}");
-        }
 
         EventService.Dispatch<OnDataUpdatedEvent>();
     }

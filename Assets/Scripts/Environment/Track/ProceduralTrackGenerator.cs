@@ -10,7 +10,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
     [SerializeField] private float recycleBehind = 6f;  // recycle once the player is this far past a piece
     [SerializeField] private Vector3 startPosition = Vector3.zero;
     [SerializeField] private Vector3 startForward = Vector3.forward;
-    [SerializeField] private int seed = 12345;          // same seed, same track
+    [SerializeField] private int seed = 12345;          // used when no run mode has been chosen
     [SerializeField] private int maxRepeats = 2;        // stop one prefab running away with it
     [SerializeField] private float playerMaxSpeed = 32f; // matches PlayerTrackMovement
     [SerializeField] private float jumpAirtime = 0.64f;
@@ -40,12 +40,9 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private int lastHazardAt = int.MinValue / 2;
     private int nextExitAt;
     private int exitsSpawned;
+    private int runSeed;
 
     public IReadOnlyList<TrackPiece> ActivePieces => active;
-
-    // A daily run overrides whatever the scene was authored with, so everyone gets the
-    // same corridor on a given date.
-    private int ActiveSeed => RunMode.Daily ? RunMode.Seed : seed;
 
     private void Start()
     {
@@ -60,7 +57,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
         }
         active.Clear();
 
-        rng = new System.Random(ActiveSeed);
+        // Rolled per run, not per scene: a daily is the date's corridor for everyone, and a
+        // free run is a new one every time.
+        runSeed = RunMode.SeedFor(seed, 0);
+        rng = new System.Random(runSeed);
         lastIndex = -1;
         repeats = 0;
         spawned = 0;
@@ -107,9 +107,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
         var piece = Take(index);
 
         // Back to back hazards are unavoidable: a jump covers more ground than one piece.
+        // Random among the safe ones, or every swap was the same prefab.
         if (piece.ContainsHazard && spawned - lastHazardAt < HazardGap())
         {
-            var clean = FindCleanIndex();
+            var clean = PickCleanIndex();
             if (clean >= 0)
             {
                 Recycle(piece);
@@ -157,7 +158,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         // Seeded off the ordinal, so the same seed lays out the same corridor.
         if (piece.Scenery != null)
         {
-            piece.Scenery.Vary(ActiveSeed + spawned);
+            piece.Scenery.Vary(runSeed + spawned);
         }
 
         active.Add(piece);
@@ -291,19 +292,6 @@ public class ProceduralTrackGenerator : MonoBehaviour
     {
         var piece = piecePrefabs[index];
         return piece != null && !piece.ContainsHazard && !IsExit(index);
-    }
-
-    private int FindCleanIndex()
-    {
-        for (var i = 0; i < piecePrefabs.Length; i++)
-        {
-            if (piecePrefabs[i] != null && !piecePrefabs[i].ContainsHazard && !IsExit(i))
-            {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
     private int PickIndex()

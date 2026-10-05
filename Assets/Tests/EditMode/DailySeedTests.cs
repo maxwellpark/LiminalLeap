@@ -57,6 +57,31 @@ public class DailySeedTests
         Assert.AreEqual(DailySeed.For(utc), DailySeed.For(elsewhere));
     }
 
+    // Salted, so the track and the attacks don't draw from one stream, but fixed by the date.
+    [Test]
+    public void ADailySeedsEverythingFromTheDate()
+    {
+        RunMode.ChooseDaily();
+
+        Assert.AreEqual(RunMode.Seed, RunMode.SeedFor(1, 0), "the track should be the date's seed as before");
+        Assert.AreEqual(RunMode.SeedFor(1, 77), RunMode.SeedFor(2, 77), "the authored seed leaked into a daily");
+        Assert.AreNotEqual(RunMode.SeedFor(1, 0), RunMode.SeedFor(1, 77), "the salt did nothing");
+
+        RunMode.ChooseFree();
+    }
+
+    [Test]
+    public void AFreeRunRollsANewSeed()
+    {
+        RunMode.ChooseFree();
+
+        var a = RunMode.SeedFor(5, 0);
+        var b = RunMode.SeedFor(5, 0);
+        var c = RunMode.SeedFor(5, 0);
+
+        Assert.IsFalse(a == b && b == c, "three free runs in a row got the same seed");
+    }
+
     [Test]
     public void ChoosingDailySetsTheSeedAndDay()
     {

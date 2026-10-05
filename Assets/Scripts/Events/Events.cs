@@ -7,7 +7,7 @@ namespace Events
         public RunOutcome Outcome { get; }
 
         // Kept so existing subscribers don't all have to learn about outcomes at once.
-        public bool Completed => Outcome != RunOutcome.Died;
+        public bool Completed => Outcome is RunOutcome.Completed or RunOutcome.Banked;
 
         public OnDeathEvent(float distance, bool completed = false)
             : this(distance, completed ? RunOutcome.Completed : RunOutcome.Died)
