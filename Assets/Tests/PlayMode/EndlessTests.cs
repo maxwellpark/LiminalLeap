@@ -135,7 +135,7 @@ public class EndlessTests
         Assert.AreEqual(first, second);
     }
 
-    // Past the forced straight lead-in, which is the same on every seed.
+    // Past the lead-in, which is the same on every seed.
     private IEnumerator FreshRunPastTheLeadIn()
     {
         player.position = Vector3.zero;
@@ -144,7 +144,6 @@ public class EndlessTests
         yield return Advance(20);
     }
 
-    // Free mode followed the scene's seed, so it was one fixed corridor you could learn.
     [UnityTest]
     public IEnumerator EveryFreeRunIsANewCorridor()
     {
@@ -160,7 +159,6 @@ public class EndlessTests
         Assert.AreNotEqual(first, second, "two free runs laid out the same corridor");
     }
 
-    // Opening a scene straight from the editor, or shooting one headlessly, keeps it stable.
     [UnityTest]
     public IEnumerator WithNoModeChosenTheSceneKeepsItsSeed()
     {
@@ -174,7 +172,7 @@ public class EndlessTests
         Assert.AreEqual(first, Layout());
     }
 
-    // ChooseFree and ChooseDaily both pick a mode, and nothing in the game unpicks one.
+    // Nothing in the game unpicks a mode.
     private static void SetRunModeUnchosen()
     {
         RunMode.ChooseFree();

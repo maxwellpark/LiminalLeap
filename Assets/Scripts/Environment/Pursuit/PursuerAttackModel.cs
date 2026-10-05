@@ -44,7 +44,7 @@ public class PursuerAttackModel
         idleWait = NextInterval();
     }
 
-    // Reseeded per run, or the sequence carried on from however many attacks came before.
+    // Per run, so a daily replays the same attacks.
     public void Reset(int seed)
     {
         rng = new Random(seed);

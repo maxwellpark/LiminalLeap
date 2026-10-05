@@ -57,7 +57,6 @@ public class DailySeedTests
         Assert.AreEqual(DailySeed.For(utc), DailySeed.For(elsewhere));
     }
 
-    // Salted, so the track and the attacks don't draw from one stream, but fixed by the date.
     [Test]
     public void ADailySeedsEverythingFromTheDate()
     {

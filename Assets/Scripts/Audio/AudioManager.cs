@@ -133,7 +133,7 @@ public class AudioManager : Singleton<AudioManager>
         dread.pitch = 1f + dreadPitchAtContact * near;
     }
 
-    // Silent once the run is over, or the loop sat at whatever it reached over the summary.
+    // Off between runs, or it hangs over the summary.
     private float Dread()
     {
         if (!PlayerTrackMovement.Running)

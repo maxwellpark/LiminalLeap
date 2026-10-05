@@ -217,7 +217,6 @@ public class RunTests
         Assert.Less(PlayerTrackMovement.DistanceCovered, 1f, "restart did not reset the run");
     }
 
-    // R sits next to E, so a tap in a doorway threw the whole run away.
     [UnityTest]
     public IEnumerator TappingRestartDoesNothing()
     {
@@ -234,8 +233,6 @@ public class RunTests
         Assert.Greater(PlayerTrackMovement.DistanceCovered, 10f, "a tap reset the run");
     }
 
-    // A restart is a choice, not a death. Counted as one it zeroed the score in the stats and
-    // dragged down whichever variant was being tested.
     [UnityTest]
     public IEnumerator RestartingIsNotRecordedAsARun()
     {
@@ -260,7 +257,6 @@ public class RunTests
         Assert.AreEqual(runs, SaveStore.Data.Runs, "the restart was recorded as a run");
     }
 
-    // The shifter moves hazards, and pooling handed the piece back with them still moved.
     [UnityTest]
     public IEnumerator AMovedHazardGoesBackWithTheRun()
     {
@@ -277,7 +273,6 @@ public class RunTests
         Assert.AreEqual(home, hazard.transform.localPosition, "the hazard kept where it was moved to");
     }
 
-    // Time stops, but input doesn't, so a press while paused could still bank or jump.
     [UnityTest]
     public IEnumerator PausingHoldsTheRunStill()
     {
@@ -306,14 +301,13 @@ public class RunTests
         Assert.Greater(PlayerTrackMovement.DistanceCovered, held, "the run never resumed");
     }
 
-    // Nothing called the step that moves the light for a while, so Darkness sat at zero and
-    // both tests above passed against a feature that did nothing. This one has to go dark.
+    // The tests above passed while the light never moved.
     [UnityTest]
     public IEnumerator RunningPastTheLightGoesDark()
     {
         Features.Override(Feature.LightAsResource, true);
 
-        // No head start and a front that never moves, so any distance at all is past it.
+        // No head start and a still front, so any distance is past it.
         var lighting = MoodLighting.GetInstance();
         var field = typeof(MoodLighting).GetField("lightFront",
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
@@ -331,8 +325,6 @@ public class RunTests
         Features.Override(Feature.LightAsResource, false);
     }
 
-    // A restart isn't a result, but it used to replace the best ghost in memory, and the
-    // next real run saved it.
     [UnityTest]
     public IEnumerator ARestartDoesNotBecomeTheGhost()
     {
@@ -359,8 +351,7 @@ public class RunTests
         }
     }
 
-    // Release can't be seen while paused, so let go and press again used to resume the old
-    // hold. 0.4s before plus 0.3s after is past the 0.6s it takes.
+    // 0.4s before plus 0.3s after is past the 0.6s hold.
     [UnityTest]
     public IEnumerator RestartProgressDoesNotSurviveAPause()
     {
@@ -385,7 +376,7 @@ public class RunTests
         Assert.Greater(PlayerTrackMovement.DistanceCovered, 5f, "the run was reset");
     }
 
-    // Paused, the mirror stays up, so only the Running gate can stop a shift that's due.
+    // The mirror stays up while paused, so only the Running gate can stop it.
     [UnityTest]
     public IEnumerator TheShifterHoldsStillWhilePaused()
     {

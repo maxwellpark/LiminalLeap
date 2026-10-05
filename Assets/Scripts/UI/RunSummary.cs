@@ -30,7 +30,7 @@ public class RunSummary : Singleton<RunSummary>
         Build();
     }
 
-    // Not for a restart: you already decided to go again, so there is nothing to decide.
+    // Not for restarts, which go straight back in.
     protected override void OnDeath(OnDeathEvent evt)
     {
         if (evt.Outcome != RunOutcome.Abandoned)
@@ -54,8 +54,7 @@ public class RunSummary : Singleton<RunSummary>
         alpha = Mathf.MoveTowards(alpha, WaitingForInput ? 1f : 0f, fadeSpeed * Time.unscaledDeltaTime);
         group.alpha = alpha;
 
-        // Counted from fully visible rather than from the death. From the death, a jump
-        // mashed through the death pause dismissed it before it had been seen.
+        // From fully visible, or a panic jump skips it.
         if (WaitingForInput && alpha >= 1f && visibleAt < 0f)
         {
             visibleAt = Time.unscaledTime;
@@ -63,7 +62,7 @@ public class RunSummary : Singleton<RunSummary>
 
         var ready = WaitingForInput && visibleAt >= 0f && Time.unscaledTime - visibleAt >= minimumSeconds;
 
-        // The prompt only shows once a press will count, so it never asks for one it ignores.
+        // Only shown once a press will count.
         prompt.alpha = ready ? 1f : 0f;
 
         if (!ready)

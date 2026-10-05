@@ -35,7 +35,7 @@ public static class MaterialAssets
         var path = PathFor(surface);
         var source = MaterialLibrary.Get(surface);
 
-        // Carried across by hand: without the flags, validation on save strips the emission.
+        // Copied explicitly, or saving strips the emission keyword.
         var material = new Material(source) { globalIlluminationFlags = source.globalIlluminationFlags };
         var texture = source.mainTexture as Texture2D;
 

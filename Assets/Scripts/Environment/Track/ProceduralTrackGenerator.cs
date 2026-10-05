@@ -57,8 +57,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         }
         active.Clear();
 
-        // Rolled per run, not per scene: a daily is the date's corridor for everyone, and a
-        // free run is a new one every time.
+        // Per run, not per scene.
         runSeed = RunMode.SeedFor(seed, 0);
         rng = new System.Random(runSeed);
         lastIndex = -1;
@@ -107,7 +106,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         var piece = Take(index);
 
         // Back to back hazards are unavoidable: a jump covers more ground than one piece.
-        // Random among the safe ones, or every swap was the same prefab.
+        // Random, or every swap was the same prefab.
         if (piece.ContainsHazard && spawned - lastHazardAt < HazardGap())
         {
             var clean = PickCleanIndex();

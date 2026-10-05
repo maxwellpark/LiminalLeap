@@ -43,7 +43,7 @@ public class ScriptedInputTests
         Assert.IsFalse(input.RestartPressed);
     }
 
-    // Restart is a hold now, so this one is a state rather than an edge.
+    // A hold, so a state rather than an edge.
     [Test]
     public void RestartHeldHoldsUntilChanged()
     {

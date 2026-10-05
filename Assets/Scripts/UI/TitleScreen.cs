@@ -60,8 +60,7 @@ public class TitleScreen : MonoBehaviour
             return;
         }
 
-        // Before anyKeyDown, or the daily key would just start a free run. Was D, which is
-        // also steer right, so the key the screen teaches started the wrong mode.
+        // Before anyKeyDown. Not D, which is also steer right.
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
             RunMode.ChooseDaily();

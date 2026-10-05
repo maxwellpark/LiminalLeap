@@ -86,13 +86,13 @@ public class RearView : Singleton<RearView>
 
     private void Update()
     {
-        // Paused, the key still flips raised and queues a swish that plays on resume.
+        // Paused, a held key would queue swishes for resume.
         if (panel == null || PauseMenu.Paused)
         {
             return;
         }
 
-        // Dropped with the run, so holding the key over the summary isn't still swishing it up.
+        // Drops when the run ends.
         var raised = InputRouter.Source.LookingBack && PlayerTrackMovement.Running;
         var speed = raised ? raiseSpeed : dropSpeed;
         shown = Mathf.MoveTowards(shown, raised ? 1f : 0f, speed * Time.deltaTime);

@@ -110,8 +110,6 @@ public class PursuerTests
         Assert.AreEqual(start, Pursuer.GetInstance().Distance, 2f, "pursuer did not reset with the run");
     }
 
-    // The summary waits on you now, so anything still ticking plays out behind it: closing,
-    // attacking, and once it arrived, searching the scene for the player every frame.
     [UnityTest]
     public IEnumerator NothingMovesBehindTheSummary()
     {

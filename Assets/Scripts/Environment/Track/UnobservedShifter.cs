@@ -23,8 +23,7 @@ public class UnobservedShifter : Singleton<UnobservedShifter>, IRunResettable
         ResetForNewRun();
     }
 
-    // Seeded with the run, or a daily stopped being the same run the moment you looked back.
-    // The deadline too, or a run inherited whatever wait the last one left behind.
+    // Reseeded and retimed per run, so a daily stays the same.
     public void ResetForNewRun()
     {
         rng = new System.Random(RunMode.SeedFor(shiftSeed, ShiftSalt));
@@ -33,8 +32,7 @@ public class UnobservedShifter : Singleton<UnobservedShifter>, IRunResettable
 
     private void Update()
     {
-        // Running as well: paused, or with the mirror still dropping after a death, it is up
-        // but nobody is playing.
+        // Not paused or after a death, when the mirror can still be up.
         if (!Features.On(Feature.ShiftWhenUnobserved) || !PlayerTrackMovement.Running)
         {
             return;

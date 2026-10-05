@@ -2,8 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// There was no way to stop, and no way back to the title, so switching between a daily and
-// a free run meant reloading the page. Builds its own UI like the other managers.
+// Pause, back to title, and the player options.
 public class PauseMenu : Singleton<PauseMenu>
 {
     [SerializeField] private string titleScene = "TitleScreen";
@@ -12,7 +11,6 @@ public class PauseMenu : Singleton<PauseMenu>
     private TextMeshProUGUI keys;
     private TextMeshProUGUI options;
 
-    // Static so PlayerTrackMovement.Running can read it without holding a reference.
     public static bool Paused { get; private set; }
 
     public override void Init()
@@ -34,7 +32,7 @@ public class PauseMenu : Singleton<PauseMenu>
 
     private void Update()
     {
-        // Esc as well as P, but P is the one to teach: a fullscreen browser eats Esc.
+        // P is the one to teach: fullscreen browsers eat Esc.
         if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
         {
             if (Paused)
@@ -71,8 +69,7 @@ public class PauseMenu : Singleton<PauseMenu>
     }
 
 #if !UNITY_EDITOR
-    // Coming back to a run that kept going while you were in another tab is a death you
-    // never saw. Not in the editor, where clicking away mid test would pause the test.
+    // Not in the editor, where clicking away would pause tests.
     private void OnApplicationFocus(bool focused)
     {
         if (!focused && PlayerTrackMovement.Running)
@@ -135,7 +132,7 @@ public class PauseMenu : Singleton<PauseMenu>
 
     private void Build()
     {
-        // Under the run summary at 220, which can't be open at the same time anyway.
+        // Below the summary at 220.
         var canvas = RuntimeUi.CreateCanvas("PauseCanvas", 210);
 
         var holder = new GameObject("PauseMenu");

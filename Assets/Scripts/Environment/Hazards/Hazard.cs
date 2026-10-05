@@ -13,7 +13,7 @@ public class Hazard : MonoBehaviour, IRunResettable
 
     public bool Jumpable => jumpable;
 
-    // Kept as they enable, so the shifter can walk them without searching the scene.
+    // For the shifter, instead of searching the scene.
     public static IReadOnlyList<Hazard> Live => live;
 
     private void Awake()
@@ -32,8 +32,7 @@ public class Hazard : MonoBehaviour, IRunResettable
         live.Remove(this);
     }
 
-    // The shifter moves these, and pooling hands the piece back with them still moved.
-    // Resets reach inactive objects too, and one never enabled has no home yet.
+    // Undoes the shifter. Skipped if never woken, as there's no home yet.
     public void ResetForNewRun()
     {
         if (homed)

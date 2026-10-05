@@ -13,7 +13,7 @@ public class PursuerAttackPresenter : MonoBehaviour
     private static readonly Color Charging = new(0.45f, 0.72f, 1f);
     private static readonly Color Locked = new(1f, 0.72f, 0.32f);
 
-    // Unlit now, so this stands in for the emission boost it used to get.
+    // Stands in for the emission it had on Standard.
     private const float Glow = 2.4f;
 
     // Renderer and material held from build time. Looking them up in the tint ran eight
@@ -179,9 +179,7 @@ public class PursuerAttackPresenter : MonoBehaviour
         part.Material.color = lit;
     }
 
-    // Sprites/Default rather than Standard. Standard needed _EMISSION and _ALPHABLEND_ON,
-    // which no shipped material uses, so a build stripped both and the curtain drew as an
-    // opaque wall across the mirror. This one is always included, unlit and already blended.
+    // Sprites/Default is always in the build. Standard's alpha and emission variants get stripped.
     private Part BuildPart(string name)
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);

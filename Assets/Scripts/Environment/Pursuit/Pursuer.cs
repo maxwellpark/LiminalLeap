@@ -106,9 +106,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
     private void Update()
     {
-        // Held still behind the summary. It used to keep closing, attacking and paying out
-        // dodges into a run that was already recorded, and once it arrived it searched the
-        // scene for the player every frame.
+        // Frozen behind the summary.
         if (!active || body == null || !PlayerTrackMovement.Running)
         {
             return;
@@ -242,9 +240,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
     // Has to be current rather than cached: the whole fairness rule is not firing into a
     // lane the track has already closed.
-    //
-    // From the centreline, because that is what Threatens compares Lane against. Measured
-    // from the player, strafing shifted every lane and a centre hazard read as the left.
+    // Measured from the centreline, as Threatens is.
     private int ScanLanes()
     {
         blocked.Clear();
@@ -283,7 +279,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             }
         }
 
-        // Past the last spawned piece, or nothing to walk at all: carry straight on.
+        // Beyond spawned track, carry straight on.
         if (along < far)
         {
             ScanStretch(cursor, heading, along, far, near, far);
@@ -292,8 +288,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         return PursuerSafety.AllowedLanes(blocked, attack.LaneSpacing, playerHalfWidth);
     }
 
-    // One straight stretch of track, clipped to the window. Lateral offsets are taken across
-    // this stretch, so a hazard past a turn still lands in the lane it is actually in.
+    // Lanes are measured across each stretch, so they hold past turns.
     private void ScanStretch(Vector3 start, Vector3 direction, float from, float to, float near, float far)
     {
         var a = Mathf.Max(from, near);
@@ -340,7 +335,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         }
     }
 
-    // Before the warning a whole attack's lead is still to come. From then on the model knows.
+    // Before the warning, the whole lead is still to come.
     private float SecondsUntilResolve()
     {
         return attackModel != null && attackModel.Phase != AttackPhase.Idle
