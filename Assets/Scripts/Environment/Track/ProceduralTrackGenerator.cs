@@ -142,8 +142,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
             stale.Hide();
         }
 
-        // Pooling reuses the object, so a collected pickup stays collected without this.
-        // That is why pickups ran out mid-run once every pooled one had been eaten.
+        // Pooled pieces come back with pickups still collected otherwise.
         var resettables = piece.Resettables;
         for (var i = 0; i < resettables.Length; i++)
         {
@@ -175,8 +174,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
             return;
         }
 
-        // Only announce something worth announcing. A sign on every piece is wallpaper, and
-        // wallpaper is not something anyone reads, let alone distrusts.
+        // Only what is worth announcing, or the signs become wallpaper.
         var truth = TruthFor(piece);
         if (truth == SignKind.Clear)
         {
@@ -206,8 +204,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
             return hazard.Jumpable ? SignKind.Jump : SignKind.Strafe;
         }
 
-        // Flagged as a hazard piece but nothing found to inspect. Announce it anyway: a
-        // missed warning is worse than a vague one.
+        // Flagged but nothing found. A vague warning beats a missed one.
         return piece.ContainsHazard ? SignKind.Strafe : SignKind.Clear;
     }
 
@@ -257,8 +254,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         return Features.On(Feature.CalmSections) && CalmRhythm.IsCalm(piece, busyPieces, calmPieces);
     }
 
-    // Random among the safe pieces rather than the first one, or every breath would be the
-    // same prefab repeated and read as the track having broken.
+    // Random, or every calm stretch is the same prefab.
     private int PickCleanIndex()
     {
         var options = 0;

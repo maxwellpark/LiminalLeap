@@ -31,7 +31,7 @@ namespace Events
         public EventType Type => EventType.DataUpdated;
     }
 
-    // Raised when the beam misses. Score and later Flow hang off this, never off the mirror.
+    // Raised when the beam misses. Score hangs off this, never the mirror.
     public class OnAttackDodgedEvent : IEvent
     {
         public EventType Type => EventType.AttackDodged;

@@ -86,8 +86,7 @@ public class ProceduralAudioLibrary : IAudioLibrary
 
             case Sound.Lunge:
             {
-                // Two frequencies a semitone apart, beating against each other. Dissonance
-                // reads as wrong far faster than volume does.
+                // A semitone apart, so they beat. Dissonance reads as wrong faster than volume.
                 var a = Synth.Sweep(240f, 150f, 0.5f, 4.5f);
                 var b = Synth.Sweep(254f, 159f, 0.5f, 4.5f);
                 var hiss = Synth.Noise(0.5f, 211, 0.3f);
@@ -98,8 +97,7 @@ public class ProceduralAudioLibrary : IAudioLibrary
 
             case Sound.Dread:
             {
-                // Slow pulse, ambiguous between a breath and machinery. Loops under everything
-                // so the pursuer can be heard before the mirror confirms it.
+                // Loops under everything, so the pursuer is heard before it is seen.
                 const float length = 4.4f;
 
                 var sub = Synth.Sweep(41f, 41f, length, 0f);

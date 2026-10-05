@@ -1,4 +1,4 @@
-// Run state that has to be put back on death. Missing one is invisible until you replay.
+// Run state that has to be put back on death.
 public interface IRunResettable
 {
     void ResetForNewRun();

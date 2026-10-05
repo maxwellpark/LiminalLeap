@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-// Banking a run and dying on one are not the same thing to the player, even when the
-// distance matches, so the outcome travels with the result.
+// Banking and dying differ to the player, even at the same distance.
 public enum RunOutcome
 {
     Died,
@@ -44,7 +43,7 @@ public class VariantRecord
     }
 }
 
-// Best per day, so a daily run has something to beat that is not your all time best.
+// Best per day, separate from the all time best.
 [Serializable]
 public class DailyRecord
 {
@@ -75,8 +74,7 @@ public class DailyRecord
     }
 }
 
-// Plain serialisable state. Versioned from the start so an old save can be migrated
-// rather than binned when fields change.
+// Versioned so an old save can be migrated rather than binned.
 [Serializable]
 public class SaveData
 {
@@ -106,8 +104,7 @@ public class SaveData
             return false;
         }
 
-        // v2 added the ghost trace and per variant stats, v3 the per day bests. All start
-        // empty, so there is nothing to move across, only fields to make sure exist.
+        // v2 added the ghost and variant stats, v3 the daily bests. Only fields to fill in.
         Version = CurrentVersion;
         return true;
     }
@@ -177,8 +174,7 @@ public class SaveData
         return record;
     }
 
-    // JsonUtility leaves absent objects null, so a save written before these existed comes
-    // back with holes in it.
+    // JsonUtility leaves missing objects null in older saves.
     private void EnsureFields()
     {
         Ghost ??= new GhostTrace();

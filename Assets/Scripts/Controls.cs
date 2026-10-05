@@ -1,6 +1,4 @@
-// One source for what the keys are. The title screen had its own copy serialised into the
-// scene, so adding a control changed the code and left the screen still telling players the
-// old set. Derive it instead.
+// One source for the keys, so the title screen can't teach a stale set.
 public static class Controls
 {
     public const string Steer = "A D";

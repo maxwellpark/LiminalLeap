@@ -74,7 +74,7 @@ public class SignTextTests
             }
         }
 
-        // Too many and the signs become wallpaper, which is worse than not having them.
+        // Too many and the signs become wallpaper.
         Assert.Less(lies / (float)total, 0.3f);
     }
 }

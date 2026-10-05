@@ -89,8 +89,7 @@ public static class TitleSceneGenerator
         Debug.Log("BUILD SCENES: " + string.Join(", ", scenes.ConvertAll(s => s.path)));
     }
 
-    // Only the fallback. Generated scenes are resolved from Build Settings at runtime,
-    // because a baked list of names goes stale as soon as scenes are regenerated.
+    // Fallback only. Generated scenes are resolved from Build Settings at runtime.
     private static void PointAtGameScenes(TitleScreen title)
     {
         var so = new SerializedObject(title);

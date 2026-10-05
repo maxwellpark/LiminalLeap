@@ -1,10 +1,7 @@
 using System;
 
-// The lights come on at their own pace, ahead of you, and they do not hurry.
-//
-// Every other system here rewards speed without qualification. This is the one that does
-// not: push past the front and you are running into a corridor you cannot see, and the
-// only way back into the light is to slow down and let it catch up.
+// The lights advance at their own pace. Outrun them and you're in the dark until you
+// slow down.
 public static class LightFront
 {
     [Serializable]
@@ -21,8 +18,7 @@ public static class LightFront
         return Math.Max(0f, s?.HeadStart ?? 0f);
     }
 
-    // Advances regardless of what the player does. Slowing lets it gain on you, which is
-    // the whole recovery mechanic.
+    // Advances regardless, so slowing down lets it catch up.
     public static float Advance(float front, float dt, float travelled, Settings s)
     {
         if (s == null || dt <= 0f)
@@ -32,8 +28,7 @@ public static class LightFront
 
         var speed = Math.Max(0f, s.Speed);
 
-        // Once you are back inside the lit stretch it closes up a little faster, so a
-        // recovery does not take the whole rest of the run.
+        // Catches up faster once you're back in the light.
         if (front > travelled)
         {
             speed *= Math.Max(1f, s.Recovery);

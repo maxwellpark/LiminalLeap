@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-// A row spanning the track is an unwinnable run and nothing else would catch it.
+// A row spanning the track is unwinnable.
 public static class HazardLanes
 {
     public struct Span
@@ -55,8 +55,7 @@ public static class HazardLanes
         return Math.Max(1, (int)Math.Ceiling(reach / pieceLength));
     }
 
-    // Passability says nothing about hazards colliding with each other, so two blockers
-    // at nearby lanes both passed while visibly intersecting.
+    // Passability says nothing about hazards overlapping each other.
     public static bool Overlaps(Span candidate, IReadOnlyList<Span> existing, float minGap)
     {
         if (existing == null)

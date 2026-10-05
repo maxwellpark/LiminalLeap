@@ -21,7 +21,7 @@ public class RunTests
         fixture.Teardown();
     }
 
-    // Elapsed time, not frames: batchmode runs uncapped so 60 frames was about 0.12s.
+    // Time, not frames: batchmode runs uncapped.
     private IEnumerator Seconds(float seconds)
     {
         var until = Time.time + seconds;
@@ -37,8 +37,7 @@ public class RunTests
         var deadline = Time.realtimeSinceStartup + timeoutSeconds;
         while (PlayerTrackMovement.DistanceCovered > 1f && Time.realtimeSinceStartup < deadline)
         {
-            // The run holds on the summary now, so nothing resets until it is dismissed.
-            // RunSummaryTests covers the input path; this just gets out of the way.
+            // The run waits on the summary. RunSummaryTests covers dismissing it.
             if (RunSummary.Instance != null)
             {
                 RunSummary.Instance.Dismiss();
@@ -188,8 +187,7 @@ public class RunTests
             "a flag that is off should leave the corridor alone");
     }
 
-    // You are meant to begin inside the lit stretch, so the head start has to actually
-    // cover the opening rather than dropping you straight into the dark.
+    // The head start should cover the opening.
     [UnityTest]
     public IEnumerator YouStartInsideTheLight()
     {

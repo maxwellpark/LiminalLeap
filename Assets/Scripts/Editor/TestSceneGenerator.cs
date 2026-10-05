@@ -237,7 +237,7 @@ public static class TestSceneGenerator
         return (GameObject)PrefabUtility.InstantiatePrefab(asset);
     }
 
-    // An endless runner that ends is a level. The runtime generator chains forever.
+    // The runtime generator chains forever.
     private static string BuildEndless(GameObject root, Settings settings)
     {
         var generator = root.AddComponent<ProceduralTrackGenerator>();
@@ -315,8 +315,7 @@ public static class TestSceneGenerator
         return found.ToArray();
     }
 
-    // The opening stretch teaches the controls as floor markings, which is also just
-    // what these spaces look like.
+    // The controls are taught as floor markings.
     private static void PaintControlSign(Transform piece, Settings settings, int index)
     {
         var lines = Controls.FloorLines;
@@ -351,8 +350,7 @@ public static class TestSceneGenerator
             var centre = (float)(rng.NextDouble() * 2d - 1d) * (settings.TrackHalfWidth - halfWidth);
             var candidate = new HazardLanes.Span(centre, halfWidth);
 
-            // Two checks, not one: the row must stay passable AND the pieces must not
-            // intersect each other.
+            // The row must stay passable and the pieces must not intersect.
             if (HazardLanes.Overlaps(candidate, blocked, settings.HazardSeparation))
             {
                 continue;
@@ -423,7 +421,7 @@ public static class TestSceneGenerator
         return 0f;
     }
 
-    // Nothing to fall onto otherwise, so a mistake just leaves you drifting.
+    // Something to fall onto.
     private static void AddKillFloor(Transform parent, float length)
     {
         var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);

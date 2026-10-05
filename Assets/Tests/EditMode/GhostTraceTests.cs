@@ -30,7 +30,7 @@ public class GhostTraceTests
         Assert.AreEqual(GhostTrace.Spacing * 1.5f, trace.DistanceAt(1.5f), 0.001f);
     }
 
-    // Outliving your last attempt is how you shake it off, so it must not keep going.
+    // Outliving it is how you shake it off.
     [Test]
     public void ItStopsWhereTheRecordingStopped()
     {
@@ -107,8 +107,7 @@ public class GhostTraceTests
         Assert.LessOrEqual(recorder.Count, GhostTrace.MaxSamples);
     }
 
-    // Keeping the last run instead would mean dying early hands the next run a trivial
-    // pursuer, which makes it easier to die early again.
+    // The last run would hand an early death an easy pursuer.
     [Test]
     public void TheBetterRunBecomesTheGhost()
     {

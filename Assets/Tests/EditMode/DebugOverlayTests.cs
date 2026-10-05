@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 public class DebugOverlayTests
 {
-    // Binding is by name, so a rename only warns behind an F1 press. This makes it red.
+    // Binding is by name, so this catches renames.
     [Test]
     public void EveryKnobResolvesToAFloatField()
     {

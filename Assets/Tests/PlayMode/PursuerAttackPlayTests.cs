@@ -69,8 +69,7 @@ public class PursuerAttackPlayTests
         yield return null;
     }
 
-    // It animates up over a fraction of a second, so setting the input is not the same as
-    // it being raised.
+    // It animates up, so the input alone isn't enough.
     private IEnumerator RaiseMirror()
     {
         fixture.Input.LookingBack = true;
@@ -125,7 +124,7 @@ public class PursuerAttackPlayTests
         Assert.IsFalse(hit);
     }
 
-    // The regression the whole redesign rests on. Holding the mirror must not save you.
+    // The core regression: holding the mirror must not save you.
     [UnityTest]
     public IEnumerator TheMirrorDoesNotGrantImmunity()
     {
@@ -168,8 +167,6 @@ public class PursuerAttackPlayTests
             "watching it must not buy distance, or the mirror is a defence again");
     }
 
-    // A backwards camera renders the world reversed, so the telegraph pointed players into
-    // the beam rather than out of it. The panel has to be flipped to read like a mirror.
     [UnityTest]
     public IEnumerator TheMirrorReadsLikeAMirrorNotACamera()
     {

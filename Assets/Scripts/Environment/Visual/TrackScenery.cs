@@ -1,10 +1,6 @@
 using UnityEngine;
 
-// Props built into the piece prefab and varied per spawn, rather than instantiated at
-// runtime. Pooling then handles them for free and a spawn allocates nothing.
-//
-// The corridor was a bare plane with no ceiling and nothing either side, which undersells
-// the one thing this game is actually about.
+// Props built into the piece and varied per spawn, so pooling covers them.
 public class TrackScenery : MonoBehaviour
 {
     public const string PillarHolder = "Pillars";
@@ -19,8 +15,7 @@ public class TrackScenery : MonoBehaviour
     private Vector3[] pillarRest;
     private bool captured;
 
-    // Called by the generator on every spawn with the piece's ordinal, so the same seed
-    // lays out the same corridor.
+    // Seeded by piece ordinal, so the same seed gives the same corridor.
     public void Vary(int seed)
     {
         Capture();
@@ -41,8 +36,7 @@ public class TrackScenery : MonoBehaviour
                 continue;
             }
 
-            // Varying height alone reads as a different building rather than the same prop
-            // moved along, and costs nothing.
+            // Varying height makes it read as a different building.
             var rest = pillarRest[i];
             var tall = rest.y + (Hash01(seed, i * 7 + 2) - 0.5f) * heightVariation;
             pillar.localScale = new Vector3(rest.x, Mathf.Max(2f, tall), rest.z);
@@ -57,8 +51,7 @@ public class TrackScenery : MonoBehaviour
         }
     }
 
-    // Gathered from named holders rather than serialised arrays, so the prefab builder does
-    // not have to wire object arrays through SerializedObject.
+    // Named holders, so the prefab builder doesn't wire arrays.
     private void Capture()
     {
         if (captured)
@@ -93,7 +86,7 @@ public class TrackScenery : MonoBehaviour
         return found;
     }
 
-    // Deterministic and allocation free. A System.Random per spawn would have been neither.
+    // Deterministic and allocation free, unlike a System.Random per spawn.
     private static float Hash01(int seed, int salt)
     {
         unchecked

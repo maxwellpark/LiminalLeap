@@ -12,8 +12,7 @@ public struct AttackTick
     public bool Aborted;         // no fair lane left, so it never fired
 }
 
-// Pure state machine for the thing behind you taking a swing. Deliberately knows nothing
-// about the mirror: the mirror reads this, it can never change it.
+// Pure state machine for an attack. The mirror reads it and never changes it.
 public class PursuerAttackModel
 {
     public const int AllLanes = 0b111;
@@ -28,12 +27,11 @@ public class PursuerAttackModel
     public AttackLane TargetLane { get; private set; } = AttackLane.Centre;
     public float PhaseTime => phaseTime;
 
-    // The lane is only readable once it has been chosen, which is the point of the mirror.
+    // Only readable once chosen.
     public bool TargetVisible =>
         Phase is AttackPhase.Telegraph or AttackPhase.Locked or AttackPhase.Fire;
 
-    // An attack is committed to a layout from the warning onward, so anything that rearranges
-    // the track has to hold off until this is clear.
+    // Committed from the warning on, so nothing may rearrange the track until clear.
     public bool InFlight =>
         Phase is not AttackPhase.Idle and not AttackPhase.Cooldown;
 

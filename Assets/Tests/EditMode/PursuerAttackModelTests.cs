@@ -321,8 +321,7 @@ public class PursuerAttackModelTests
         Assert.AreEqual(before, model.Phase);
     }
 
-    // Anything that rearranges the track reads this. If it were wrong, a hazard could move
-    // into the escape lane after the attack committed and make it unavoidable.
+    // Read by anything that rearranges the track.
     [Test]
     public void InFlightIsTrueFromTheWarningUntilItResolves()
     {

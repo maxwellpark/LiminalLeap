@@ -52,8 +52,7 @@ public class FeaturesTests
         Assert.AreEqual(Features.DefaultFor(Feature.ExitDoors), Features.On(Feature.ExitDoors));
     }
 
-    // GameManager.Awake calls UseStorage, and PlayMode tests spawn one. Without the latch
-    // half the flags quietly start reading the real prefs part way through a test.
+    // GameManager.Awake calls UseStorage, and PlayMode tests spawn one.
     [Test]
     public void IsolationSurvivesAGameManagerWakingUp()
     {

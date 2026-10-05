@@ -50,8 +50,7 @@ public class ExitTests
         }
     }
 
-    // The bug this exists for: the exit sits in the right hand dodge lane, so touching it
-    // must not end the run or dodging a left lane attack would bank it for you.
+    // The exit sits in a dodge lane, so touching it mustn't bank the run.
     [UnityTest]
     public IEnumerator StrafingThroughAnExitDoesNotBankTheRun()
     {
@@ -61,8 +60,7 @@ public class ExitTests
         Assert.Greater(PlayerTrackMovement.DistanceCovered, 20f, "the player should still be running");
     }
 
-    // Asking every frame rather than timing the press, so the test is about the rule and
-    // not about whether it guessed the right moment.
+    // Asks every frame, so this tests the rule, not the timing.
     [UnityTest]
     public IEnumerator PressingInsideTheExitBanksTheRun()
     {

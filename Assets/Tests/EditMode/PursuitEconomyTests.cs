@@ -1,7 +1,6 @@
 using NUnit.Framework;
 
-// The pursuit has to be something the player can act on. Once the mirror stopped holding it
-// off, dodging became the only counterplay, so a dodge has to actually pay for itself.
+// Dodging is the only counterplay, so a dodge has to pay for itself.
 public class PursuitEconomyTests
 {
     private const float Step = 1f / 60f;
@@ -63,8 +62,7 @@ public class PursuitEconomyTests
         Assert.IsTrue(PursuitModel.Caught(distance), "standing still for two minutes should be fatal");
     }
 
-    // Uncatchable at speed would pin Proximity at zero, and Proximity is what drives the
-    // dread audio and the vignette, so the pursuer would go quiet for most of a run.
+    // Uncatchable would pin Proximity at zero and silence the dread.
     [Test]
     public void SpeedNeverMakesItHarmless()
     {
@@ -83,8 +81,7 @@ public class PursuitEconomyTests
         Assert.Less(fast, slow, "speed should still be worth something");
     }
 
-    // Zeroing RecoverRate was not enough on its own: the observed branch also skips the
-    // close rate, so watching still bought a complete stop.
+    // Watching used to stop the close rate entirely.
     [Test]
     public void WatchingBuysNothingWhenObservationIsIgnored()
     {

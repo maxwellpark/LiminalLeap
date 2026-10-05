@@ -7,8 +7,7 @@ public class PursuerTests
 {
     private RunFixture fixture;
 
-    // Covers the variant with attacks off, where watching it is still what holds it off.
-    // The attacks variant deliberately breaks that rule and is covered separately.
+    // Attacks off. The attacks variant is covered separately.
     [SetUp]
     public void SetUp()
     {
@@ -46,8 +45,7 @@ public class PursuerTests
         Assert.Less(Pursuer.GetInstance().Distance, start, "pursuer never closed");
     }
 
-    // True only with attacks off. Under PursuerAttacks the mirror is information and buys
-    // nothing, which PursuerAttackPlayTests asserts instead.
+    // Attacks off only. PursuerAttackPlayTests covers the other case.
     [UnityTest]
     public IEnumerator LookingBackHoldsItOffWithoutAttacks()
     {
@@ -64,8 +62,7 @@ public class PursuerTests
         Assert.Greater(afterWatching, afterIgnoring, "watching did not hold it off");
     }
 
-    // CopyFrom copies the transform, so setting the 180 before it silently showed the
-    // forward view in the mirror.
+    // CopyFrom copies the transform, so the 180 has to come after.
     [UnityTest]
     public IEnumerator MirrorActuallyLooksBackwards()
     {

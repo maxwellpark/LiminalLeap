@@ -2,11 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// The written half of the attack warning. Audio alone means the game is unplayable muted,
-// and a cue you can only hear is a cue plenty of people never get.
-//
-// Deliberately never names the lane. It tells you something is coming and roughly when,
-// which is exactly what the audio says. The lane stays in the mirror.
+// The written half of the warning, for playing muted. Never names the lane.
 public class AttackPrompt : Singleton<AttackPrompt>
 {
     [SerializeField] private float fadeSpeed = 8f;
@@ -108,7 +104,7 @@ public class AttackPrompt : Singleton<AttackPrompt>
         fill = fillImage.rectTransform;
         Place(fill, barWidth, 8f);
 
-        // Drains from the middle outward would read as decoration, so pin it left.
+        // Pinned left, as draining from the middle reads as decoration.
         fill.pivot = new Vector2(0f, 1f);
         fill.anchorMin = new Vector2(0.5f, 1f);
         fill.anchorMax = new Vector2(0.5f, 1f);

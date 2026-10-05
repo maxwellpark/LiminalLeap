@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using Events;
 using UnityEngine;
 
-// Closes on you while you ignore it. Under PursuerAttacks the mirror stops holding it off
-// and starts being the only place the next attack is readable.
+// Closes on you while you ignore it. With attacks on, the mirror is where you read them.
 public class Pursuer : Singleton<Pursuer>, IRunResettable
 {
     [SerializeField] private bool active = true;
@@ -115,8 +114,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         var dt = Time.deltaTime;
         runTime += dt;
 
-        // A breath means it holds station and starts nothing new. An attack already in
-        // flight still resolves, because vanishing mid telegraph would read as a bug.
+        // Holds station in a calm stretch, but an attack in flight still resolves.
         var calm = PlayerTrackMovement.InCalm;
 
         if (!calm)
@@ -126,16 +124,14 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
         if (Features.On(Feature.PursuerAttacks))
         {
-            // An empty mask is how the model already postpones for fairness, so calm reuses
-            // that rather than introducing a second way to say "not now".
+            // An empty mask is how the model already postpones.
             if (calm)
             {
                 allowed = 0;
             }
             else if (attackModel.Phase is AttackPhase.Idle or AttackPhase.Warning)
             {
-                // Only read when starting an attack or choosing its lane. Once locked it
-                // cannot change anything, so scanning then is a physics query wasted.
+                // Only matters before the lane locks.
                 allowed = ScanLanes();
             }
 
@@ -158,22 +154,18 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     {
         if (Features.On(Feature.GhostPursuer) && ghost != null && ghost.HasData)
         {
-            // Distance becomes how far ahead of your last self you are, so beating your
-            // old pace is literally what holds it off.
+            // Distance is your lead over your last self.
             var lead = PlayerTrackMovement.DistanceCovered - ghost.DistanceAt(runTime);
 
-            // Ghost mode recomputes distance from scratch every frame, so a dodge reward
-            // added straight to it would be wiped the next frame and quietly do nothing.
+            // Recomputed every frame, so a dodge bonus has to be added here.
             distance = Mathf.Clamp(startDistance + lead + dodgeBonus, 0f, startDistance);
             return;
         }
 
-        // Passed straight through: IgnoreObservation is what decides whether it counts, so
-        // the rule lives in one place instead of depending on this caller remembering.
+        // IgnoreObservation decides whether this counts.
         var observed = RearView.GetInstance().IsRaised;
 
-        // Outrunning the lights has to cost more than visibility, or the dark is only ever
-        // an inconvenience rather than a reason to slow down.
+        // The dark costs more than visibility.
         var step = settings;
         var lighting = MoodLighting.Instance;
 
@@ -238,8 +230,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         }
     }
 
-    // Has to be current rather than cached: the whole fairness rule is not firing into a
-    // lane the track has already closed.
+    // Current, not cached, so it never fires into a closed lane.
     // Measured from the centreline, as Threatens is.
     private int ScanLanes()
     {
@@ -343,7 +334,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             : attack.LeadTime;
     }
 
-    // Only on the way in. Announcing every recovery would make it chatty rather than tense.
+    // Only on the way in, or it gets chatty.
     private void Warn()
     {
         var near = Proximity;
@@ -380,7 +371,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
         body.position = player + back * distance + right * bias + Vector3.up * (bodyHeight * 0.5f - 0.5f);
         body.rotation = Quaternion.LookRotation(-back, Vector3.up);
 
-        // Darker and larger as it closes, so the mirror reads as a threat not a decoration.
+        // Darker and larger as it closes.
         var t = Proximity;
         body.localScale = new Vector3(1.1f + t * 0.5f, bodyHeight, 1.1f + t * 0.5f);
     }

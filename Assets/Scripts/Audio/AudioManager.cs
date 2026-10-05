@@ -109,7 +109,7 @@ public class AudioManager : Singleton<AudioManager>
         var t = PlayerTrackMovement.SpeedFraction;
         var target = windVolume * Mathf.Lerp(windFloor, 1f, t);
 
-        // The world falling quiet as it closes is worth more than anything getting louder.
+        // Quieter as it closes, rather than louder.
         target *= 1f - windDuckedByDread * Dread();
 
         wind.volume = Mathf.Lerp(wind.volume, target, 2f * Time.deltaTime);
@@ -118,7 +118,7 @@ public class AudioManager : Singleton<AudioManager>
         DriveDread();
     }
 
-    // Hearing it approach is what makes raising the mirror a decision rather than a guess.
+    // Hearing it approach makes raising the mirror a decision.
     private void DriveDread()
     {
         if (dread == null)

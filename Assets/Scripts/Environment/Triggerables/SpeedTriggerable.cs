@@ -37,7 +37,7 @@ public class SpeedTriggerable : MonoBehaviour, ITriggerable, IRunResettable
         SetCollected(false);
     }
 
-    // Collider goes with the renderer, or a collected pickup keeps boosting you invisibly.
+    // Collider too, or a collected pickup still boosts.
     private void SetCollected(bool collected)
     {
         if (rend != null)

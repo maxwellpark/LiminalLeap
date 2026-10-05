@@ -16,8 +16,7 @@ public class EndlessTests
     {
         RunFixture.IsolateFlags();
 
-        // Built at runtime rather than loaded with AssetDatabase: PlayMode tests must not
-        // reference the editor, and doing so silently emptied the whole suite.
+        // Built at runtime, as PlayMode tests can't reference the editor.
         prefabHolder = new GameObject("Prefabs");
         prefabHolder.SetActive(false);
 
@@ -76,8 +75,6 @@ public class EndlessTests
         }
     }
 
-    // A breath is meant to be a beat with nothing to survive. A hazard in one would be
-    // worse than having no breath at all, because the player has already relaxed.
     [UnityTest]
     public IEnumerator NothingCanKillYouInACalmStretch()
     {
@@ -116,8 +113,6 @@ public class EndlessTests
         }
     }
 
-    // The whole point of a daily: the same date has to lay out the same corridor, or
-    // comparing scores against anyone else is meaningless.
     [UnityTest]
     public IEnumerator TheDailyRunIsTheSameEveryTime()
     {
@@ -180,8 +175,7 @@ public class EndlessTests
             .SetValue(null, false);
     }
 
-    // The opening pieces are forced plain for the floor signage, so nothing is worth
-    // announcing until the player is past them.
+    // The lead-in is plain, so nothing is announced before it ends.
     private IEnumerator PastTheLeadIn()
     {
         generator.ResetRun();
@@ -203,8 +197,7 @@ public class EndlessTests
         Assert.Greater(root.GetComponentsInChildren<TrackSign>(true).Length, 0, "no signage was painted");
     }
 
-    // Runs the same distance as the passing case, or it would prove nothing but that the
-    // lead-in exists.
+    // Same distance as the passing case.
     [UnityTest]
     public IEnumerator NoSignsWhenTheFlagIsOff()
     {
@@ -251,7 +244,7 @@ public class EndlessTests
         f.SetValue(target, value);
     }
 
-    // The old finite track was 40 pieces. Walking well past that must still find track.
+    // The old finite track was 40 pieces.
     [UnityTest]
     public IEnumerator TrackKeepsComingIndefinitely()
     {
@@ -265,7 +258,7 @@ public class EndlessTests
         Debug.Log($"ENDLESS survived 120 steps with {generator.ActivePieces.Count} pieces live");
     }
 
-    // Pooling is the point: it must not leak a GameObject per piece forever.
+    // Must not leak a GameObject per piece.
     [UnityTest]
     public IEnumerator ItRecyclesInsteadOfGrowing()
     {
@@ -283,8 +276,6 @@ public class EndlessTests
         Assert.Less(late, early + 30, $"pieces are accumulating: {early} then {late}");
     }
 
-    // Pooling reuses objects, so a collected pickup came back still collected and the
-    // track quietly ran out of them mid-run.
     [UnityTest]
     public IEnumerator RecycledPickupsComeBack()
     {

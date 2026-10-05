@@ -1,11 +1,7 @@
 using UnityEngine;
 
-// Everything you can see about an attack. Reads the model and never writes to it, so a
-// zone can re-skin the telegraph without the rules moving.
-//
-// Readability is the whole job here: the lane is only ever shown behind you, in a panel a
-// few hundred pixels wide, for about a second. A thin floor strip at 30m was a couple of
-// degrees of arc and easy to miss entirely.
+// Shows an attack. Reads the model, never writes it. Big and bold, since it's only
+// seen in a small mirror for about a second.
 public class PursuerAttackPresenter : MonoBehaviour
 {
     private const int Chevrons = 6;
@@ -16,8 +12,7 @@ public class PursuerAttackPresenter : MonoBehaviour
     // Stands in for the emission it had on Standard.
     private const float Glow = 2.4f;
 
-    // Renderer and material held from build time. Looking them up in the tint ran eight
-    // GetComponent calls a frame for the length of every telegraph.
+    // Cached at build, not looked up per frame.
     private class Part
     {
         public GameObject Go;
@@ -80,8 +75,7 @@ public class PursuerAttackPresenter : MonoBehaviour
         }
     }
 
-    // Only on change. SetActive is a native call, and nine of them a frame for a whole run
-    // is a lot to pay for a thing that is off almost all of the time.
+    // Only on change, as SetActive is a native call.
     private static void Show(Part part, bool visible)
     {
         if (part.Visible == visible)
@@ -93,8 +87,7 @@ public class PursuerAttackPresenter : MonoBehaviour
         part.Go.SetActive(visible);
     }
 
-    // Deliberately stops short of the player: the lane is only readable in the mirror,
-    // otherwise there would be no reason to look back.
+    // Stops short of the player, so the lane is only readable in the mirror.
     private void Telegraph()
     {
         var player = PlayerTrackMovement.Position;
@@ -118,12 +111,12 @@ public class PursuerAttackPresenter : MonoBehaviour
         floor.Transform.localScale = new Vector3(width, 0.06f, length);
         Tint(floor, colour, pulse, 1f);
 
-        // The part that actually reads at a glance: a wall of light down the lane.
+        // The part that reads at a glance.
         curtain.Transform.SetPositionAndRotation(centre + Vector3.up * 1.7f, rotation);
         curtain.Transform.localScale = new Vector3(width, 3.4f, length);
         Tint(curtain, colour, pulse * 0.8f, 0.28f);
 
-        // Sweep toward the player so it reads as incoming rather than just present.
+        // Sweeps toward the player so it reads as incoming.
         var sweep = Time.time * (locked ? 3.5f : 1.6f);
         for (var i = 0; i < Chevrons; i++)
         {
@@ -145,16 +138,14 @@ public class PursuerAttackPresenter : MonoBehaviour
         var right = Vector3.Cross(Vector3.up, forward).normalized;
         var lane = model.LaneCentre(model.TargetLane);
 
-        // Runs from behind you to well ahead, rather than centred, so it reads as passing
-        // through rather than appearing on top of you.
+        // Runs from behind to well ahead, so it reads as passing through.
         const float length = 60f;
         var centre = player + forward * (length * 0.25f) + right * lane + Vector3.up * 0.9f;
 
         beam.Transform.SetPositionAndRotation(centre, Quaternion.LookRotation(forward, Vector3.up));
         beam.Transform.localScale = new Vector3(config.LaneHalfWidth * 2f, 1.8f, length);
 
-        // Shallow and slow on purpose. A hard strobe filling the screen is the thing that
-        // made the lighting unpleasant last time.
+        // Shallow and slow. A hard strobe made the lighting unpleasant.
         var shimmer = 0.8f + 0.12f * Mathf.Sin(Time.time * 9f);
         Tint(beam, new Color(1f, 0.93f, 0.82f), shimmer, 1f);
     }
@@ -185,7 +176,7 @@ public class PursuerAttackPresenter : MonoBehaviour
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.name = name;
 
-        // Resolution is the model's job, so this must never be something you can collide with.
+        // Never collidable: resolution is the model's job.
         Destroy(go.GetComponent<Collider>());
 
         var shader = Shader.Find("Sprites/Default");

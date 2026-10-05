@@ -5,7 +5,7 @@ using UnityEngine.UI;
 // Managers build their own UI when nothing is wired, so generated scenes work.
 public static class RuntimeUi
 {
-    // One scale rather than numbers picked per call site, which is why sizes looked arbitrary.
+    // One type scale for every call site.
     public const float Display = 96f;
     public const float Headline = 52f;
     public const float Body = 32f;
@@ -31,8 +31,7 @@ public static class RuntimeUi
         return text.gameObject.AddComponent<UiPop>();
     }
 
-    // Stacks rows by their own height. Hand-placed offsets silently overlapped the moment
-    // a font size changed, which is exactly what happened when score went to 96pt.
+    // Stacks rows by height, so a font size change can't overlap them.
     public class Column
     {
         private const float LineFactor = 1.3f;

@@ -5,8 +5,7 @@ using UnityEngine.TestTools;
 
 public class PickupBobTests
 {
-    // The player's trigger is a 1 unit box at its feet, so anything outside this band is
-    // uncollectable. Pickups being a hair out of reach has already been a bug once.
+    // The player's trigger is a 1 unit box at its feet.
     private const float ReachBottom = 0f;
     private const float ReachTop = 1f;
 

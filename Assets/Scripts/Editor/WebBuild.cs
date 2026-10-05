@@ -72,21 +72,16 @@ public static class WebBuild
 
     private static void ConfigureWebGl(bool development)
     {
-        // Gzip plus the fallback: itch serves it fine, and the fallback covers hosts
-        // that send the wrong content-encoding, which is the usual cause of a blank page.
+        // Gzip with the fallback, for hosts that send the wrong content-encoding.
         PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
         PlayerSettings.WebGL.decompressionFallback = true;
-        // None means a thrown exception silently corrupts state instead of surfacing, which
-        // is exactly what made a suspected failure impossible to diagnose in the browser.
-        // Allocation measurement says the run loop costs about 577 B/frame, so there is
-        // plenty of headroom to spend on being able to see what went wrong.
+        // Without exceptions a throw silently corrupts state, and there's headroom to pay for it.
         PlayerSettings.WebGL.exceptionSupport = development
             ? WebGLExceptionSupport.FullWithStacktrace
             : WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly;
         PlayerSettings.WebGL.dataCaching = true;
 
-        // The stock template pins the canvas at 960x600, which leaves the game in a small
-        // box inside whatever frame itch gives it.
+        // The stock template pins the canvas at 960x600.
         PlayerSettings.WebGL.template = "PROJECT:LiminalLeap";
         PlayerSettings.runInBackground = false;
         PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.WebGL, Il2CppCompilerConfiguration.Release);

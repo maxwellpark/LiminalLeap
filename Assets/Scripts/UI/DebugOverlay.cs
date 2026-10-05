@@ -46,8 +46,7 @@ public class DebugOverlay : Singleton<DebugOverlay>
         base.OnEnable();
         gcRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame");
 
-        // Allocation is only one axis. Draw cost is the one that actually decides whether a
-        // web build holds 60, and it was not observable anywhere until now.
+        // Draw cost decides whether a web build holds 60.
         drawRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Draw Calls Count");
         triangleRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Triangles Count");
     }
@@ -245,8 +244,7 @@ public class DebugOverlay : Singleton<DebugOverlay>
         return bytes <= 0 ? "0 B" : bytes < 1024 ? bytes + " B" : (bytes / 1024f).ToString("F1") + " KB";
     }
 
-    // Sampled rather than counted every OnGUI. A scene wide search allocating an array on
-    // every repaint made the overlay show a frame cost it had caused itself.
+    // Sampled, as a scene search every repaint cost a frame itself.
     private int CountPieces()
     {
         if (Time.unscaledTime >= nextPieceCountAt)

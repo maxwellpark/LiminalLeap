@@ -1,8 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-// Floor signage announcing what is coming. The generator tells it the truth and it decides
-// whether to pass it on.
+// Floor signage. Told the truth, it decides whether to pass it on.
 public class TrackSign : MonoBehaviour
 {
     [SerializeField] private Vector3 localOffset = new(0f, 0.02f, 4f);

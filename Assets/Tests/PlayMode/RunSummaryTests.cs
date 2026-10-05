@@ -58,8 +58,6 @@ public class RunSummaryTests
         Assert.IsTrue(RunSummary.GetInstance().WaitingForInput, "no summary after the run ended");
     }
 
-    // The whole point: a runner that restarts itself never gives you the moment where you
-    // decide to go again.
     [UnityTest]
     public IEnumerator TheRunDoesNotRestartOnItsOwn()
     {
@@ -86,7 +84,7 @@ public class RunSummaryTests
         yield return UntilSummaryOr(3f);
         Assert.IsTrue(RunSummary.GetInstance().WaitingForInput);
 
-        // Past the minimum display time, or a held key would skip the summary entirely.
+        // Past the minimum display time.
         yield return Seconds(0.7f);
 
         var deadline = Time.realtimeSinceStartup + 3f;
