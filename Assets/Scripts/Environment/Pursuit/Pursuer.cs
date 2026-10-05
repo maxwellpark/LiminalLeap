@@ -24,7 +24,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     [Header("Attacks")]
     [SerializeField] private PursuerAttackConfig attack = new();
     [SerializeField] private int attackSeed = 7;
-    [SerializeField] private float lookahead = 30f;     // how far forward a lane must be clear
+    [SerializeField] private float resolveMargin = 15f; // track checked either side of where the beam lands
     [SerializeField] private float playerHalfWidth = 0.6f;
 
     private readonly Collider[] overlaps = new Collider[32];
@@ -104,7 +104,10 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
     private void Update()
     {
-        if (!active || body == null)
+        // Held still behind the summary. It used to keep closing, attacking and paying out
+        // dodges into a run that was already recorded, and once it arrived it searched the
+        // scene for the player every frame.
+        if (!active || body == null || !PlayerTrackMovement.Running)
         {
             return;
         }
@@ -237,16 +240,80 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
     // Has to be current rather than cached: the whole fairness rule is not firing into a
     // lane the track has already closed.
+    //
+    // From the centreline, because that is what Threatens compares Lane against. Measured
+    // from the player, strafing shifted every lane and a centre hazard read as the left.
     private int ScanLanes()
     {
         blocked.Clear();
 
-        var origin = PlayerTrackMovement.Position;
-        var forward = Forward();
-        var right = Vector3.Cross(Vector3.up, forward).normalized;
-        var rotation = Quaternion.LookRotation(forward, Vector3.up);
-        var centre = origin + forward * (lookahead * 0.5f);
-        var extents = new Vector3(6f, 2.5f, lookahead * 0.5f);
+        PursuerSafety.ResolveWindow(
+            PlayerTrackMovement.CurrentSpeed, SecondsUntilResolve(), resolveMargin, out var near, out var far);
+
+        var cursor = PlayerTrackMovement.TrackCentre;
+        var heading = Forward();
+        var along = 0f;
+
+        var tracks = TrackManager.Instance;
+        var pieces = tracks != null ? tracks.Pieces : null;
+
+        if (pieces != null)
+        {
+            for (var i = 0; i < pieces.Count && along < far; i++)
+            {
+                var piece = pieces[i];
+                if (piece == null || piece.Passed)
+                {
+                    continue;
+                }
+
+                var end = piece.GetEndPosition();
+                var length = Vector3.Distance(cursor, end);
+
+                if (length > 0.001f)
+                {
+                    ScanStretch(cursor, (end - cursor) / length, along, along + length, near, far);
+                }
+
+                cursor = end;
+                heading = piece.GetEndForward();
+                along += length;
+            }
+        }
+
+        // Past the last spawned piece, or nothing to walk at all: carry straight on.
+        if (along < far)
+        {
+            ScanStretch(cursor, heading, along, far, near, far);
+        }
+
+        return PursuerSafety.AllowedLanes(blocked, attack.LaneSpacing, playerHalfWidth);
+    }
+
+    // One straight stretch of track, clipped to the window. Lateral offsets are taken across
+    // this stretch, so a hazard past a turn still lands in the lane it is actually in.
+    private void ScanStretch(Vector3 start, Vector3 direction, float from, float to, float near, float far)
+    {
+        var a = Mathf.Max(from, near);
+        var b = Mathf.Min(to, far);
+
+        if (b <= a)
+        {
+            return;
+        }
+
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.0001f)
+        {
+            return;
+        }
+
+        direction.Normalize();
+
+        var right = Vector3.Cross(Vector3.up, direction);
+        var rotation = Quaternion.LookRotation(direction, Vector3.up);
+        var centre = start + direction * ((a + b) * 0.5f - from);
+        var extents = new Vector3(6f, 2.5f, (b - a) * 0.5f);
 
         var count = Physics.OverlapBoxNonAlloc(
             centre, extents, overlaps, rotation, ~0, QueryTriggerInteraction.Collide);
@@ -260,7 +327,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             }
 
             var bounds = collider.bounds;
-            var lateral = Vector3.Dot(bounds.center - origin, right);
+            var lateral = Vector3.Dot(bounds.center - start, right);
 
             // Extent of an AABB along an arbitrary axis, so a turned piece still measures right.
             var half = Mathf.Abs(bounds.extents.x * right.x)
@@ -269,8 +336,14 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
             blocked.Add(new HazardLanes.Span(lateral, half));
         }
+    }
 
-        return PursuerSafety.AllowedLanes(blocked, attack.LaneSpacing, playerHalfWidth);
+    // Before the warning a whole attack's lead is still to come. From then on the model knows.
+    private float SecondsUntilResolve()
+    {
+        return attackModel != null && attackModel.Phase != AttackPhase.Idle
+            ? attackModel.TimeUntilFire + attack.FireDuration
+            : attack.LeadTime;
     }
 
     // Only on the way in. Announcing every recovery would make it chatty rather than tense.

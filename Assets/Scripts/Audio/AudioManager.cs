@@ -127,8 +127,14 @@ public class AudioManager : Singleton<AudioManager>
         dread.pitch = 1f + dreadPitchAtContact * near;
     }
 
+    // Silent once the run is over, or the loop sat at whatever it reached over the summary.
     private float Dread()
     {
+        if (!PlayerTrackMovement.Running)
+        {
+            return 0f;
+        }
+
         pursuer = pursuer != null ? pursuer : Pursuer.Instance;
         return pursuer != null ? pursuer.Proximity : 0f;
     }

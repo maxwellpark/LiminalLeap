@@ -215,4 +215,29 @@ public class RunTests
 
         Assert.Less(PlayerTrackMovement.DistanceCovered, 1f, "restart did not reset the run");
     }
+
+    // Nothing called the step that moves the light for a while, so Darkness sat at zero and
+    // both tests above passed against a feature that did nothing. This one has to go dark.
+    [UnityTest]
+    public IEnumerator RunningPastTheLightGoesDark()
+    {
+        Features.Override(Feature.LightAsResource, true);
+
+        // No head start and a front that never moves, so any distance at all is past it.
+        var lighting = MoodLighting.GetInstance();
+        var field = typeof(MoodLighting).GetField("lightFront",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        Assert.IsNotNull(field, "no lightFront field on MoodLighting");
+
+        var settings = (LightFront.Settings)field.GetValue(lighting);
+        settings.HeadStart = 0f;
+        settings.Speed = 0f;
+        lighting.ResetForNewRun();
+
+        yield return Seconds(2f);
+
+        Assert.Greater(lighting.Darkness, 0.1f, "ran well past the front and the corridor stayed lit");
+
+        Features.Override(Feature.LightAsResource, false);
+    }
 }
