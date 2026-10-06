@@ -36,11 +36,24 @@ public class UIManager : Singleton<UIManager>
 
         highScoreText.gameObject.SetActive(gameManager.HighScore > 0);
         nextScorePop = scorePopEvery;
+
+        // No score, speed or multiplier in the story.
+        HudVisible = Presentation.Arcade;
+        if (!HudVisible)
+        {
+            distanceText.gameObject.SetActive(false);
+            speedText.gameObject.SetActive(false);
+            scoreText.gameObject.SetActive(false);
+            multiplierText.gameObject.SetActive(false);
+            highScoreText.gameObject.SetActive(false);
+        }
     }
+
+    public bool HudVisible { get; private set; } = true;
 
     private void Update()
     {
-        if (distanceText == null || speedText == null)
+        if (!HudVisible || distanceText == null || speedText == null)
         {
             return;
         }
@@ -94,7 +107,7 @@ public class UIManager : Singleton<UIManager>
 
     protected override void OnDataUpdated()
     {
-        if (highScoreText != null && gameManager != null && gameManager.HighScore > 0)
+        if (HudVisible && highScoreText != null && gameManager != null && gameManager.HighScore > 0)
         {
             highScoreText.gameObject.SetActive(true);
             highScoreText.SetText("BEST {0:0}", gameManager.HighScore);

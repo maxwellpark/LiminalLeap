@@ -25,7 +25,7 @@ public class SpeedTriggerable : MonoBehaviour, ITriggerable, IRunResettable
         SetCollected(true);
 
         var combo = AudioManager.GetInstance().PlayPickup();
-        ToastManager.GetInstance().Show(combo > 1
+        ToastManager.GetInstance().ShowArcade(combo > 1
             ? $"+{speedToAdd:F0} speed   x{combo}"
             : $"+{speedToAdd:F0} speed");
 

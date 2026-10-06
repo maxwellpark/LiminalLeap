@@ -26,7 +26,7 @@ public static class Places
             Arrival = "Everyone went home hours ago.", Length = 120,
             Fog = new Color(0.07f, 0.08f, 0.09f), FogDensity = 0.018f,
             Ambient = new Color(0.16f, 0.17f, 0.2f), Light = new Color(0.82f, 0.86f, 0.8f),
-            Rules = Array.Empty<Feature>(),
+            Rules = new[] { Feature.LyingSigns },
         },
         new()
         {
@@ -42,13 +42,14 @@ public static class Places
             Arrival = "The hallway is longer than you remember.", Length = 180,
             Fog = new Color(0.09f, 0.06f, 0.05f), FogDensity = 0.02f,
             Ambient = new Color(0.18f, 0.13f, 0.11f), Light = new Color(0.95f, 0.78f, 0.6f),
-            Rules = new[] { Feature.ShiftWhenUnobserved, Feature.GhostPursuer },
+            Rules = new[] { Feature.LyingSigns, Feature.ShiftWhenUnobserved, Feature.GhostPursuer },
         },
     };
 
     // Decided by the place. Outside one, as in a free run, they fall back to the flags.
     public static readonly Feature[] Scoped =
     {
+        Feature.LyingSigns,
         Feature.LightAsResource,
         Feature.ShiftWhenUnobserved,
         Feature.GhostPursuer,

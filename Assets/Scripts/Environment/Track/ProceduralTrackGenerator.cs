@@ -53,6 +53,9 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
     public void ResetRun()
     {
+        // Applied here as well as by the player, since either may start first and signs read it.
+        Places.Apply(Places.ForRun());
+
         for (var i = 0; i < active.Count; i++)
         {
             Recycle(active[i]);
@@ -193,7 +196,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
             sign = host.gameObject.AddComponent<TrackSign>();
         }
 
-        sign.Paint(SignText.Choose(truth, (float)rng.NextDouble(), lieChance));
+        sign.Paint(SignText.Choose(truth, (float)rng.NextDouble(), lieChance), truth);
     }
 
     private static SignKind TruthFor(TrackPiece piece)

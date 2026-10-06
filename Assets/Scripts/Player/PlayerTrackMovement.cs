@@ -386,7 +386,9 @@ public class PlayerTrackMovement : MonoBehaviour
         if (other.GetComponent<ExitDoor>() != null)
         {
             exitsInside++;
-            ToastManager.GetInstance().Show($"E to leave with {Score:F0}");
+            ToastManager.GetInstance().Show(Presentation.Arcade
+                ? $"{Controls.Leave} to leave with {Score:F0}"
+                : $"{Controls.Leave}   open");
             return;
         }
 
@@ -428,7 +430,7 @@ public class PlayerTrackMovement : MonoBehaviour
     public void RegisterNearMiss(float reward)
     {
         nearMissBonus = Mathf.Min(nearMissBonus + reward, maxNearMissBonus);
-        ToastManager.GetInstance().Show($"Near miss   x{Multiplier:F1}");
+        ToastManager.GetInstance().ShowArcade($"Near miss   x{Multiplier:F1}");
     }
 
     public void KillPlayer()
@@ -533,7 +535,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
         Score += reward * Multiplier;
         fovKick = pickupFovKick;
-        ToastManager.GetInstance().Show($"Dodged   +{reward * Multiplier:F0}");
+        ToastManager.GetInstance().ShowArcade($"Dodged   +{reward * Multiplier:F0}");
     }
 
     private void ResetRun()

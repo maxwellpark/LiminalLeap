@@ -87,4 +87,79 @@ public class StoryTests
         Assert.IsTrue(Features.On(Feature.LightAsResource), "the school's rule did not apply");
         Assert.AreEqual(school.Fog, RenderSettings.fogColor, "the school's fog did not apply");
     }
+
+    [UnityTest]
+    public IEnumerator TheStoryHidesTheArcadeHud()
+    {
+        var hud = new GameObject("Hud").AddComponent<UIManager>();
+        yield return null;
+        yield return null;
+
+        Assert.IsFalse(hud.HudVisible, "score and speed should be hidden in the story");
+    }
+
+    [UnityTest]
+    public IEnumerator DyingInTheStoryGoesStraightBackIn()
+    {
+        yield return null;
+        fixture.AddHazardAhead();
+
+        var sawSummary = false;
+        var died = false;
+        var deadline = Time.realtimeSinceStartup + 6f;
+        while (Time.realtimeSinceStartup < deadline)
+        {
+            died |= outcome == RunOutcome.Died;
+            sawSummary |= RunSummary.GetInstance().WaitingForInput;
+            if (died && PlayerTrackMovement.DistanceCovered < 1f)
+            {
+                break;
+            }
+
+            fixture.Input.Tick();
+            yield return null;
+        }
+
+        Assert.IsTrue(died, "never hit the hazard");
+        Assert.IsFalse(sawSummary, "the story showed the score summary");
+        Assert.Less(PlayerTrackMovement.DistanceCovered, 1f, "the office did not restart");
+        Assert.AreEqual(0, SaveStore.Data.StoryPlace, "dying should not move the story");
+    }
+
+    [UnityTest]
+    public IEnumerator TheStoryExitDoesNotTalkAboutScore()
+    {
+        fixture.AddExit(2.8f, 3);
+
+        var guard = 0f;
+        var toasts = ToastManager.GetInstance();
+        while (!AtTheDoor(toasts.LastMessage) && guard < 8f)
+        {
+            fixture.Input.Horizontal = 1f;
+            fixture.Input.Tick();
+            guard += Time.deltaTime;
+            yield return null;
+        }
+
+        Assert.IsTrue(AtTheDoor(toasts.LastMessage), "never reached the exit");
+        StringAssert.Contains("open", toasts.LastMessage);
+        StringAssert.DoesNotContain("leave with", toasts.LastMessage);
+    }
+
+    // Other toasts, like the mirror hint, can arrive first.
+    private static bool AtTheDoor(string message)
+    {
+        return message != null && (message.Contains("open") || message.Contains("leave"));
+    }
+
+    [UnityTest]
+    public IEnumerator ArcadeToastsStayQuietInTheStory()
+    {
+        yield return null;
+        var toasts = ToastManager.GetInstance();
+
+        toasts.ShowArcade("Near miss   x1.5");
+
+        Assert.AreNotEqual("Near miss   x1.5", toasts.LastMessage);
+    }
 }

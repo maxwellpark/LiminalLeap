@@ -45,16 +45,19 @@ public class PlacesTests
     public void EachPlaceBringsItsOwnRule()
     {
         Places.Apply(Get("office"));
+        Assert.IsTrue(Features.On(Feature.LyingSigns));
         Assert.IsFalse(Features.On(Feature.LightAsResource));
         Assert.IsFalse(Features.On(Feature.ShiftWhenUnobserved));
         Assert.IsFalse(Features.On(Feature.GhostPursuer));
 
         Places.Apply(Get("school"));
+        Assert.IsFalse(Features.On(Feature.LyingSigns));
         Assert.IsTrue(Features.On(Feature.LightAsResource));
         Assert.IsFalse(Features.On(Feature.ShiftWhenUnobserved));
         Assert.IsFalse(Features.On(Feature.GhostPursuer));
 
         Places.Apply(Get("house"));
+        Assert.IsTrue(Features.On(Feature.LyingSigns));
         Assert.IsFalse(Features.On(Feature.LightAsResource));
         Assert.IsTrue(Features.On(Feature.ShiftWhenUnobserved));
         Assert.IsTrue(Features.On(Feature.GhostPursuer));

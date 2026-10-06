@@ -53,6 +53,12 @@ public static class SceneShot
             // Back off the eye line, as the first person camera starts inside the geometry.
             camera.transform.position += Vector3.up * 1.6f - camera.transform.forward * 4f;
 
+            // The forward view, so a sign's mirror reading doesn't print over it.
+            if (Presentation.MirrorOnlyLayer >= 0)
+            {
+                camera.cullingMask &= ~(1 << Presentation.MirrorOnlyLayer);
+            }
+
             var file = Path.Combine(OutputDir, scene.name + ".png");
             Render(camera, width, height, file);
             taken++;
