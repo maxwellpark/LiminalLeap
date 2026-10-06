@@ -50,6 +50,13 @@ public class GameManager : Singleton<GameManager>
             SaveStore.Data.Daily(RunMode.Day).Record(score, evt.DistanceCovered);
         }
 
+        // Still the place just left: the story only moves on once the summary is dismissed.
+        var place = RunMode.Story ? Places.ForRun() : null;
+        if (place != null)
+        {
+            SaveStore.Data.PlaceBest(place.Id).Record(score);
+        }
+
         SaveStore.Save();
 
         data.HighScore = SaveStore.Data.HighScore;

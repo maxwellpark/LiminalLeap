@@ -37,11 +37,11 @@ public class FeaturesTests
     [Test]
     public void AnOverrideWins()
     {
-        Features.Override(Feature.SpeedSummons, true);
-        Assert.IsTrue(Features.On(Feature.SpeedSummons));
+        Features.Override(Feature.GhostPursuer, true);
+        Assert.IsTrue(Features.On(Feature.GhostPursuer));
 
-        Features.Override(Feature.SpeedSummons, false);
-        Assert.IsFalse(Features.On(Feature.SpeedSummons));
+        Features.Override(Feature.GhostPursuer, false);
+        Assert.IsFalse(Features.On(Feature.GhostPursuer));
     }
 
     [Test]
@@ -67,10 +67,10 @@ public class FeaturesTests
     [Test]
     public void OverridesSurviveAGameManagerWakingUp()
     {
-        Features.Override(Feature.SpeedSummons, true);
+        Features.Override(Feature.GhostPursuer, true);
         Features.UseStorage();
 
-        Assert.IsTrue(Features.On(Feature.SpeedSummons));
+        Assert.IsTrue(Features.On(Feature.GhostPursuer));
     }
 
     [Test]
@@ -110,5 +110,35 @@ public class FeaturesTests
             Assert.IsTrue(seen.Add(Features.VariantKey()), "two features share a slot in the key");
             Features.Override(feature, false);
         }
+    }
+
+    [Test]
+    public void APlaceRuleBeatsTheDefault()
+    {
+        Features.SetPlaceRule(Feature.GhostPursuer, true);
+        Assert.IsTrue(Features.On(Feature.GhostPursuer));
+
+        Features.ClearPlace();
+        Assert.AreEqual(Features.DefaultFor(Feature.GhostPursuer), Features.On(Feature.GhostPursuer));
+    }
+
+    // The debug overlay and the tests still get the last word.
+    [Test]
+    public void AnOverrideBeatsAPlaceRule()
+    {
+        Features.SetPlaceRule(Feature.GhostPursuer, true);
+        Features.Override(Feature.GhostPursuer, false);
+
+        Assert.IsFalse(Features.On(Feature.GhostPursuer));
+        Features.ClearPlace();
+    }
+
+    [Test]
+    public void IsolatingClearsThePlace()
+    {
+        Features.SetPlaceRule(Feature.GhostPursuer, true);
+        Features.IsolateForTests();
+
+        Assert.AreEqual(Features.DefaultFor(Feature.GhostPursuer), Features.On(Feature.GhostPursuer));
     }
 }

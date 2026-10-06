@@ -20,6 +20,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
     [Header("Exits")]
     [SerializeField] private int firstExitAfter = 22;
     [SerializeField] private float exitGapGrowth = 1.5f; // the way out gets rarer the deeper you go
+    [SerializeField] private int storyRetryGap = 8;      // a missed story exit comes round again
 
     [Header("Calm")]
     [SerializeField] private int busyPieces = 22;   // stretch of ordinary track
@@ -40,6 +41,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private int lastHazardAt = int.MinValue / 2;
     private int nextExitAt;
     private int exitsSpawned;
+    private int placeLength;
     private int runSeed;
 
     public IReadOnlyList<TrackPiece> ActivePieces => active;
@@ -65,7 +67,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
         spawned = 0;
         lastHazardAt = int.MinValue / 2;
         exitsSpawned = 0;
-        nextExitAt = firstExitAfter;
+
+        var place = RunMode.Story ? Places.ForRun() : null;
+        placeLength = place != null ? place.Length : 0;
+        nextExitAt = ExitSchedule.First(placeLength, firstExitAfter);
 
         nextEnd = startPosition;
         nextForward = startForward.sqrMagnitude > 0f ? startForward.normalized : Vector3.forward;
@@ -126,7 +131,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         if (IsExit(index))
         {
             exitsSpawned++;
-            nextExitAt = spawned + Mathf.RoundToInt(firstExitAfter * Mathf.Pow(exitGapGrowth, exitsSpawned));
+            nextExitAt = ExitSchedule.Next(spawned, exitsSpawned, placeLength, firstExitAfter, exitGapGrowth, storyRetryGap);
         }
 
         piece.Calm = Calm(spawned);

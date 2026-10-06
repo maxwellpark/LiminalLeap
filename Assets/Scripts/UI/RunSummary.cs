@@ -118,8 +118,36 @@ public class RunSummary : Singleton<RunSummary>
 
         prompt.text = "press SPACE to run again";
 
+        var place = RunMode.Story ? Places.ForRun() : null;
+        if (place != null)
+        {
+            ShowStory(evt, place, kept);
+        }
+
         visibleAt = -1f;
         WaitingForInput = true;
+    }
+
+    // Out of a place, say where you're going next. Caught, measure against that place's best.
+    private void ShowStory(OnDeathEvent evt, Place place, bool kept)
+    {
+        var next = Places.Next(place);
+
+        if (evt.Outcome == RunOutcome.Banked)
+        {
+            headline.text = next == null ? "HOME" : $"OUT OF {place.Short.ToUpperInvariant()}";
+            best.text = next == null ? "the story is over" : $"next  {next.Name}";
+            best.color = RuntimeUi.Accent;
+            prompt.text = next == null ? "press SPACE" : "press SPACE to go on";
+            return;
+        }
+
+        var record = SaveStore.Data.PlaceBest(place.Id).BestScore;
+        var beaten = kept && PlayerTrackMovement.Score > 0f && PlayerTrackMovement.Score >= record;
+
+        best.text = beaten ? "NEW BEST HERE" : $"{place.Name}   best  {record:N0}";
+        best.color = beaten ? RuntimeUi.Accent : RuntimeUi.Muted;
+        prompt.text = "press SPACE to try again";
     }
 
     private void Build()

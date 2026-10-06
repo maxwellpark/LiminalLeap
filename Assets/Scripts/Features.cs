@@ -8,7 +8,6 @@ public enum Feature
     GhostPursuer,
     ShiftWhenUnobserved,
     LyingSigns,
-    SpeedSummons,
     PursuerAttacks,
     CalmSections,
     LightAsResource,
@@ -24,6 +23,7 @@ public static class Features
     public static readonly Feature[] All = (Feature[])Enum.GetValues(typeof(Feature));
 
     private static readonly sbyte[] Overrides = Filled(All.Length);
+    private static readonly sbyte[] PlaceRules = Filled(All.Length);
     private static readonly sbyte[] Cache = Filled(All.Length);
     private static readonly string[] Keys = BuildKeys();
 
@@ -42,7 +42,6 @@ public static class Features
             Feature.CalmSections => true,
             Feature.GhostPursuer => false,
             Feature.ShiftWhenUnobserved => false,
-            Feature.SpeedSummons => false,
             Feature.LightAsResource => false,
             _ => throw new ArgumentOutOfRangeException(nameof(feature), feature, "no default set"),
         };
@@ -55,6 +54,11 @@ public static class Features
         if (Overrides[i] != Unset)
         {
             return Overrides[i] == 1;
+        }
+
+        if (PlaceRules[i] != Unset)
+        {
+            return PlaceRules[i] == 1;
         }
 
         if (Cache[i] == Unset)
@@ -87,6 +91,20 @@ public static class Features
         Overrides[(int)feature] = (sbyte)(on ? 1 : 0);
     }
 
+    // Set by the current place. Overrides still win, for the debug overlay and tests.
+    public static void SetPlaceRule(Feature feature, bool on)
+    {
+        PlaceRules[(int)feature] = (sbyte)(on ? 1 : 0);
+    }
+
+    public static void ClearPlace()
+    {
+        for (var i = 0; i < PlaceRules.Length; i++)
+        {
+            PlaceRules[i] = Unset;
+        }
+    }
+
     public static void ClearOverrides()
     {
         for (var i = 0; i < Overrides.Length; i++)
@@ -99,6 +117,7 @@ public static class Features
     public static void IsolateForTests()
     {
         ClearOverrides();
+        ClearPlace();
         isolated = true;
         useStorage = false;
         Invalidate();
