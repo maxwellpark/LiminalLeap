@@ -29,10 +29,10 @@ public class RunSummary : Singleton<RunSummary>
         Build();
     }
 
-    // Not for restarts, which go straight back in.
+    // Not for restarts, which go straight back in, nor in the story, which just carries on.
     protected override void OnDeath(OnDeathEvent evt)
     {
-        if (evt.Outcome != RunOutcome.Abandoned)
+        if (evt.Outcome != RunOutcome.Abandoned && Presentation.Arcade)
         {
             Show(evt);
         }

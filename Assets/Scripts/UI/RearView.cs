@@ -64,6 +64,15 @@ public class RearView : Singleton<RearView>
         mirrorCamera.CopyFrom(main);
         FaceBackwards();
 
+        // Each sees its own reading of a sign: ahead can lie, the mirror can't.
+        var forward = Presentation.ForwardOnlyLayer;
+        var mirrored = Presentation.MirrorOnlyLayer;
+        if (forward >= 0 && mirrored >= 0)
+        {
+            mirrorCamera.cullingMask = (main.cullingMask | (1 << mirrored)) & ~(1 << forward);
+            main.cullingMask &= ~(1 << mirrored);
+        }
+
         mirrorCamera.targetTexture = target;
         mirrorCamera.fieldOfView = 75f;
         mirrorCamera.enabled = false;

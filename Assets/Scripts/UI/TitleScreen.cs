@@ -67,7 +67,7 @@ public class TitleScreen : MonoBehaviour
         }
         else if (Input.anyKeyDown)
         {
-            RunMode.ChooseFree();
+            RunMode.ChooseStory();
             StartGame();
         }
     }
@@ -143,15 +143,23 @@ public class TitleScreen : MonoBehaviour
         return found;
     }
 
-    // Today's run and your best on it.
+    // Today's run, its place and your best on it.
     private static string DailyLine()
     {
         var day = DailySeed.TodayKey();
         var record = SaveStore.Data.Daily(day);
+        var place = Places.ForDaily(DailySeed.Today()).Name;
 
         return record.Runs > 0
-            ? $"{Controls.Daily}   today's run  {day}      your best  {record.BestScore:N0}"
-            : $"{Controls.Daily}   today's run  {day}";
+            ? $"{Controls.Daily}   today's run  {place}      your best  {record.BestScore:N0}"
+            : $"{Controls.Daily}   today's run  {place}";
+    }
+
+    // Where the story picks up.
+    private static string StoryLine()
+    {
+        var place = Places.Story[Mathf.Clamp(SaveStore.Data.StoryPlace, 0, Places.Story.Length - 1)];
+        return SaveStore.Data.StoryPlace > 0 ? $"continue from  {place.Name}" : place.Name;
     }
 
     private void BuildUi()
@@ -170,6 +178,7 @@ public class TitleScreen : MonoBehaviour
 
         prompt = column.Add("Prompt", RuntimeUi.Caption, RuntimeUi.Accent, 0.15f, 10f);
         prompt.text = "press any key";
+        column.Add("Story", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = StoryLine();
 
         column.Space(26f);
         column.Add("Daily", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = DailyLine();

@@ -113,6 +113,8 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void Start()
     {
+        Places.Apply(Places.ForRun());
+
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true; // we drive the transform; keep triggers, drop the physics fight
         trackManager = TrackManager.GetInstance();
@@ -151,6 +153,7 @@ public class PlayerTrackMovement : MonoBehaviour
         RunSummary.GetInstance();
         Onboarding.GetInstance();
         PauseMenu.GetInstance();
+        PlaceCard.GetInstance().Show(Places.ForRun());
     }
 
     private void Update()
@@ -383,7 +386,9 @@ public class PlayerTrackMovement : MonoBehaviour
         if (other.GetComponent<ExitDoor>() != null)
         {
             exitsInside++;
-            ToastManager.GetInstance().Show($"E to leave with {Score:F0}");
+            ToastManager.GetInstance().Show(Presentation.Arcade
+                ? $"{Controls.Leave} to leave with {Score:F0}"
+                : $"{Controls.Leave}   open");
             return;
         }
 
@@ -425,7 +430,7 @@ public class PlayerTrackMovement : MonoBehaviour
     public void RegisterNearMiss(float reward)
     {
         nearMissBonus = Mathf.Min(nearMissBonus + reward, maxNearMissBonus);
-        ToastManager.GetInstance().Show($"Near miss   x{Multiplier:F1}");
+        ToastManager.GetInstance().ShowArcade($"Near miss   x{Multiplier:F1}");
     }
 
     public void KillPlayer()
@@ -483,8 +488,23 @@ public class PlayerTrackMovement : MonoBehaviour
             yield return null;
         }
 
+        // Out of a place moves the story on, and out of the last one ends it.
+        if (outcome == RunOutcome.Banked && RunMode.Story)
+        {
+            var finished = Places.Advance(SaveStore.Data);
+            SaveStore.Save();
+
+            if (finished)
+            {
+                Time.timeScale = 1f;
+                PauseMenu.LoadTitle();
+                yield break;
+            }
+        }
+
         ResetRun();
         ScreenFade.GetInstance().To(0f, 0.35f);
+        PlaceCard.GetInstance().Show(Places.ForRun());
         dying = false;
         live = true;
     }
@@ -515,11 +535,12 @@ public class PlayerTrackMovement : MonoBehaviour
 
         Score += reward * Multiplier;
         fovKick = pickupFovKick;
-        ToastManager.GetInstance().Show($"Dodged   +{reward * Multiplier:F0}");
+        ToastManager.GetInstance().ShowArcade($"Dodged   +{reward * Multiplier:F0}");
     }
 
     private void ResetRun()
     {
+        Places.Apply(Places.ForRun());
         trackManager.ResetRun();
         basePos = startingPosition;
         TrackCentre = basePos;

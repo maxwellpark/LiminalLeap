@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 // Pause, back to title, and the player options.
 public class PauseMenu : Singleton<PauseMenu>
 {
-    [SerializeField] private string titleScene = "TitleScreen";
+    private const string TitleScene = "TitleScreen";
 
     private CanvasGroup group;
     private TextMeshProUGUI keys;
@@ -99,10 +99,14 @@ public class PauseMenu : Singleton<PauseMenu>
     private void ToTitle()
     {
         Resume();
+        LoadTitle();
+    }
 
-        if (Application.CanStreamedLevelBeLoaded(titleScene))
+    public static void LoadTitle()
+    {
+        if (Application.CanStreamedLevelBeLoaded(TitleScene))
         {
-            SceneManager.LoadScene(titleScene);
+            SceneManager.LoadScene(TitleScene);
         }
         else
         {
