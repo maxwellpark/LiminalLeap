@@ -73,7 +73,7 @@ public class PlayerTrackMovement : MonoBehaviour
     // Where you sit across the track, so the pursuer can aim at a lane without a reference.
     public static float Lane { get; private set; }
 
-    // Read by the pursuer and the lighting, so a breath is one fact rather than three.
+    // Read by the pursuer and the lighting too.
     public static bool InCalm { get; private set; }
 
     private readonly GhostRecorder ghostRecorder = new();
@@ -137,7 +137,7 @@ public class PlayerTrackMovement : MonoBehaviour
             fovBase = camComponent.fieldOfView;
         }
 
-        // Someone has to ask first, and this builds their canvases before the first death.
+        // Spawned now, so their canvases exist before the first death.
         AudioManager.GetInstance();
         ToastManager.GetInstance();
         ScreenFade.GetInstance();
@@ -272,7 +272,7 @@ public class PlayerTrackMovement : MonoBehaviour
         var piece = trackManager.GetClosestPiece(basePos);
         if (piece == null)
         {
-            // Running out of track used to stall silently, same dead end junctions had.
+            // Running out of track ends the run rather than stalling.
             if (hadPiece)
             {
                 FinishRun(RunOutcome.Completed);
@@ -285,14 +285,12 @@ public class PlayerTrackMovement : MonoBehaviour
 
         InCalm = Features.On(Feature.CalmSections) && piece.Calm;
 
-        // The floor is deliberately bypassed here. Clamping to minSpeed would stop the pace
-        // dropping at all, which is the entire point of the stretch.
+        // Bypasses minSpeed, or the pace couldn't drop.
         CurrentSpeed = InCalm
             ? Mathf.MoveTowards(CurrentSpeed, calmSpeed, calmEase * dt)
             : Mathf.Clamp(Mathf.MoveTowards(CurrentSpeed, maxSpeed, acceleration * dt), minSpeed, maxSpeed);
 
-        // Spill leftover into the next piece. MoveTowards clamps at its target, so stopping
-        // at a boundary silently dropped the rest of the frame's movement and read as jitter.
+        // Spill the remainder into the next piece, or boundaries stutter.
         var remaining = CurrentSpeed * dt;
         var guard = 0;
 
@@ -315,12 +313,10 @@ public class PlayerTrackMovement : MonoBehaviour
             piece = trackManager.GetClosestPiece(basePos);
         }
 
-        // Once per frame, outside the loop: rotating per iteration turned twice as far on a
-        // boundary frame, and boundaries arrive faster the quicker you run.
+        // Once per frame, not per piece crossed.
         if (piece != null)
         {
-            // Exponential ease so the heading never snaps onto a new piece's angle, and
-            // framerate independent unlike lerping by a raw factor.
+            // Exponential ease: no snap, and framerate independent.
             var blend = 1f - Mathf.Exp(-turnResponse * dt);
             trackRot = Quaternion.Slerp(trackRot, piece.transform.rotation, blend);
         }
@@ -375,7 +371,7 @@ public class PlayerTrackMovement : MonoBehaviour
             return;
         }
 
-        // Tracked separately, or the lerp eats last frame's kick and the punch never reads.
+        // Separate, or the lerp eats the kick.
         fovBase = Mathf.Lerp(fovBase, baseFov + maxFovBoost * SpeedT, 5f * dt);
         fovKick = Mathf.Lerp(fovKick, 0f, fovKickDecay * dt);
         camComponent.fieldOfView = fovBase + fovKick;
@@ -383,8 +379,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Standing in the doorway only offers the choice. Taking it needs a press, or you
-        // would bank the run by strafing to dodge, since the exit sits in a dodge lane.
+        // Only an offer. Banking needs a press, since the exit sits in a dodge lane.
         if (other.GetComponent<ExitDoor>() != null)
         {
             exitsInside++;
@@ -446,7 +441,7 @@ public class PlayerTrackMovement : MonoBehaviour
         }
     }
 
-    // Reset happens behind the wipe so the respawn isn't a teleport in your face.
+    // Reset behind the wipe, so the respawn isn't a teleport.
     private System.Collections.IEnumerator EndSequence(RunOutcome outcome)
     {
         dying = true;
@@ -481,8 +476,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
         Time.timeScale = 1f;
 
-        // Hold on the summary until they ask for another go. A runner that restarts itself
-        // never gives you the moment where you decide to try again.
+        // Wait on the summary, so going again is a choice.
         var summary = RunSummary.GetInstance();
         while (summary != null && summary.WaitingForInput)
         {

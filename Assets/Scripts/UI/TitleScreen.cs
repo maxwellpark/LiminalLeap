@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Builds its own UI so the scene only needs this component and some geometry to look at.
+// Builds its own UI, so the scene only needs this and some geometry.
 public class TitleScreen : MonoBehaviour
 {
     [Header("Where to go")]
@@ -15,8 +15,7 @@ public class TitleScreen : MonoBehaviour
     [Header("Presentation")]
     [SerializeField] private string title = "LIMINAL LEAP";
     [SerializeField] private string subtitle = "keep running";
-    // Controls are derived, not serialised. The old copy lived in the scene, so adding the
-    // leave key changed the code and left the title screen teaching the previous set.
+    // Controls come from Controls.Summary, not the scene.
     [SerializeField] private float driftSpeed = 1.6f;
     [SerializeField] private float startDelay = 0.6f;
 
@@ -96,8 +95,7 @@ public class TitleScreen : MonoBehaviour
         }
     }
 
-    // Read from Build Settings at runtime. A baked list of names goes stale the moment
-    // scenes are regenerated, which is exactly what happened.
+    // From Build Settings at runtime, as a baked list goes stale.
     private string Resolve()
     {
         if (preferGenerated)
@@ -145,7 +143,7 @@ public class TitleScreen : MonoBehaviour
         return found;
     }
 
-    // Same corridor for everyone on a given date, and something of your own to beat.
+    // Today's run and your best on it.
     private static string DailyLine()
     {
         var day = DailySeed.TodayKey();

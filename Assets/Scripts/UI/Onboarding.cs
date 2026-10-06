@@ -1,7 +1,6 @@
 using UnityEngine;
 
-// The floor signage covers the controls you need at the start. This is for the one that
-// can't be a sign: the mirror only means anything at the moment it has an answer for you.
+// Teaches the mirror at the moment it has an answer.
 public class Onboarding : Singleton<Onboarding>
 {
     [SerializeField] private float hintAtProximity = 0.25f;
@@ -34,12 +33,12 @@ public class Onboarding : Singleton<Onboarding>
         HintOnProximity();
     }
 
-    // Told at the one moment it is worth acting on, which is what the warning is for.
+    // Told when it's worth acting on.
     private void HintOnFirstAttack()
     {
         var warning = pursuer.Attack != null && pursuer.Attack.Phase == AttackPhase.Warning;
 
-        // Latched per attack, or the warning lasts a second and this fires every frame of it.
+        // Latched per attack, or it fires every frame of the warning.
         if (!warning)
         {
             hintedThisAttack = false;

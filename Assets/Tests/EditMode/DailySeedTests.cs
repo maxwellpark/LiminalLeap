@@ -18,8 +18,7 @@ public class DailySeedTests
         Assert.AreNotEqual(DailySeed.For(Day), DailySeed.For(Day.AddDays(1)));
     }
 
-    // Raw ordinals would put consecutive days next to each other in the sequence, and
-    // today looking like yesterday defeats the point of a daily.
+    // Today shouldn't look like yesterday.
     [Test]
     public void ConsecutiveDaysAreNotAdjacentSeeds()
     {

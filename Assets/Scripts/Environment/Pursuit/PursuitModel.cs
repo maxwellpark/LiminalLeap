@@ -14,13 +14,11 @@ public static class PursuitModel
         public float LungeWithin;   // closes harder inside this distance
         public float LungeMultiplier;
 
-        // Zeroing RecoverRate was not enough to make watching neutral: the observed branch
-        // also skips the close rate, so the mirror still bought a full stop. This makes
-        // "the mirror changes nothing" a property of the model rather than of the caller.
+        // Makes the mirror neutral in the model rather than relying on the caller.
         public bool IgnoreObservation;
     }
 
-    // Flat pursuit makes the endgame as tame as the opening. Past a threshold it commits.
+    // Commits harder past a threshold.
     public static float CloseRateAt(float distance, Settings s)
     {
         var rate = Math.Max(0f, s.CloseRate);

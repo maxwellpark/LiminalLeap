@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-// Decides which lanes are fair game. Postponing an attack is always allowed, inventing an
-// exception once the beam is already committed is not.
+// Which lanes are fair game. Postponing is always allowed.
 public static class PursuerSafety
 {
     public static int AllowedLanes(

@@ -37,17 +37,13 @@ public class PursuerAttackConfig
 
     public float[] LaneWeights = { 1f, 1f, 1f };
 
-    // Once the mirror stopped being a defence, a steady close rate was an unwinnable timer:
-    // there was nothing left you could do about it. The fight is the attacks now, so it
-    // drifts in slowly and a dodge has to be worth more than a cycle's drift.
+    // Drifts in slowly, since dodging is the only counterplay.
     public float CloseRateDuringAttacks = 0.9f;
 
-    // Less than the close rate would cancel: at full speed the old relief made it literally
-    // uncatchable, which pinned Proximity at zero and muted the dread it drives.
+    // Below the close rate, or it can't catch you at full speed.
     public float SpeedReliefDuringAttacks = 0.7f;
 
-    // Has to clear a whole cycle's drift at a standstill, not just match it, or crawling
-    // along dodging perfectly still slowly loses.
+    // More than a cycle's drift, or perfect dodging at a crawl still loses.
     public float PursuerSetbackOnDodge = 12f;
     public float ScoreRewardOnDodge = 250f;
 

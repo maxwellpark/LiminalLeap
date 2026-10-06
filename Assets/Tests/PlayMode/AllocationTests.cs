@@ -4,12 +4,8 @@ using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-// Per frame garbage is what makes a WebGL build hitch, and it is invisible until measured.
-//
-// Everything here is measured against a control: the test runner allocates around 4 KB a
-// frame all by itself, so an absolute number would have read as a serious problem when
-// almost none of it was ours. Each test subtracts a baseline taken in the same run, which
-// also keeps the budget meaningful across machines and Unity versions.
+// Per frame garbage makes WebGL hitch. Measured against a baseline from the same run,
+// since the test runner allocates plenty by itself.
 public class AllocationTests
 {
     private const int WarmUpFrames = 40;
@@ -80,7 +76,7 @@ public class AllocationTests
 
     private IEnumerator CompareToBaseline(string label)
     {
-        // Warm up first: lazy caches allocate once and would be blamed on the steady state.
+        // Warm up first, so lazy caches don't count.
         yield return Frames(WarmUpFrames);
 
         var measured = new long[1];
@@ -112,8 +108,7 @@ public class AllocationTests
         yield return CompareToBaseline("run loop");
     }
 
-    // The presenter drives eight parts a frame for the length of every telegraph, so it is
-    // the likeliest place for a per frame allocation to reappear.
+    // Eight parts a frame through every telegraph.
     [UnityTest]
     public IEnumerator AnAttackTelegraphStaysCheapPerFrame()
     {
@@ -126,8 +121,7 @@ public class AllocationTests
         yield return CompareToBaseline("attack telegraph");
     }
 
-    // Spawning used to fetch a piece's resettables with GetComponentsInChildren, which
-    // allocates an array every time, and spawns come faster the quicker you run.
+    // Spawns come faster the quicker you run.
     [UnityTest]
     public IEnumerator NoFrameSpikesWhilePiecesRecycle()
     {

@@ -20,14 +20,13 @@ public class GameManager : Singleton<GameManager>
         // A test run in the same editor session leaves the flags isolated otherwise.
         Features.UseStorage();
 
-        // A lost asset ref shouldn't be an instant null ref, and runtime scenes have none.
+        // Runtime scenes have no asset to reference.
         if (data == null)
         {
             data = ScriptableObject.CreateInstance<GameData>();
         }
 
-        // Was ResetToDefaults, which wiped the high score every launch and made the
-        // BEST readout decorative. The save is the source of truth now.
+        // The save is the source of truth for the best score.
         data.HighScore = SaveStore.Data.HighScore;
     }
 
@@ -39,8 +38,7 @@ public class GameManager : Singleton<GameManager>
             return;
         }
 
-        // Dying costs you the score, but only once there was a way to bank it. Without
-        // exits, death is the only ending, so taking the score away would just be a bug.
+        // Dying only costs the score when there was a way to bank it.
         var kept = evt.Outcome != RunOutcome.Died || !Features.On(Feature.ExitDoors);
         var score = kept ? PlayerTrackMovement.Score : 0f;
 

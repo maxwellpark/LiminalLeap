@@ -38,7 +38,7 @@ public static class ProceduralTextures
         return pixels;
     }
 
-    // Dark lines on cell boundaries. Reads as panelling and gives speed something to bite on.
+    // Panelling lines, which give speed something to bite on.
     public static float[] Grid(int size, int cells, float lineWidth)
     {
         size = Math.Max(2, size);

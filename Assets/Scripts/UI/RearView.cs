@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// Mirror you hold a key to raise. The camera is disabled unless it's up, so it costs
-// nothing the rest of the time, unlike the always-on full-res RearViewMirror.
+// Hold to raise. The camera only renders while raised.
 public class RearView : Singleton<RearView>
 {
     [SerializeField] private int width = 480;
@@ -41,8 +40,7 @@ public class RearView : Singleton<RearView>
     public bool IsRaised => shown > 0.5f;
     public Camera MirrorCamera => mirrorCamera;
 
-    // A backwards camera is not a mirror: it renders the world reversed, so something on
-    // your left came out on the right of the panel and the lane telegraph read inverted.
+    // A backwards camera renders reversed, so the panel is flipped.
     public bool Flipped => panel != null && panel.uvRect.width < 0f;
 
     // How much of the way forward the mirror is currently costing you.
@@ -62,8 +60,7 @@ public class RearView : Singleton<RearView>
         go.transform.SetParent(main.transform, false);
         mirrorCamera = go.AddComponent<Camera>();
 
-        // CopyFrom copies the transform too, so face it backwards afterwards or the
-        // mirror shows what is in front of you.
+        // CopyFrom copies the transform, so face backwards after.
         mirrorCamera.CopyFrom(main);
         FaceBackwards();
 
@@ -111,7 +108,7 @@ public class RearView : Singleton<RearView>
 
     private void Present()
     {
-        // Back-eased so it settles rather than arriving linearly, which reads as UI.
+        // Back-eased so it settles, as linear reads as UI.
         var t = Mathf.Clamp01(shown);
         var eased = 1f - Mathf.Pow(1f - t, 3f);
         var settle = eased + overshoot * t * (1f - t) * (1f - t);
@@ -124,7 +121,7 @@ public class RearView : Singleton<RearView>
         var wobbleX = (Mathf.PerlinNoise(noiseSeed, Time.time * 18f) - 0.5f) * shake;
         var wobbleY = (Mathf.PerlinNoise(noiseSeed + 7f, Time.time * 18f) - 0.5f) * shake;
 
-        // Growing over the middle of the screen is the cost: you cannot watch both ways.
+        // Grows over the middle of the screen: you can't watch both ways.
         var cost = Features.On(Feature.LookBackCost) ? settle : 0f;
         holder.sizeDelta = Vector2.Lerp(restSize, raisedSize, cost);
 
@@ -171,7 +168,7 @@ public class RearView : Singleton<RearView>
         holder.pivot = new Vector2(0.5f, 1f);
         holder.sizeDelta = restSize;
 
-        // Bezel behind the image so it reads as a mirror rather than a floating rectangle.
+        // Bezel, so it reads as a mirror.
         frame = new GameObject("Frame").AddComponent<Image>();
         frame.transform.SetParent(holder, false);
         frame.color = new Color(0.04f, 0.04f, 0.05f, 0.85f);
@@ -184,8 +181,7 @@ public class RearView : Singleton<RearView>
         panel.color = calmTint;
         panel.raycastTarget = false;
 
-        // Flip horizontally so it reads like a mirror. Without this, left and right in the
-        // panel are the wrong way round and the attack telegraph points you into the beam.
+        // Flipped, or the telegraph points you into the beam.
         panel.uvRect = new Rect(1f, 0f, -1f, 1f);
 
         Stretch(panel.rectTransform, 10f);

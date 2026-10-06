@@ -3,8 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-// Bakes the generated materials to disk. Prefabs cannot reference a material created with
-// new Material() at runtime, so saving piece prefabs dropped them and everything went purple.
+// Bakes the generated materials to disk, since prefabs can't reference runtime ones.
 public static class MaterialAssets
 {
     public const string Folder = "Assets/Materials/Generated";

@@ -1,12 +1,9 @@
 using System;
 
-// Everyone runs the same corridor on a given date. The generator is already deterministic,
-// so a shared seed is nearly free, and it gives a reason to come back tomorrow without
-// touching what the game is.
+// Everyone runs the same corridor on a given date.
 public static class DailySeed
 {
-    // UTC, so the day rolls over at the same moment for everyone rather than making the
-    // "same" daily run depend on which timezone you opened it in.
+    // UTC, so the day rolls over at the same moment for everyone.
     public static string KeyFor(DateTime date)
     {
         return date.ToUniversalTime().ToString("yyyy-MM-dd");
@@ -18,8 +15,7 @@ public static class DailySeed
         {
             var days = (uint)(date.ToUniversalTime().Date - new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)).Days;
 
-            // Hashed rather than used raw: consecutive ordinals produce visibly similar
-            // corridors, and "today looks like yesterday" defeats the point.
+            // Hashed, or consecutive days lay out similar corridors.
             var h = days * 2654435761u;
             h ^= h >> 15;
             h *= 0x85ebca6b;
@@ -40,7 +36,7 @@ public static class DailySeed
     }
 }
 
-// Which run you asked for. Static because it has to survive the load into the game scene.
+// Static, so it survives the load into the game scene.
 public static class RunMode
 {
     private static readonly Random Rolls = new();

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// The way out. Running into it banks the run, which is the only way the score survives.
+// The way out. Banking is the only way the score survives.
 public class ExitDoor : MonoBehaviour, IRunResettable
 {
     [SerializeField] private float chimeRange = 45f;
@@ -9,7 +9,7 @@ public class ExitDoor : MonoBehaviour, IRunResettable
 
     private void Start()
     {
-        // Off means off: no door, no decision, so the variant is a clean comparison.
+        // Off means no door, so the variant compares cleanly.
         if (!Features.On(Feature.ExitDoors))
         {
             gameObject.SetActive(false);

@@ -21,8 +21,7 @@ public class SmoothnessTests
         fixture.Teardown();
     }
 
-    // Actual movement should match commanded speed every frame. MoveTowards clamping at a
-    // piece boundary drops the surplus, so boundary frames move short and it reads as jitter.
+    // Boundary frames used to move short and read as jitter.
     [UnityTest]
     public IEnumerator SpeedMatchesCommandedEveryFrame()
     {
@@ -80,12 +79,11 @@ public class SmoothnessTests
             $"{shortFrames}/{frames} frames moved short of commanded speed, worst {worstRatio:P0}");
     }
 
-    // Rotating inside the spill loop turned twice on a boundary frame, so the view snapped.
+    // Rotating per spill step turned twice on boundary frames.
     [UnityTest]
     public IEnumerator HeadingNeverTurnsFasterThanAllowed()
     {
-        // Easing at turnResponse 6 against a 7 degree seam settles around 42 deg/s, so
-        // anything past 120 is a snap. The old per-iteration rotation hit 400.
+        // Easing settles around 42 deg/s on a 7 degree seam. Past 120 is a snap.
         const float sane = 120f;
 
         var settle = Time.time + 1.5f;

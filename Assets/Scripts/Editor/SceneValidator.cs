@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// Reports unassigned refs. Generated scenes looked fine until play without this.
+// Reports unassigned refs.
 public static class SceneValidator
 {
     // Fields that are legitimately optional, so an empty one isn't a fault.
@@ -73,8 +73,7 @@ public static class SceneValidator
                     pieces++;
                 }
 
-                // Only our own components. TextMeshPro alone has seven optional object
-                // fields, and auditing Unity's wiring is not the job.
+                // Only our own components, not Unity's wiring.
                 if (IsOurs(mb))
                 {
                     problems += CheckFields(path, mb);

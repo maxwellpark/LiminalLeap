@@ -37,8 +37,7 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
     private float nextDropoutAllowed;
     private float noiseSeed;
 
-    // Read by the vignette and the pursuer. The dark is meant to be felt in more than one
-    // place, or it is just a dimmer switch.
+    // Read by the vignette and the pursuer too.
     public float Darkness { get; private set; }
 
     public void ResetForNewRun()
@@ -93,8 +92,7 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
             return;
         }
 
-        // Perlin rather than Random per frame: strobing reads as a bug, drift reads as dread.
-        // Eased rather than switched, or the stretch would announce itself with a snap.
+        // Perlin, not Random: drift reads as dread, strobing as a bug.
         var wanted = PlayerTrackMovement.InCalm ? 1f : 0f;
         calm = Mathf.MoveTowards(calm, wanted, calmSettle * dt);
 
@@ -103,8 +101,7 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
         // Either the scene or the player can turn it on.
         var reduced = reducedFlashing || PlayerOptions.ReducedFlashing;
 
-        // Steadier through a breath as well as brighter: the flicker is the dread, and the
-        // point of the stretch is that there is nothing to dread for a moment.
+        // Steadier as well as brighter through a calm stretch.
         var depth = (reduced ? flickerDepth * 0.4f : flickerDepth) * Mathf.Lerp(1f, 0.25f, calm);
         var target = keyIntensity
             * Mathf.Lerp(1f, calmLift, calm)
@@ -117,7 +114,7 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
             target *= DropoutMultiplier(dt);
         }
 
-        // Chased, not assigned: snapping to the floor was the strobe that felt epileptic.
+        // Chased, not assigned, or it strobes.
         key.intensity = Mathf.Lerp(key.intensity, target, responsiveness * dt);
     }
 
@@ -140,8 +137,7 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
         front = LightFront.Advance(front, dt, travelled, lightFront);
         Darkness = LightFront.Darkness(travelled, front, lightFront);
 
-        // Fog closes in as well as the light going: losing the corridor is the point, not
-        // just losing brightness.
+        // Fog closes in too, so you lose the corridor, not just brightness.
         RenderSettings.fogDensity = Mathf.Lerp(fogDensity, fogDensity * darkFog, Darkness);
     }
 

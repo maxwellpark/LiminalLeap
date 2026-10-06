@@ -1,8 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-// Text painted into the world rather than over it. Liminal spaces are all institutional
-// signage, so the controls can be floor markings instead of a tutorial overlay.
+// Text painted on the floor, like institutional signage.
 public static class WorldSign
 {
     public static TextMeshPro Floor(Transform parent, string text, Vector3 localPosition, float size, Color colour)

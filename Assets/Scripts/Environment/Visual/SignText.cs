@@ -19,16 +19,14 @@ public static class SignText
         {
             SignKind.Clear => "CLEAR AHEAD",
             SignKind.Jump => "JUMP AHEAD",
-            // No direction: the blocker is on the left, and the shifter can move it anyway,
-            // so naming a side is a sign that tells you to run into the thing.
+            // No direction, since the shifter can move it.
             SignKind.Strafe => "OBSTRUCTION AHEAD",
             SignKind.ExitAhead => "EXIT AHEAD",
             _ => string.Empty,
         };
     }
 
-    // Mostly honest, or the lies stop meaning anything and the signs become wallpaper.
-    // roll is 0..1; anything at or above lieChance tells the truth.
+    // Mostly honest, or the lies mean nothing. A roll at or above lieChance is the truth.
     public static SignKind Choose(SignKind truth, float roll, float lieChance)
     {
         if (lieChance <= 0f || roll >= lieChance)

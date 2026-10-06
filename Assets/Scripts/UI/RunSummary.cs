@@ -3,8 +3,7 @@ using TMPro;
 using UnityEngine;
 using EventType = Events.EventType;
 
-// The moment a runner lives on: what you got, what your best is, and one key to go again.
-// Sorts above the fade so it reads over the black rather than under it.
+// Score, best and one key to go again. Sorts above the fade.
 public class RunSummary : Singleton<RunSummary>
 {
     protected override EventType[] EventTypes => new[] { EventType.Death };
@@ -86,8 +85,7 @@ public class RunSummary : Singleton<RunSummary>
 
         var run = PlayerTrackMovement.Score;
 
-        // Dying only costs you the score when there was a way to bank it, so the readout
-        // has to match what actually happened rather than always claiming a loss.
+        // Dying only costs the score when there was a way to bank it.
         var banking = Features.On(Feature.ExitDoors);
         var kept = evt.Outcome != RunOutcome.Died || !banking;
 
@@ -102,13 +100,12 @@ public class RunSummary : Singleton<RunSummary>
         score.text = $"{(kept ? run : 0f):N0}";
         score.color = kept ? RuntimeUi.Ink : new Color(0.55f, 0.57f, 0.62f);
 
-        // The whole point of exits: say out loud what walking past one just cost.
+        // Say what walking past the exit cost.
         detail.text = kept
             ? $"{evt.DistanceCovered:N0} m"
             : $"{evt.DistanceCovered:N0} m     lost {run:N0}";
 
-        // A daily run is measured against today, not against your all time best, or the
-        // number it shows you is one you cannot beat on this corridor.
+        // A daily is measured against today's best.
         var daily = RunMode.Daily && !string.IsNullOrEmpty(RunMode.Day);
         var record = daily ? SaveStore.Data.Daily(RunMode.Day).BestScore : SaveStore.Data.HighScore;
         var beaten = kept && run > 0f && run >= record;

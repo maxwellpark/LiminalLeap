@@ -1,8 +1,6 @@
 using UnityEngine;
 
-// A pickup that sits perfectly still reads as scenery. The travel is deliberately small:
-// the player's trigger only reaches so far, and pickups being a hair out of reach has
-// already been a bug once.
+// Small travel, as the player's trigger only reaches so far.
 public class PickupBob : MonoBehaviour, IRunResettable
 {
     [SerializeField] private float height = 0.12f;

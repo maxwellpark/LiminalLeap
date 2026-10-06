@@ -3,12 +3,8 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// Renders a generated scene to a PNG without opening the editor UI or a browser.
-//
-// Driving the web build through Chrome to look at it does not work: runInBackground is off,
-// so Unity stops painting the moment focus lapses, and most "screenshots" came back black.
-// This renders deterministically in batchmode, and doubles as a way to produce stills for
-// an itch page.
+// Renders a generated scene to a PNG in batchmode. Browser screenshots come back
+// black, as runInBackground is off.
 public static class SceneShot
 {
     private const string OutputDir = "Build/Shots";
@@ -43,10 +39,7 @@ public static class SceneShot
         {
             var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
 
-            // The endless scenes hold a generator and a player and nothing else: the track
-            // and the lighting only exist once the game runs. Drive the real components
-            // rather than reproducing what they do, or this becomes a second source of
-            // truth that drifts from the game.
+            // Drives the real components rather than copying them, so stills match the game.
             Populate();
 
             var camera = FindCamera();
@@ -57,8 +50,7 @@ public static class SceneShot
                 continue;
             }
 
-            // Nudged up and back off the player's eye line: the runtime camera is first
-            // person and sits inside the geometry until the run moves it.
+            // Back off the eye line, as the first person camera starts inside the geometry.
             camera.transform.position += Vector3.up * 1.6f - camera.transform.forward * 4f;
 
             var file = Path.Combine(OutputDir, scene.name + ".png");

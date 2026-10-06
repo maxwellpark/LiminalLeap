@@ -14,11 +14,8 @@ public enum Feature
     LightAsResource,
 }
 
-// Experiment toggles. Default is the shipped variant, prefs hold a manual override, and
-// test overrides stay in memory so running the suite can't rewrite the real save.
-//
-// Resolved values are cached because this is read several times a frame from Update: the
-// naive version built a prefs key string every call and allocated in the hot path.
+// Experiment toggles. Prefs hold manual overrides, test overrides stay in memory.
+// Cached, as this is read several times a frame.
 public static class Features
 {
     private const string Prefix = "liminalleap.feature.";
@@ -33,7 +30,7 @@ public static class Features
     private static bool useStorage = true;
     private static bool isolated;
 
-    // Throws rather than falling through, so adding a feature without deciding fails loudly.
+    // Throws, so a new feature without a default fails loudly.
     public static bool DefaultFor(Feature feature)
     {
         return feature switch
@@ -107,8 +104,7 @@ public static class Features
         Invalidate();
     }
 
-    // A latch, because PlayMode tests spawn a GameManager and its Awake calls this. Without
-    // it, half the flags would quietly start reading the real prefs mid test.
+    // Latched, or a GameManager spawned in a test switches back to the real prefs.
     public static void UseStorage()
     {
         if (isolated)

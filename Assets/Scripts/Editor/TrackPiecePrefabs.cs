@@ -2,8 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-// Generates the piece prefabs the runtime generator chains. Hazards and pickups are baked
-// into variants rather than spawned separately, so pooling keeps working unchanged.
+// Hazards and pickups are baked into variants, so pooling still works.
 public static class TrackPiecePrefabs
 {
     public const string Folder = "Assets/Prefabs/TrackPieces";
@@ -108,8 +107,7 @@ public static class TrackPiecePrefabs
 
             case Decoration.Exit:
             {
-                // The zone spans the whole piece so the offer lasts long enough to take.
-                // It only offers: banking needs a press, so strafing through costs nothing.
+                // Spans the piece so the offer lasts. Banking still needs a press.
                 var zone = new GameObject("ExitZone");
                 zone.transform.SetParent(piece, false);
                 zone.transform.localPosition = new Vector3(2.8f, 1.1f, Length * 0.5f);
@@ -135,8 +133,7 @@ public static class TrackPiecePrefabs
         }
     }
 
-    // Built into every piece and toggled per spawn by TrackScenery, so the corridor varies
-    // without the generator instantiating anything at runtime.
+    // Toggled per spawn by TrackScenery, so nothing is instantiated at runtime.
     private static void AddScenery(Transform piece)
     {
         var scenery = piece.gameObject.AddComponent<TrackScenery>();
@@ -165,8 +162,7 @@ public static class TrackPiecePrefabs
         var lights = new GameObject(TrackScenery.LightHolder).transform;
         lights.SetParent(piece, false);
 
-        // Overhead strips. The corridor had no ceiling at all, so there was nothing above
-        // the horizon and nothing to explain where the light was coming from.
+        // Ceiling strips, so the light has a source.
         for (var a = 0; a < along.Length; a++)
         {
             var strip = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -177,8 +173,7 @@ public static class TrackPiecePrefabs
             var stripRenderer = strip.GetComponent<Renderer>();
             stripRenderer.sharedMaterial = MaterialAssets.Load(Surface.Light);
 
-            // A light fixture casting a shadow is both wrong and paid for. The pillars keep
-            // theirs, since those floor patterns are most of what the scenery buys.
+            // No shadows from light fixtures. The pillars keep theirs.
             stripRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             stripRenderer.receiveShadows = false;
             Object.DestroyImmediate(strip.GetComponent<Collider>());

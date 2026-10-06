@@ -1,8 +1,4 @@
-// Pacing. A corridor at a fixed speed has no dynamics, and liminal spaces are about
-// dwelling in them rather than sprinting through.
-//
-// Deliberately not a stop: the run keeps moving, the pace drops and the hazards clear, so
-// there is a beat to look around without breaking the flow the junction work fought for.
+// Pacing: the run keeps moving, but the pace drops and the hazards clear for a while.
 public static class CalmRhythm
 {
     public static bool IsCalm(int piece, int runLength, int calmLength)
@@ -15,8 +11,7 @@ public static class CalmRhythm
         return piece % (runLength + calmLength) >= runLength;
     }
 
-    // 0 at the first calm piece, 1 at the last. Lets presentation ease in and out rather
-    // than snapping, which would read as a bug rather than a breath.
+    // 0 at the first calm piece, 1 at the last, so presentation can ease.
     public static float Progress(int piece, int runLength, int calmLength)
     {
         if (!IsCalm(piece, runLength, calmLength))

@@ -5,8 +5,7 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-// macOS standalone. Same scene list and the same argument handling as WebBuild, so the two
-// cannot drift into disagreeing about what "the game" is.
+// macOS standalone. Shares WebBuild's scenes and arguments so they can't drift.
 public static class MacBuild
 {
     [MenuItem("Liminal Leap/Build macOS")]
@@ -40,8 +39,7 @@ public static class MacBuild
 
         Directory.CreateDirectory(output);
 
-        // Full exceptions here regardless: this build exists to be debugged, not shipped,
-        // and the size and speed cost that matters on the web does not matter locally.
+        // Full exceptions always: this build is for debugging.
         PlayerSettings.SetIl2CppCompilerConfiguration(
             NamedBuildTarget.Standalone,
             development ? Il2CppCompilerConfiguration.Debug : Il2CppCompilerConfiguration.Release);

@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// The track ahead only rearranges while you are looking the other way. Extends the pursuer's
-// observed rule to the world, which is what makes looking back cost something real.
+// Rearranges the track ahead only while you're looking back.
 public class UnobservedShifter : Singleton<UnobservedShifter>, IRunResettable
 {
     private const int ShiftSalt = 0x5417;
@@ -49,9 +48,7 @@ public class UnobservedShifter : Singleton<UnobservedShifter>, IRunResettable
             return;
         }
 
-        // The attack picked its lane against the layout as it was. Moving a hazard into the
-        // escape lane after that would make it unavoidable, which is the one thing the
-        // fairness rules exist to prevent.
+        // Not mid attack, or a hazard could move into the escape lane.
         var pursuer = Pursuer.Instance;
         if (pursuer != null && pursuer.Attack != null && pursuer.Attack.InFlight)
         {
@@ -79,8 +76,7 @@ public class UnobservedShifter : Singleton<UnobservedShifter>, IRunResettable
         }
     }
 
-    // Only ever moves it somewhere the row is still passable, or an unwatched moment could
-    // hand back a run you could not have survived.
+    // Only where the row stays passable.
     private void TryMove(Transform body)
     {
         if (body.parent == null)

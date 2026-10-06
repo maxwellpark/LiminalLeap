@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Built at runtime: TestSceneGenerator is editor-only and generated scenes are ignored.
+// Built at runtime, since generated scenes aren't committed.
 public class RunFixture
 {
     public const float PieceLength = 10f;
@@ -13,8 +13,7 @@ public class RunFixture
 
     private readonly List<GameObject> spawned = new();
 
-    // Call before Build: Pursuer reads the flags in Init. Tests must not inherit whatever
-    // was toggled in the editor, and an attack going off mid test makes everything flaky.
+    // Before Build, as Pursuer reads the flags in Init.
     public static void IsolateFlags(bool attacks = false)
     {
         Features.IsolateForTests();
@@ -80,8 +79,7 @@ public class RunFixture
 
         spawned.Clear();
 
-        // Managers spawn themselves and keep a static instance, so leaking one makes the next
-        // test inherit the last one's pursuer distance, score and canvases.
+        // Managers keep static instances, so a leaked one carries into the next test.
         foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             if (mb != null && IsSingleton(mb.GetType()))

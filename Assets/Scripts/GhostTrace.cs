@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-// Your last run, stored as the time you reached each distance mark. A pace curve rather
-// than a path, so it still replays when the track ahead generates differently.
+// A pace curve rather than a path, so it replays on any track.
 [Serializable]
 public class GhostTrace
 {
@@ -13,8 +12,7 @@ public class GhostTrace
 
     public bool HasData => Times != null && Times.Length > 1;
 
-    // Best run, not last. Keeping the last one means dying early hands the next run a
-    // trivial pursuer, which makes it easier to die early again.
+    // Best, not last, or dying early hands the next run an easy pursuer.
     public static GhostTrace Best(GhostTrace current, GhostTrace candidate)
     {
         if (candidate == null || !candidate.HasData)
@@ -34,8 +32,7 @@ public class GhostTrace
 
     public float TotalDistance => HasData ? (Times.Length - 1) * Spacing : 0f;
 
-    // Stops at the end of the recording: the ghost died there, so outliving your last
-    // attempt is how you shake it off.
+    // Stops where the ghost died, so outliving it shakes it off.
     public float DistanceAt(float time)
     {
         if (!HasData || time <= Times[0])

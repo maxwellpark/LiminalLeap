@@ -19,7 +19,7 @@ public class TrackManager : Singleton<TrackManager>
         }
     }
 
-    // Death only reset the player, so a second run inherited passed pieces and the old branch.
+    // Resets the track as well as the player.
     public void ResetRun()
     {
         if (generator != null)

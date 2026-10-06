@@ -42,7 +42,7 @@ public class SpeedVignette : Singleton<SpeedVignette>
         var speed = Mathf.Lerp(restIntensity, fullIntensity, PlayerTrackMovement.SpeedFraction);
         var dread = Pursuer.GetInstance().Proximity * dreadIntensity;
 
-        // Instance, not GetInstance: the vignette must never be what spawns the mirror.
+        // Instance, so the vignette never spawns the mirror.
         var mirror = RearView.Instance;
         var blind = mirror != null ? mirror.Blindness * blindIntensity : 0f;
 

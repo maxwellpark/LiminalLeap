@@ -66,8 +66,7 @@ public static class MaterialLibrary
 
             case Surface.Light:
             {
-                // Strip lighting. Emissive and near white, so it reads as the source of the
-                // corridor's glow rather than one more painted surface.
+                // Emissive, so it reads as the light source.
                 var even = ProceduralTextures.Remap(ProceduralTextures.Noise(Size, 131, 2), 0.85f, 1f);
                 var lit = Make("LightSurface", even, new Color(0.93f, 0.95f, 1f), 0.2f);
                 return Emissive(lit, new Color(0.8f, 0.85f, 0.95f));

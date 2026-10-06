@@ -25,7 +25,7 @@ public class ToastManager : Singleton<ToastManager>
         SetAlpha(0f);
     }
 
-    // Replaces rather than queues: at speed the queue dropped over half of them.
+    // Replaces rather than queues, which dropped most at speed.
     public void Show(string message)
     {
         if (label != null)
@@ -68,7 +68,7 @@ public class ToastManager : Singleton<ToastManager>
         SetAlpha(elapsed <= holdSeconds ? 1f : 1f - (elapsed - holdSeconds) / fadeSeconds);
     }
 
-    // RunSummary reports the run now, so a lingering near miss toast would just sit over it.
+    // The summary reports the run, so clear any toast.
     protected override void OnDeath(OnDeathEvent evt)
     {
         Clear();

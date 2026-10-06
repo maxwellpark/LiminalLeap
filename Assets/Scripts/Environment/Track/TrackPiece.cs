@@ -1,12 +1,11 @@
 using UnityEngine;
 
-// End anchor, not Renderer.bounds: a world AABB only held for pieces facing +Z.
+// End anchor, not Renderer.bounds, which only held for pieces facing +Z.
 public class TrackPiece : MonoBehaviour
 {
     public bool Passed { get; set; }
 
-    // Set by the generator at spawn. The player and the pursuer both read it, so the
-    // stretch is a property of the track rather than a timer running alongside it.
+    // Set at spawn, so calm is a property of the track.
     public bool Calm { get; set; }
 
     // Which prefab this came from, so the pool hands back the same kind of piece.
@@ -22,8 +21,7 @@ public class TrackPiece : MonoBehaviour
     private bool rendererLookedUp;
     private IRunResettable[] resettables;
 
-    // Cached: the generator resets these on every spawn, and GetComponentsInChildren
-    // allocates a fresh array each call.
+    // Cached, as GetComponentsInChildren allocates.
     private TrackScenery scenery;
     private bool sceneryLookedUp;
 
