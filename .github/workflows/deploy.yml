@@ -1,0 +1,87 @@
+# Builds WebGL and pushes it to itch. Skips until its secrets exist, like the tests.
+#
+#   Unity:      UNITY_EMAIL + UNITY_PASSWORD (plus UNITY_SERIAL for Pro), or UNITY_LICENSE
+#   1Password:  OP_SERVICE_ACCOUNT_TOKEN, a service account that can read the Deploy vault
+#
+# The itch key stays in 1Password, behind the same reference in scripts/itch.env the Mac uses.
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  secrets:
+    name: Secrets
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+        run: |
+          unity=false
+          if [ -n "$UNITY_LICENSE" ] || { [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; }; then unity=true; fi
+          if [ "$unity" = true ] && [ -n "$OP_SERVICE_ACCOUNT_TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deploy skipped: needs the Unity secrets and OP_SERVICE_ACCOUNT_TOKEN in the repo's Actions secrets."
+          fi
+
+  deploy:
+    name: Build and push to itch
+    needs: secrets
+    if: needs.secrets.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-WebGL-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: Library-WebGL-
+
+      # Same seeds as check.sh --full, so CI ships the scenes that were tested.
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          unityVersion: 6000.2.15f1
+          targetPlatform: WebGL
+          buildMethod: WebBuild.BuildForCi
+          customParameters: -out Build/WebGL -seed 1700 -count 3
+          versioning: None
+
+      - name: Install butler
+        run: |
+          scripts/install-butler.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # Read from itch.env rather than restated here, so there is one reference to change.
+      - name: Point at the itch key
+        run: grep '^BUTLER_API_KEY=' scripts/itch.env >> "$GITHUB_ENV"
+
+      - uses: 1password/load-secrets-action@v2
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+
+      - name: Push to itch
+        run: scripts/publish-itch.sh
