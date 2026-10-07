@@ -31,6 +31,13 @@ public static class WebBuild
         }
     }
 
+    // CI entry. Generated scenes aren't committed, so make them first. Args: -seed N -count N -out <dir>
+    public static void BuildForCi()
+    {
+        TestSceneGenerator.GenerateFromCommandLine();
+        BuildFromCommandLine();
+    }
+
     public static bool Build(string output, bool development)
     {
         var scenes = EditorBuildSettings.scenes
