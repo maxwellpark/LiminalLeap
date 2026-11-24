@@ -14,6 +14,7 @@ players of short horror, and the streamers who play it.
 - [ ] Every Unity suite passes: `scripts/check.sh` exits 0.
 - [ ] Each story place can be got out of, start to end: `StoryTests` and `LapTests` pass.
 - [ ] A place loops back on itself (#51): a junction returns to track already run, with a test.
+  Built and compiled in db92197 (LoopTests); open until the test has run.
 - [ ] A WebGL build is on itch: `scripts/deploy-itch.sh` pushed, and a run starts in the browser.
 - [ ] At least 5 people outside the project have finished a story place.
 
@@ -33,4 +34,4 @@ players of short horror, and the streamers who play it.
 
 ## Last checked
 
-2026-11-24, at c6b3f55.
+2026-11-24, at db92197.

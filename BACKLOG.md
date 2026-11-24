@@ -4,9 +4,7 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
-1. Loops (#51), in the generator: a fork piece with a wall and two doors in the arcade runs,
-   spawning held at the fork until the player commits, then either fresh track or the replayed
-   stretch. Behind a flag, with PlayMode tests. Moves: "A place loops back on itself".
+Nothing buildable is left for an unmet goal line: the rest wait on the owner, below.
 
 ## Blocked on owner
 
@@ -23,6 +21,8 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ideas
 
+- Forks in the story places, which need a design that fits the exit rule.
+- A tell for which door loops, if a blind choice plays as a coin flip.
 - Distance that lies (#54), once loops exist.
 - Map the space (#61), once loops exist.
 - Vertical and split pursuer attacks (#67), an attack director (#68), distorted telegraphs
@@ -36,6 +36,8 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Done
 
+- 2026-11-24: forks in the arcade track, one door laying the track already run again (db92197).
+  Its PlayMode tests (LoopTests) are written but not run, so the goal line stays open.
 - 2026-11-24: the loop rule and a memory of the track already laid (a6b748e).
 - 2026-11-24: anomalies on the exit rule, the share line with its button and story card, the
   daily taking a place's look only (#93).

@@ -121,6 +121,10 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-24 [needs-review]: loops are on in the arcade runs (daily and free) and off
+  in the story: a fork every 24 pieces after the first 20, the looping door picked from the
+  run's seed, replaying the last 10 pieces. Why: the story's exits are already calls. To change:
+  the `Loops` flag and the generator's serialised numbers.
 - Decided 2026-11-24: the pitch is "Exit 8 at a sprint: the only warning is in your mirror."
 - Decided 2026-11-24: the daily takes a place's look (fog, light, name) but keeps the
   arcade's own flags, so shifting and the ghost never turn up in it unannounced. Built.
