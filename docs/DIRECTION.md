@@ -122,8 +122,9 @@ Whether these anomalies read at speed is the open question, as #52 warned.
 
 Taken without a decision, since each is cheap to change.
 
-- Default 2026-11-24 [needs-review]: laps of 50, 60 and 70 pieces, needing 2, 3 and 4
-  right calls, with even odds of a lap being wrong (`Places`).
+- Decided 2026-11-24: laps of 30, 40 and 50 pieces (`Places`).
+- Default 2026-11-24 [needs-review]: 2, 3 and 4 right calls to get out, with even odds of a
+  lap being wrong (`Places`).
 - Default 2026-11-24 [needs-review]: the four anomalies and their four-piece stretch
   (`LapRule`, `TrackScenery`).
 - Default 2026-11-24 [needs-review]: the daily share line's shape, a 50 m block strip
