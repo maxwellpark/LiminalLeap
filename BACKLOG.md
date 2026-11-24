@@ -4,10 +4,7 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
-1. Loops (#51), the rule: where a fork goes, which door loops, and a buffer of the track
-   already run that a looping door replays piece for piece. Pure, with tests. Moves: "A place
-   loops back on itself".
-2. Loops (#51), in the generator: a fork piece with a wall and two doors in the arcade runs,
+1. Loops (#51), in the generator: a fork piece with a wall and two doors in the arcade runs,
    spawning held at the fork until the player commits, then either fresh track or the replayed
    stretch. Behind a flag, with PlayMode tests. Moves: "A place loops back on itself".
 
@@ -39,5 +36,6 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Done
 
+- 2026-11-24: the loop rule and a memory of the track already laid (a6b748e).
 - 2026-11-24: anomalies on the exit rule, the share line with its button and story card, the
   daily taking a place's look only (#93).
