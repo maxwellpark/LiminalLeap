@@ -159,10 +159,12 @@ See gap 3 for moving the Unity login behind 1Password as well.
    the editor. Wants a setup script on the environment, saved once activation and the test
    run have worked, so it only contains steps known to work. It costs a several minute
    download per new machine.
-5. **`scripts/check.sh` assumes the Mac.** It defaults to the Mac editor path, finds the
-   compiler tools by the Mac app layout, and runs PlayMode without a display. On Linux it
-   needs the Linux path, the tools under `Editor/Data`, and PlayMode wrapped in
-   `xvfb-run`. `build-web.sh` and `build-mac.sh` have the same default path.
+5. ~~**`scripts/check.sh` assumes the Mac.**~~ Done: `scripts/unity-path.sh` holds the
+   editor path, tool folder and launcher per OS, and `check.sh`, `build-web.sh` and
+   `unity-activate.sh` read it. `check.sh --fast` is **verified** on Linux and catches a
+   planted error. On a headless Linux box Unity runs under `xvfb-run`, which is
+   **unverified** until there's a licence to run the suites with. A missing licence now
+   says so instead of reporting no results.
 6. **The deploy workflow (PR #92) has never run.** Unmerged, and untested against
    game-ci's builder with a custom build method.
 7. **The itch project isn't created or published** (#74). Account steps, then the first

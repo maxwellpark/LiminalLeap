@@ -14,13 +14,9 @@ set -euo pipefail
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
 ENV_FILE="$SCRIPTS/unity.env"
 
-if [ "$(uname)" = "Darwin" ]; then
-  UNITY="${UNITY:-/Applications/Unity/Hub/Editor/6000.2.15f1/Unity.app/Contents/MacOS/Unity}"
-  ROOT="$(dirname "$(dirname "$UNITY")")"
-else
-  UNITY="${UNITY:-/opt/unity/6000.2.15f1/Editor/Unity}"
-  ROOT="$(dirname "$UNITY")"
-fi
+# shellcheck source-path=SCRIPTDIR source=unity-path.sh
+. "$SCRIPTS/unity-path.sh"
+ROOT="$(dirname "$UNITY_TOOLS")"
 
 # It ships inside the editor, at a different depth on each platform.
 CLIENT="$(find "$ROOT" -type f -name Unity.Licensing.Client -perm -u+x 2>/dev/null | head -1)"
