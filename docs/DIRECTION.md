@@ -117,3 +117,16 @@ Whether these anomalies read at speed is the open question, as #52 warned.
 
 - Whether the daily should inherit a place's rules. Today a daily on the house turns on
   shifting, which #75 argued reads as a bug.
+
+## Defaults to review
+
+Taken without a decision, since each is cheap to change.
+
+- Default 2026-11-24 [needs-review]: laps of 50, 60 and 70 pieces, needing 2, 3 and 4
+  right calls, with even odds of a lap being wrong (`Places`).
+- Default 2026-11-24 [needs-review]: the four anomalies and their four-piece stretch
+  (`LapRule`, `TrackScenery`).
+- Default 2026-11-24 [needs-review]: the daily share line's shape, a 50 m block strip
+  ending in a door or an eye, and the itch link it points at (`ShareLine`).
+- Default 2026-11-24 [needs-review]: 1Password vault `LiminalLeap` with items `itch` and
+  `unity` (`op/`).
