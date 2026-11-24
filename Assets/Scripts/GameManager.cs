@@ -42,19 +42,25 @@ public class GameManager : Singleton<GameManager>
         var kept = evt.Outcome != RunOutcome.Died || !Features.On(Feature.ExitDoors);
         var score = kept ? PlayerTrackMovement.Score : 0f;
 
-        SaveStore.Data.RecordRun(
-            score, evt.DistanceCovered, evt.Outcome, Features.VariantKey());
-
-        if (RunMode.Daily && !string.IsNullOrEmpty(RunMode.Day))
+        if (RunMode.Story)
         {
-            SaveStore.Data.Daily(RunMode.Day).Record(score, evt.DistanceCovered);
+            // Hidden in the story, so kept per place and out of the arcade's best and its stats.
+            // Still the place just left: the story only moves on once the summary is dismissed.
+            var place = Places.ForRun();
+            if (place != null)
+            {
+                SaveStore.Data.PlaceBest(place.Id).Record(score);
+            }
         }
-
-        // Still the place just left: the story only moves on once the summary is dismissed.
-        var place = RunMode.Story ? Places.ForRun() : null;
-        if (place != null)
+        else
         {
-            SaveStore.Data.PlaceBest(place.Id).Record(score);
+            SaveStore.Data.RecordRun(
+                score, evt.DistanceCovered, evt.Outcome, Features.VariantKey());
+
+            if (RunMode.Daily && !string.IsNullOrEmpty(RunMode.Day))
+            {
+                SaveStore.Data.Daily(RunMode.Day).Record(score, evt.DistanceCovered);
+            }
         }
 
         SaveStore.Save();

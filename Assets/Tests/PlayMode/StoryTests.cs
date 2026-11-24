@@ -60,6 +60,8 @@ public class StoryTests
     public IEnumerator TakingTheExitMovesOnToTheNextPlace()
     {
         fixture.AddExit(2.8f, 3);
+        var best = SaveStore.Data.HighScore;
+        var furthest = SaveStore.Data.FurthestDistance;
 
         var guard = 0f;
         while (outcome == null && guard < 8f)
@@ -72,6 +74,8 @@ public class StoryTests
         }
 
         Assert.AreEqual(RunOutcome.Banked, outcome, "never got out of the office");
+        Assert.AreEqual(best, SaveStore.Data.HighScore, "a hidden story score reached the arcade's best");
+        Assert.AreEqual(furthest, SaveStore.Data.FurthestDistance, "a story run reached the arcade's records");
         fixture.Input.Horizontal = 0f;
 
         var deadline = Time.realtimeSinceStartup + 4f;
