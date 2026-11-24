@@ -43,8 +43,9 @@ None are runners. The runner shelf has no liminal horror. That gap is the positi
 | Shows | No HUD, no score, no toasts | Score, speed, multiplier, summary |
 | Job | First impression, what streamers play | Reason to come back |
 
-Recommended: the story is the front door and the daily is retention. Not formally decided
-yet; settling it also settles #75.
+Decided 2026-11-24: the story is the front door and the daily is retention. That also
+answers #75: a place's rules decide the scoped flags, and nothing ships that a place
+doesn't use.
 
 ## State, as of 2026-11-24
 
@@ -59,7 +60,8 @@ Not done:
 - No outside player has touched it. Most open design questions end in "needs a playtest".
 - Not on itch (#74). The CI deploy (#92) and CI tests (#19) wait on secrets.
 - The story (#91) has not been run in Unity.
-- `companyName` is still `DefaultCompany` (#77), which has to change before anyone has a save.
+- `companyName` is now `maxwellpark` (#77), done before any public build so no player save
+  is lost. It does move the local dev save.
 
 ## USPs
 
@@ -72,7 +74,8 @@ Missing, best value for cost first:
    delivers it yet. Start with five or six authored ones to learn whether they read at speed.
 2. **A place you can't leave (#51 loops, #54 distance that lies).** The corridor only goes
    forward, so the liminality is visual. Loops make going in circles a mechanic.
-3. **A shareable daily result.** One copyable line, Wordle style. Cheapest growth there is.
+3. **A shareable daily result.** In progress: a daily's summary arms a few lines to paste
+   (day, a strip of blocks, where you got to, the itch link) and C copies them.
 4. **A look you can put on a thumbnail.** Grain or VHS, dolly zoom on the lunge, a camera
    that drifts so you can't always see ahead. All in the 2024 notes.
 5. **A through-line for the story.** "Starts weird and gets less weird, becoming human" is
@@ -83,14 +86,12 @@ Missing, best value for cost first:
 ## Roadmap
 
 1. Run #91 in Unity, fix what breaks, merge.
-2. Decide the shipped flags (#75) and the company name (#77).
+2. ~~Decide the shipped flags (#75) and the company name (#77).~~ Done.
 3. Publish to itch (#74, #92) and get 5 to 10 people playing.
 4. Anomalies (#52) as the headline feature, with the shareable daily line alongside.
 5. Loops (#51) once anomalies read, since recognising a repeat is the same skill.
 
 ## Open decisions
 
-- Story as the front door (above).
-- Company name, before the first public build.
 - Whether the daily should inherit a place's rules. Today a daily on the house turns on
   shifting, which #75 argued reads as a bug.
