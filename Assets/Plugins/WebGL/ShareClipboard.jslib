@@ -23,7 +23,7 @@ mergeInto(LibraryManager.library, {
         return ok;
       };
 
-      document.addEventListener("pointerdown", function (e) {
+      var copyAt = function (e) {
         var canvas = Module.canvas;
         if (state.text === null || !canvas || state.w <= 0) { return; }
 
@@ -41,7 +41,11 @@ mergeInto(LibraryManager.library, {
         } else if (fallback(value)) {
           state.copied = 1;
         }
-      }, true);
+      };
+
+      // A press only grants the clipboard for a mouse; a finger or pen grants it on lifting.
+      document.addEventListener("pointerdown", function (e) { if (e.pointerType === "mouse") { copyAt(e); } }, true);
+      document.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { copyAt(e); } }, true);
     }
 
     state.text = UTF8ToString(text);
