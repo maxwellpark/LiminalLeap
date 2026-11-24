@@ -83,6 +83,26 @@ Missing, best value for cost first:
 6. **Positional sound as a second mirror.** Also an accessibility win.
 7. **Gamepad and the new Input System (#7).** For Steam and Deck later, not for itch.
 
+## Anomalies: the exit rule
+
+Decided 2026-11-24. Each story place is run as laps, with an exit at the end of every lap.
+
+- **Nothing wrong this lap: take the exit. Something wrong: run past it.**
+- A right call adds one to the count painted on the floor at the start of each lap. A
+  wrong one sends you back to the start with the count at zero.
+- You get out by taking a clean exit once the count reaches the place's target: 2 in the
+  office, 3 in the school, 4 in the house.
+- The first lap after a start or a wrong call is always clean, so there's a baseline. The
+  floor shows the rules only on that lap, so seeing them again means you got it wrong.
+- Dying replays the same lap, so dying can't be used to reroll it.
+- The first four anomalies: strip lights the wrong colour, pillars that stop short of the
+  floor, strip lights hung low, and a count that skips a number.
+- Story only. The daily keeps its exits as banking.
+
+Status: the rule (`LapRule`) is tested and passing. The generator and player wiring
+compiles in Unity, but its play-mode tests haven't run, and nobody has played it yet.
+Whether these anomalies read at speed is the open question, as #52 warned.
+
 ## Roadmap
 
 1. Run #91 in Unity, fix what breaks, merge.
