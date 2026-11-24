@@ -123,7 +123,7 @@ None open. The ones taken are below.
 
 - Decided 2026-11-24: the pitch is "Exit 8 at a sprint: the only warning is in your mirror."
 - Decided 2026-11-24: the daily takes a place's look (fog, light, name) but keeps the
-  arcade's own flags, so shifting and the ghost never turn up in it unannounced. To build.
+  arcade's own flags, so shifting and the ghost never turn up in it unannounced. Built.
 
 Taken without a decision, since each is cheap to change.
 

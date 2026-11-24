@@ -114,7 +114,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void Start()
     {
-        Places.Apply(Places.ForRun());
+        Places.Apply(Places.RulesForRun());
 
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true; // we drive the transform; keep triggers, drop the physics fight
@@ -577,7 +577,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void ResetRun()
     {
-        Places.Apply(Places.ForRun());
+        Places.Apply(Places.RulesForRun());
         trackManager.ResetRun();
         basePos = startingPosition;
         TrackCentre = basePos;

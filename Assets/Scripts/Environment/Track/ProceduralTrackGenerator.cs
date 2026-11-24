@@ -60,7 +60,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
     public void ResetRun()
     {
         // Applied here as well as by the player, since either may start first and signs read it.
-        Places.Apply(Places.ForRun());
+        Places.Apply(Places.RulesForRun());
 
         for (var i = 0; i < active.Count; i++)
         {

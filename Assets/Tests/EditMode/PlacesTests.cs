@@ -165,6 +165,30 @@ public class PlacesTests
     }
 
     [Test]
+    public void TheDailyTakesALookButNoRules()
+    {
+        try
+        {
+            RunMode.ChooseDaily();
+            Assert.IsNotNull(Places.ForRun(), "the daily should still wear a place");
+            Assert.IsNull(Places.RulesForRun(), "the daily picked up a place's rules");
+
+            Places.Apply(Places.RulesForRun());
+            foreach (var feature in Places.Scoped)
+            {
+                Assert.AreEqual(Features.DefaultFor(feature), Features.On(feature), feature.ToString());
+            }
+
+            RunMode.ChooseStory();
+            Assert.AreSame(Places.ForRun(), Places.RulesForRun(), "the story should keep its rules");
+        }
+        finally
+        {
+            RunMode.ChooseFree();
+        }
+    }
+
+    [Test]
     public void TheDailyPlaceIsFixedByTheSeed()
     {
         foreach (var seed in new[] { 0, 1, 2, 7, int.MaxValue, -5 })

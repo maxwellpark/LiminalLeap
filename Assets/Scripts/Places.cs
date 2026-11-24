@@ -68,6 +68,12 @@ public static class Places
         return RunMode.Daily ? ForDaily(RunMode.Seed) : null;
     }
 
+    // The daily wears its place's look but keeps the arcade's flags, so no rule turns up unannounced.
+    public static Place RulesForRun()
+    {
+        return RunMode.Story ? ForRun() : null;
+    }
+
     public static Place ForDaily(int seed)
     {
         return Story[(int)((uint)seed % (uint)Story.Length)];
