@@ -69,6 +69,9 @@ public class PlayerTrackMovement : MonoBehaviour
     public static float SpeedFraction { get; private set; }
 
     public static float Score { get; private set; }
+
+    // Read by the summary after the run ends, so it's only cleared when the next one starts.
+    public static RunStrip Strip { get; } = new();
     public static float Multiplier { get; private set; } = 1f;
 
     // Where you sit across the track, so the pursuer can aim at a lane without a reference.
@@ -131,6 +134,7 @@ public class PlayerTrackMovement : MonoBehaviour
         InCalm = false;
         runTime = 0f;
         ghostRecorder.Reset();
+        Strip.Reset();
         TrackCentre = basePos;
         live = true;
 
@@ -192,6 +196,12 @@ public class PlayerTrackMovement : MonoBehaviour
 
         runTime += dt;
         ghostRecorder.Sample(runTime, DistanceCovered);
+
+        var mirror = RearView.Instance;
+        if (mirror != null && mirror.IsRaised)
+        {
+            Strip.Mark(DistanceCovered, StretchMark.LookedBack);
+        }
 
         if (exitsInside > 0 && InputRouter.Source.BankPressed)
         {
@@ -467,6 +477,7 @@ public class PlayerTrackMovement : MonoBehaviour
     public void RegisterNearMiss(float reward)
     {
         nearMissBonus = Mathf.Min(nearMissBonus + reward, maxNearMissBonus);
+        Strip.Mark(DistanceCovered, StretchMark.NearMiss);
         ToastManager.GetInstance().ShowArcade($"Near miss   x{Multiplier:F1}");
     }
 
@@ -571,6 +582,7 @@ public class PlayerTrackMovement : MonoBehaviour
         var reward = pursuer != null ? pursuer.AttackConfig.ScoreRewardOnDodge : 0f;
 
         Score += reward * Multiplier;
+        Strip.Mark(DistanceCovered, StretchMark.Dodged);
         fovKick = pickupFovKick;
         ToastManager.GetInstance().ShowArcade($"Dodged   +{reward * Multiplier:F0}");
     }
@@ -598,6 +610,7 @@ public class PlayerTrackMovement : MonoBehaviour
         restartHeldFor = 0f;
         restartArmed = false; // R also dismisses the summary, so it must come up before it counts
         ghostRecorder.Reset();
+        Strip.Reset();
         CurrentSpeed = startingSpeed;
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
     }

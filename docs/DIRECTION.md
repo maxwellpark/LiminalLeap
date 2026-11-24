@@ -133,7 +133,8 @@ Taken without a decision, since each is cheap to change.
 - Default 2026-11-24 [needs-review]: the four anomalies and their four-piece stretch
   (`LapRule`, `TrackScenery`).
 - Decided 2026-11-24: each 50 m square of the share strip marks what happened there (a dodged
-  attack, a near miss, a stretch spent looking back), not just distance. To build.
+  attack, a near miss, a stretch spent looking back), not just distance. Built: red, yellow
+  and blue squares, the loudest event in a stretch winning.
 - Decided 2026-11-24: the share line keeps the itch link before the page exists.
 - Decided 2026-11-24: copying is a Copy button on the summary after a run, not a key. In a
   browser the page copies on the click itself while the pointer is over the button. To build.

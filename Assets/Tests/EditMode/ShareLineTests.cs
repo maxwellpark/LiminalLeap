@@ -60,6 +60,25 @@ public class ShareLineTests
     }
 
     [Test]
+    public void EachStretchShowsWhatHappenedThere()
+    {
+        var marks = new[] { StretchMark.Quiet, StretchMark.Dodged, StretchMark.NearMiss, StretchMark.LookedBack };
+
+        Assert.AreEqual(
+            ShareLine.Block + ShareLine.Dodged + ShareLine.NearMiss + ShareLine.LookedBack + ShareLine.Door,
+            ShareLine.Strip(RunOutcome.Banked, 200f, marks));
+    }
+
+    [Test]
+    public void TheMarksReachTheCopiedLine()
+    {
+        var share = ShareLine.For("2026-11-24", null, RunOutcome.Died, 60f, 0f, false,
+            new[] { StretchMark.NearMiss, StretchMark.Dodged });
+
+        Assert.AreEqual(ShareLine.NearMiss + ShareLine.Dodged + ShareLine.Eye, share.Split('\n')[1]);
+    }
+
+    [Test]
     public void ALongRunIsCappedRatherThanWrapping()
     {
         Assert.AreEqual(Repeat(ShareLine.MaxBlocks) + "+" + ShareLine.Door, ShareLine.Strip(RunOutcome.Banked, 5000f));

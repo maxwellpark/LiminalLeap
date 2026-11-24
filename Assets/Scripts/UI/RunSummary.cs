@@ -144,7 +144,8 @@ public class RunSummary : Singleton<RunSummary>
         best.color = beaten ? RuntimeUi.Accent : RuntimeUi.Muted;
 
         Share = daily
-            ? ShareLine.For(RunMode.Day, Places.ForRun()?.Short, evt.Outcome, evt.DistanceCovered, run, kept)
+            ? ShareLine.For(RunMode.Day, Places.ForRun()?.Short, evt.Outcome, evt.DistanceCovered, run, kept,
+                PlayerTrackMovement.Strip.Marks)
             : null;
         Copied = false;
 
