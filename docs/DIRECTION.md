@@ -127,7 +127,13 @@ Taken without a decision, since each is cheap to change.
   lap being wrong (`Places`).
 - Default 2026-11-24 [needs-review]: the four anomalies and their four-piece stretch
   (`LapRule`, `TrackScenery`).
-- Default 2026-11-24 [needs-review]: the daily share line's shape, a 50 m block strip
-  ending in a door or an eye, and the itch link it points at (`ShareLine`).
+- Decided 2026-11-24: each 50 m square of the share strip marks what happened there (a dodged
+  attack, a near miss, a stretch spent looking back), not just distance. To build.
+- Decided 2026-11-24: the share line keeps the itch link before the page exists, and C
+  stays the copy key.
+- Decided 2026-11-24: getting out of a story place offers its own line (place, right and
+  wrong calls, laps), with no anomaly spoilers. To build.
+- Decided 2026-11-24: the summary previews the strip in shapes the game font has; the
+  emoji stay in the copied text only. To build.
 - Default 2026-11-24 [needs-review]: 1Password vault `LiminalLeap` with items `itch` and
   `unity` (`op/`).
