@@ -81,8 +81,10 @@ public class RearView : Singleton<RearView>
         BuildPanel();
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
+
         // Editor domain reloads leak these otherwise.
         if (target != null)
         {
