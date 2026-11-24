@@ -129,8 +129,9 @@ Taken without a decision, since each is cheap to change.
   (`LapRule`, `TrackScenery`).
 - Decided 2026-11-24: each 50 m square of the share strip marks what happened there (a dodged
   attack, a near miss, a stretch spent looking back), not just distance. To build.
-- Decided 2026-11-24: the share line keeps the itch link before the page exists, and C
-  stays the copy key.
+- Decided 2026-11-24: the share line keeps the itch link before the page exists.
+- Decided 2026-11-24: copying is a Copy button on the summary after a run, not a key. In a
+  browser the page copies on the click itself while the pointer is over the button. To build.
 - Decided 2026-11-24: getting out of a story place offers its own line (place, right and
   wrong calls, laps), with no anomaly spoilers. To build.
 - Decided 2026-11-24: the summary previews the strip in shapes the game font has; the
