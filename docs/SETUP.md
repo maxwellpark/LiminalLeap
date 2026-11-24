@@ -6,9 +6,9 @@ needs them, and what is still not set up. Written 2026-11-24. Each step is marke
 
 ## The model
 
-Every secret lives in 1Password, in one vault. The repo holds only `op://` references to
-it (`scripts/itch.env`, `scripts/unity.env`), which are safe to commit. A machine
-reaches the vault one of two ways:
+Every secret lives in 1Password, in the **LiminalLeap** vault, one item per service. The
+repo holds only `op://` references to it, in `op/<purpose>.env` (`op/itch.env`,
+`op/unity.env`), which are safe to commit. A machine reaches the vault one of two ways:
 
 - **The Mac, interactively:** the 1Password desktop app with CLI integration, unlocked by
   Touch ID. Nothing stored.
@@ -28,17 +28,18 @@ is the vault holding only automation credentials, each revocable at its source.
 
 | Secret | 1Password item | Used by |
 |---|---|---|
-| itch API key | `Deploy / itch butler / credential` | `scripts/deploy-itch.sh`, deploy workflow |
-| Unity login | `Deploy / Unity CI / username`, `password` | `scripts/unity-activate.sh`, test and deploy workflows |
+| itch API key | `LiminalLeap / itch / api-key` | `scripts/deploy-itch.sh`, deploy workflow |
+| Unity login | `LiminalLeap / unity / username`, `password` | `scripts/unity-activate.sh`, test and deploy workflows |
 | Service account token | not in the vault | cloud environment variable, GitHub Actions secret |
 
 ## 1. The 1Password vault and service account
 
-1. Create a vault named **Deploy**. Keep only automation credentials in it.
-2. Add the itch key (see the comment in `scripts/itch.env` for the exact command).
-3. Add the Unity login as a Login item titled **Unity CI** (see `scripts/unity.env`).
-   Use the dedicated account from section 2, not a personal one.
-4. Create a service account with **read** access to **Deploy** only, no other vaults.
+1. Create a vault named **LiminalLeap**. Keep only this project's automation credentials
+   in it.
+2. Add the itch key as the item **itch** (the comment in `op/itch.env` has the command).
+3. Add the Unity login as the Login item **unity** (see `op/unity.env`). Use the
+   dedicated account from section 2, not a personal one.
+4. Create a service account with **read** access to **LiminalLeap** only, no other vaults.
    Save its token in the 1Password app itself; it is shown once.
 5. Check the references from any machine with the token set:
 
@@ -79,7 +80,9 @@ scripts/unity-activate.sh --return   hand the activation back
 It drives the licensing client bundled with the editor (`--activate-all
 --include-personal`), finds it on macOS or Linux, and reads the login through `op run`.
 The licensing client only takes the login as arguments, so it is visible in the process
-list for the second or so activation runs.
+list for the second or so activation runs. The house rule is never to pass a secret as a
+bare argument, and this is the one place that can't be met: there is no other way in.
+Whether to accept it outside the Mac is the owner's call.
 
 Run `--return` before a machine is thrown away, so activations don't pile up on the
 account. Personal activations expire after a while; rerun the script when Unity reports
@@ -145,11 +148,11 @@ See gap 3 for moving the Unity login behind 1Password as well.
 
 ## Remaining gaps
 
-1. **The accounts don't exist yet.** The Deploy vault, the service account, the
-   automation Unity ID and the Unity CI item are all still to create (sections 1 and 2).
-2. **The cloud environment can't reach 1Password.** It needs the `op` CLI installed and
-   1Password's download and API hosts allowed. The API host depends on the account's
-   sign-in address, so it gets added once that's known.
+1. **The accounts don't exist yet.** The LiminalLeap vault, its two items, the service
+   account and the automation Unity ID are all still to create (sections 1 and 2).
+2. **The cloud environment can't reach 1Password.** It needs the `op` CLI, installed only
+   on the owner's word, and 1Password's download and API hosts allowed. The API host
+   depends on the account's sign-in address, so it gets added once that's known.
 3. **CI reads the Unity login twice over.** The workflows take `UNITY_EMAIL` and
    `UNITY_PASSWORD` as their own secrets, while machines read them from 1Password. Either
    accept the duplicate (simple, two places to rotate), or add a

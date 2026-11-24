@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Activate this machine's Unity with the automation account in unity.env, via 1Password.
+# Activate this machine's Unity with the automation account in op/unity.env, via 1Password.
 # shellcheck disable=SC2016
 #
 # Usage:
@@ -12,7 +12,7 @@
 set -euo pipefail
 
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
-ENV_FILE="$SCRIPTS/unity.env"
+ENV_FILE="$SCRIPTS/../op/unity.env"
 
 # shellcheck source-path=SCRIPTDIR source=unity-path.sh
 . "$SCRIPTS/unity-path.sh"
