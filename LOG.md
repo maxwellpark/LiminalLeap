@@ -23,3 +23,11 @@ change is committed. Defaults taken: loops in the arcade only, with their number
 (docs/DIRECTION.md). Blocked on the owner: the Unity licence and 1Password setup, the shared
 tools choice, the itch page, players, and pushing this branch. Next: run the suites once there's
 a licence, then tick the loops line; or a design for forks in the story.
+
+## 2026-11-24, later
+
+- Review fixes pushed to #93: story runs kept out of the arcade's records, copy on a touch
+  lifting, and the smaller findings. #93 isn't merged: neither it nor #91 has run in Unity.
+- The page marks itself ready once the title is up, so `web-check --ready-marker` can tell a
+  booted build from a stuck loading bar. Checked by compile and the jslib in Node; a real
+  web build needs the licence.

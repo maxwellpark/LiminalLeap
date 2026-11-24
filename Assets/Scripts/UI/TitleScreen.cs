@@ -26,6 +26,7 @@ public class TitleScreen : MonoBehaviour
 
     private void Start()
     {
+        PageReady.Mark();
         MoodLighting.GetInstance();
         AudioManager.GetInstance();
         ScreenFade.GetInstance();

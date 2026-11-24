@@ -31,11 +31,11 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
 - Statics out of the run state (#22), the new Input System (#7).
 - The dev scene out of shipped builds (#76).
 - `build-mac.sh` sourcing `scripts/unity-path.sh`.
-- A ready marker in the web template, so shipwright's `web-check` can tell a started game
-  from a stuck loading bar.
 
 ## Done
 
+- 2026-11-24: the page marks itself ready (`data-ready="1"`) once the title is up, for
+  `web-check --ready-marker` on a WebGL build.
 - 2026-11-24: forks in the arcade track, one door laying the track already run again (db92197).
   Its PlayMode tests (LoopTests) are written but not run, so the goal line stays open.
 - 2026-11-24: the loop rule and a memory of the track already laid (a6b748e).

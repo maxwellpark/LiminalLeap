@@ -117,6 +117,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void Start()
     {
+        PageReady.Mark();
         Places.Apply(Places.RulesForRun());
 
         rb = GetComponent<Rigidbody>();
