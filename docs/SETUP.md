@@ -82,7 +82,7 @@ It drives the licensing client bundled with the editor (`--activate-all
 The licensing client only takes the login as arguments, so it is visible in the process
 list for the second or so activation runs. The house rule is never to pass a secret as a
 bare argument, and this is the one place that can't be met: there is no other way in.
-Whether to accept it outside the Mac is the owner's call.
+Decided 2026-11-24: accepted on cloud machines only, with the automation account.
 
 Run `--return` before a machine is thrown away, so activations don't pile up on the
 account. Personal activations expire after a while; rerun the script when Unity reports
@@ -141,6 +141,15 @@ mid-session.
 Off on this repo. Tests, builds and deploys run on a machine: the Mac, or a cloud session
 once Unity is activated there. `tests.yml` and the deploy workflow in #92 aren't live, and
 no Actions secrets are needed.
+
+## Decided, to build
+
+- Decided 2026-11-24: cloud sessions get the `op` CLI from the LiminalLeap environment's
+  setup script, with 1Password's hosts allowed. Waiting on the account's sign-in address.
+- Decided 2026-11-24: compare these scripts with the shared libraries (unity-packages'
+  `unity-verify`, shipwright) before deciding what moves there.
+- Decided 2026-11-24: once activation works, the setup script installs Unity in every new
+  session on the environment.
 
 ## Remaining gaps
 
