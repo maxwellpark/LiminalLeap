@@ -8,5 +8,6 @@ public interface IInputSource
     bool RestartHeld { get; }
     bool LookingBack { get; }
     bool BankPressed { get; }
-    bool CopyPressed { get; }
+    UnityEngine.Vector2 Pointer { get; }   // screen pixels, origin bottom left
+    bool PointerPressed { get; }
 }

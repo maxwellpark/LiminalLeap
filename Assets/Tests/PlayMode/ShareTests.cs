@@ -79,19 +79,38 @@ public class ShareTests
     }
 
     [UnityTest]
-    public IEnumerator CopyingSaysSoAndStaysOnTheSummary()
+    public IEnumerator ClickingCopySaysSoAndStaysOnTheSummary()
     {
         Build(daily: true);
         yield return DieAndWaitForSummary();
         yield return Settle();
 
-        fixture.Input.PressCopy();
+        var summary = RunSummary.GetInstance();
+        Assert.Greater(summary.CopyButtonRect.width, 0f, "the button never laid out, so this proves nothing");
+
+        fixture.Input.Pointer = summary.CopyButtonRect.center;
+        fixture.Input.PressPointer();
         fixture.Input.Tick();
         yield return null;
 
-        var summary = RunSummary.GetInstance();
         Assert.IsTrue(summary.Copied);
         Assert.IsTrue(summary.WaitingForInput, "copying shouldn't count as going again");
+    }
+
+    [UnityTest]
+    public IEnumerator ClickingElsewhereDoesNotCopy()
+    {
+        Build(daily: true);
+        yield return DieAndWaitForSummary();
+        yield return Settle();
+
+        var summary = RunSummary.GetInstance();
+        fixture.Input.Pointer = summary.CopyButtonRect.center + new Vector2(0f, summary.CopyButtonRect.height * 3f);
+        fixture.Input.PressPointer();
+        fixture.Input.Tick();
+        yield return null;
+
+        Assert.IsFalse(summary.Copied);
     }
 
     [UnityTest]

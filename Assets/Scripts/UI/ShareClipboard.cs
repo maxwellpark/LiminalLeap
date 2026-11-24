@@ -3,11 +3,12 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 #endif
 
-// Browsers only copy inside the key event, which Unity reads a frame late, so the page copies.
+// Browsers only copy inside the click, which Unity hears a frame late, so the page copies.
 public static class ShareClipboard
 {
 #if UNITY_WEBGL && !UNITY_EDITOR
     [DllImport("__Internal")] private static extern void ShareClipboardArm(string text);
+    [DllImport("__Internal")] private static extern void ShareClipboardTarget(float x, float y, float width, float height);
     [DllImport("__Internal")] private static extern void ShareClipboardDisarm();
     [DllImport("__Internal")] private static extern int ShareClipboardTakeCopied();
 #endif
@@ -35,7 +36,15 @@ public static class ShareClipboard
 #endif
     }
 
-    // A no-op on WebGL, where the page has already copied in its own key handler.
+    // Where the Copy button is, in screen pixels, so the page knows which clicks to copy on.
+    public static void Target(Rect screen)
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        ShareClipboardTarget(screen.x, screen.y, screen.width, screen.height);
+#endif
+    }
+
+    // A no-op on WebGL, where the page has already copied in its own click handler.
     public static void Copy()
     {
         if (armed == null)

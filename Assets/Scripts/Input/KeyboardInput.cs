@@ -9,5 +9,6 @@ public class KeyboardInput : IInputSource
     public bool RestartHeld => Input.GetKey(KeyCode.R);
     public bool LookingBack => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.Q);
     public bool BankPressed => Input.GetKeyDown(KeyCode.E);
-    public bool CopyPressed => Input.GetKeyDown(KeyCode.C);
+    public Vector2 Pointer => Input.mousePosition;
+    public bool PointerPressed => Input.GetMouseButtonDown(0);
 }

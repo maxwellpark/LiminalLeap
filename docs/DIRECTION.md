@@ -137,10 +137,11 @@ Taken without a decision, since each is cheap to change.
   and blue squares, the loudest event in a stretch winning.
 - Decided 2026-11-24: the share line keeps the itch link before the page exists.
 - Decided 2026-11-24: copying is a Copy button on the summary after a run, not a key. In a
-  browser the page copies on the click itself while the pointer is over the button. To build.
+  browser the page copies on the click itself, checked against the button's rectangle, so
+  touch works too. Built.
 - Decided 2026-11-24: getting out of a story place offers its own line (place, right and
   wrong calls, laps), with no anomaly spoilers. To build.
 - Decided 2026-11-24: the summary previews the strip in shapes the game font has; the
-  emoji stay in the copied text only. To build.
+  emoji stay in the copied text only. Built: coloured outline squares.
 - Default 2026-11-24 [needs-review]: 1Password vault `LiminalLeap` with items `itch` and
   `unity` (`op/`).

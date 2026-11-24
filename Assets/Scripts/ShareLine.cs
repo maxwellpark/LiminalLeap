@@ -59,6 +59,37 @@ public static class ShareLine
         return strip.Append(outcome == RunOutcome.Died ? Eye : Door).ToString();
     }
 
+    // The summary's version: the one square the game font has, coloured to match the copied line.
+    public static string Preview(float distance, IReadOnlyList<StretchMark> marks = null)
+    {
+        var blocks = (int)Math.Ceiling(Math.Max(0f, distance) / MetresPerBlock);
+        var preview = new StringBuilder();
+
+        for (var i = 0; i < Math.Min(blocks, MaxBlocks); i++)
+        {
+            var mark = marks != null && i < marks.Count ? marks[i] : StretchMark.Quiet;
+            preview.Append("<color=").Append(Colour(mark)).Append(">\u25A1</color>");
+        }
+
+        if (blocks > MaxBlocks)
+        {
+            preview.Append('+');
+        }
+
+        return preview.ToString();
+    }
+
+    public static string Colour(StretchMark mark)
+    {
+        return mark switch
+        {
+            StretchMark.LookedBack => "#4FA3E0",
+            StretchMark.NearMiss => "#E3B341",
+            StretchMark.Dodged => "#E5534B",
+            _ => "#9EA6B3",
+        };
+    }
+
     public static string Glyph(StretchMark mark)
     {
         return mark switch

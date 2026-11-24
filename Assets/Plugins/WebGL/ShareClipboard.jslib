@@ -1,9 +1,9 @@
-// Copies inside the keydown itself, the only moment every browser allows it.
+// Copies inside the click itself, the only moment every browser allows it.
 mergeInto(LibraryManager.library, {
   ShareClipboardArm: function (text) {
     var state = Module.shareClipboard;
     if (!state) {
-      state = Module.shareClipboard = { text: null, copied: 0 };
+      state = Module.shareClipboard = { text: null, copied: 0, x: 0, y: 0, w: 0, h: 0 };
 
       // A hidden textarea, for browsers without the async clipboard or that refuse it.
       var fallback = function (value) {
@@ -23,9 +23,15 @@ mergeInto(LibraryManager.library, {
         return ok;
       };
 
-      document.addEventListener("keydown", function (e) {
-        if (state.text === null || e.repeat || e.ctrlKey || e.metaKey || e.altKey) { return; }
-        if (e.key !== "c" && e.key !== "C") { return; }
+      document.addEventListener("pointerdown", function (e) {
+        var canvas = Module.canvas;
+        if (state.text === null || !canvas || state.w <= 0) { return; }
+
+        // Into Unity's screen pixels, which count up from the bottom left.
+        var r = canvas.getBoundingClientRect();
+        var x = (e.clientX - r.left) * canvas.width / r.width;
+        var y = (r.bottom - e.clientY) * canvas.height / r.height;
+        if (x < state.x || y < state.y || x > state.x + state.w || y > state.y + state.h) { return; }
 
         var value = state.text;
         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -40,12 +46,24 @@ mergeInto(LibraryManager.library, {
 
     state.text = UTF8ToString(text);
     state.copied = 0;
+    state.w = 0;
+  },
+
+  ShareClipboardTarget: function (x, y, w, h) {
+    var state = Module.shareClipboard;
+    if (state) {
+      state.x = x;
+      state.y = y;
+      state.w = w;
+      state.h = h;
+    }
   },
 
   ShareClipboardDisarm: function () {
     if (Module.shareClipboard) {
       Module.shareClipboard.text = null;
       Module.shareClipboard.copied = 0;
+      Module.shareClipboard.w = 0;
     }
   },
 

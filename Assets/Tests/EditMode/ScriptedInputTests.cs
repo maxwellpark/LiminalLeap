@@ -44,14 +44,15 @@ public class ScriptedInputTests
     }
 
     [Test]
-    public void CopyIsOnlyTrueForOneTick()
+    public void PointerPressIsOnlyTrueForOneTick()
     {
-        var input = new ScriptedInput();
-        input.PressCopy();
+        var input = new ScriptedInput { Pointer = new UnityEngine.Vector2(40f, 60f) };
+        input.PressPointer();
         input.Tick();
-        Assert.IsTrue(input.CopyPressed);
+        Assert.IsTrue(input.PointerPressed);
         input.Tick();
-        Assert.IsFalse(input.CopyPressed);
+        Assert.IsFalse(input.PointerPressed);
+        Assert.AreEqual(new UnityEngine.Vector2(40f, 60f), input.Pointer, "where the pointer is holds until moved");
     }
 
     // A hold, so a state rather than an edge.

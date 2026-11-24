@@ -70,6 +70,32 @@ public class ShareLineTests
     }
 
     [Test]
+    public void ThePreviewColoursEachStretchToMatch()
+    {
+        var marks = new[] { StretchMark.Dodged, StretchMark.Quiet };
+        var preview = ShareLine.Preview(80f, marks);
+
+        Assert.AreEqual(
+            "<color=" + ShareLine.Colour(StretchMark.Dodged) + ">\u25A1</color>"
+            + "<color=" + ShareLine.Colour(StretchMark.Quiet) + ">\u25A1</color>",
+            preview);
+        Assert.AreNotEqual(ShareLine.Colour(StretchMark.Dodged), ShareLine.Colour(StretchMark.Quiet));
+    }
+
+    // Only the square the font has, or the summary shows boxes for missing glyphs.
+    [Test]
+    public void ThePreviewUsesNoEmoji()
+    {
+        var preview = ShareLine.Preview(5000f, new[] { StretchMark.Dodged, StretchMark.NearMiss, StretchMark.LookedBack });
+        foreach (var c in preview)
+        {
+            Assert.IsFalse(char.IsSurrogate(c), "an emoji got into the preview");
+        }
+
+        StringAssert.EndsWith("+", preview);
+    }
+
+    [Test]
     public void TheMarksReachTheCopiedLine()
     {
         var share = ShareLine.For("2026-11-24", null, RunOutcome.Died, 60f, 0f, false,
