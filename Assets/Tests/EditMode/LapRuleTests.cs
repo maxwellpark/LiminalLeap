@@ -241,6 +241,17 @@ public class LapRuleTests
     }
 
     [Test]
+    public void EveryCallIsKept()
+    {
+        var rule = Rule(required: 2, chance: 0f);
+        rule.Call(tookExit: false);
+        rule.Call(tookExit: true);
+        rule.Call(tookExit: true);
+
+        CollectionAssert.AreEqual(new[] { false, true, true }, rule.History);
+    }
+
+    [Test]
     public void ACleanLapHasNoStretch()
     {
         var rule = Rule();

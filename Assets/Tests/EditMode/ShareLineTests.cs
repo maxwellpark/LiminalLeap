@@ -96,6 +96,32 @@ public class ShareLineTests
     }
 
     [Test]
+    public void APlaceLineShowsEachCallAndEndsOnTheDoor()
+    {
+        var lines = Lines(ShareLine.ForPlace("the office", new[] { true, false, true, true }));
+
+        Assert.AreEqual("Liminal Leap \u00B7 the office", lines[0]);
+        Assert.AreEqual(ShareLine.RightCall + ShareLine.WrongCall + ShareLine.RightCall + ShareLine.RightCall + ShareLine.Door, lines[1]);
+        Assert.AreEqual("out after 4 laps \u00B7 3 right, 1 wrong", lines[2]);
+        Assert.AreEqual(ShareLine.Link, lines[3]);
+    }
+
+    [Test]
+    public void OneLapSaysLap()
+    {
+        StringAssert.Contains("out after 1 lap \u00B7", ShareLine.ForPlace("the school", new[] { true }));
+    }
+
+    [Test]
+    public void ThePlacePreviewMatchesTheCalls()
+    {
+        var preview = ShareLine.PlacePreview(new[] { true, false });
+
+        Assert.AreEqual(2, preview.Split('\u25A1').Length - 1);
+        StringAssert.Contains(ShareLine.Colour(StretchMark.Dodged), preview, "a wrong call should be red like a dodge");
+    }
+
+    [Test]
     public void TheMarksReachTheCopiedLine()
     {
         var share = ShareLine.For("2026-11-24", null, RunOutcome.Died, 60f, 0f, false,

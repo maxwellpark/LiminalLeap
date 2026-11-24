@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public enum AnomalyKind
 {
@@ -37,6 +38,11 @@ public sealed class LapRule
     public int Lap { get; private set; }        // the lap the player is in
     public int CleanLap { get; private set; }   // first lap after a start or a wrong call
     public int Streak { get; private set; }     // right calls in a row
+
+    private readonly List<bool> history = new();
+
+    // Every call made in the place, right or wrong, for the share line.
+    public IReadOnlyList<bool> History => history;
 
     public LapRule(int seed, int required, float chance)
     {
@@ -86,6 +92,7 @@ public sealed class LapRule
     public LapCall Call(bool tookExit)
     {
         var right = tookExit != HasAnomaly(Lap);
+        history.Add(right);
         if (!right)
         {
             Streak = 0;

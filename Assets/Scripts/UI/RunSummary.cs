@@ -48,13 +48,57 @@ public class RunSummary : Singleton<RunSummary>
         Build();
     }
 
-    // Not for restarts, which go straight back in, nor in the story, which just carries on.
+    // Not for restarts. The story only stops to mark getting out of a place with laps.
     protected override void OnDeath(OnDeathEvent evt)
     {
-        if (evt.Outcome != RunOutcome.Abandoned && Presentation.Arcade)
+        if (evt.Outcome == RunOutcome.Abandoned)
+        {
+            return;
+        }
+
+        if (Presentation.Arcade)
         {
             Show(evt);
+            return;
         }
+
+        var laps = StoryLaps.Current;
+        var place = Places.ForRun();
+        if (evt.Outcome == RunOutcome.Banked && laps != null && place != null)
+        {
+            ShowPlace(place, laps.History);
+        }
+    }
+
+    private void ShowPlace(Place place, System.Collections.Generic.IReadOnlyList<bool> calls)
+    {
+        if (headline == null)
+        {
+            return;
+        }
+
+        var right = 0;
+        for (var i = 0; i < calls.Count; i++)
+        {
+            right += calls[i] ? 1 : 0;
+        }
+
+        headline.text = $"OUT OF {place.Short.ToUpperInvariant()}";
+        headline.color = RuntimeUi.Accent;
+        score.text = string.Empty;
+        detail.text = $"{calls.Count} laps     {right} right     {calls.Count - right} wrong";
+        strip.text = ShareLine.PlacePreview(calls);
+        best.text = string.Empty;
+
+        Share = ShareLine.ForPlace(place.Short, calls);
+        Copied = false;
+        ShareClipboard.Arm(Share);
+        copyLabel.text = "COPY RESULT";
+        copyTarget = default;
+        prompt.text = "press SPACE to go on";
+
+        visibleAt = -1f;
+        WaitingForInput = true;
     }
 
     public void Dismiss()

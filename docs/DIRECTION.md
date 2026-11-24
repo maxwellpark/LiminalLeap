@@ -140,7 +140,8 @@ Taken without a decision, since each is cheap to change.
   browser the page copies on the click itself, checked against the button's rectangle, so
   touch works too. Built.
 - Decided 2026-11-24: getting out of a story place offers its own line (place, right and
-  wrong calls, laps), with no anomaly spoilers. To build.
+  wrong calls, laps), with no anomaly spoilers. Built: a card on leaving a place, with a green
+  or red square per lap's call and the same Copy button.
 - Decided 2026-11-24: the summary previews the strip in shapes the game font has; the
   emoji stay in the copied text only. Built: coloured outline squares.
 - Default 2026-11-24 [needs-review]: 1Password vault `LiminalLeap` with items `itch` and

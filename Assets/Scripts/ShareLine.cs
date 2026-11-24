@@ -17,6 +17,8 @@ public static class ShareLine
     public const string Door = "\U0001F6AA";     // got out
     public const string Eye = "\U0001F441";      // got caught
     public const string Dot = " \u00B7 ";
+    public const string RightCall = "\U0001F7E9";  // green: a lap called right
+    public const string WrongCall = "\U0001F7E5";  // red: a lap called wrong
 
     // Kept is false when dying cost the score, so the line never claims it.
     public static string For(string day, string place, RunOutcome outcome, float distance, float score, bool kept,
@@ -57,6 +59,46 @@ public static class ShareLine
         }
 
         return strip.Append(outcome == RunOutcome.Died ? Eye : Door).ToString();
+    }
+
+    // Getting out of a story place: how the calls went, never what was wrong.
+    public static string ForPlace(string place, IReadOnlyList<bool> calls)
+    {
+        var right = 0;
+        var strip = new StringBuilder();
+        for (var i = 0; i < calls.Count; i++)
+        {
+            right += calls[i] ? 1 : 0;
+            if (i < MaxBlocks)
+            {
+                strip.Append(calls[i] ? RightCall : WrongCall);
+            }
+        }
+
+        if (calls.Count > MaxBlocks)
+        {
+            strip.Append('+');
+        }
+
+        strip.Append(Door);
+        var laps = calls.Count == 1 ? "1 lap" : $"{calls.Count} laps";
+        return $"Liminal Leap{Dot}{place}\n{strip}\nout after {laps}{Dot}{right} right, {calls.Count - right} wrong\n{Link}";
+    }
+
+    public static string PlacePreview(IReadOnlyList<bool> calls)
+    {
+        var preview = new StringBuilder();
+        for (var i = 0; i < Math.Min(calls.Count, MaxBlocks); i++)
+        {
+            preview.Append("<color=").Append(calls[i] ? "#57AB5A" : Colour(StretchMark.Dodged)).Append(">\u25A1</color>");
+        }
+
+        if (calls.Count > MaxBlocks)
+        {
+            preview.Append('+');
+        }
+
+        return preview.ToString();
     }
 
     // The summary's version: the one square the game font has, coloured to match the copied line.
