@@ -8,4 +8,5 @@ public interface IInputSource
     bool RestartHeld { get; }
     bool LookingBack { get; }
     bool BankPressed { get; }
+    bool CopyPressed { get; }
 }

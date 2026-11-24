@@ -18,11 +18,17 @@ public class RunSummary : Singleton<RunSummary>
     private TextMeshProUGUI best;
     private TextMeshProUGUI prompt;
 
+    private const string RunAgain = "press SPACE to run again";
+
     private float visibleAt = -1f;
     private float alpha;
 
     // PlayerTrackMovement holds the reset until this clears, so the run waits for you.
     public bool WaitingForInput { get; private set; }
+
+    // A daily's result to paste, or null when there's nothing to compare against.
+    public string Share { get; private set; }
+    public bool Copied { get; private set; }
 
     public override void Init()
     {
@@ -41,6 +47,15 @@ public class RunSummary : Singleton<RunSummary>
     public void Dismiss()
     {
         WaitingForInput = false;
+        Share = null;
+        ShareClipboard.Disarm();
+    }
+
+    // Or the page would still copy a finished run's line on C.
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        ShareClipboard.Disarm();
     }
 
     private void Update()
@@ -70,6 +85,18 @@ public class RunSummary : Singleton<RunSummary>
         }
 
         var source = InputRouter.Source;
+
+        if (Share != null && source != null && source.CopyPressed)
+        {
+            ShareClipboard.Copy();
+        }
+
+        if (Share != null && ShareClipboard.TakeCopied())
+        {
+            Copied = true;
+            prompt.text = $"copied     {RunAgain}";
+        }
+
         if (source != null && (source.JumpPressed || source.RestartPressed))
         {
             Dismiss();
@@ -116,7 +143,17 @@ public class RunSummary : Singleton<RunSummary>
             : $"{(daily ? "today" : "best")}  {record:N0}";
         best.color = beaten ? RuntimeUi.Accent : RuntimeUi.Muted;
 
-        prompt.text = "press SPACE to run again";
+        Share = daily
+            ? ShareLine.For(RunMode.Day, Places.ForRun()?.Short, evt.Outcome, evt.DistanceCovered, run, kept)
+            : null;
+        Copied = false;
+
+        if (Share != null)
+        {
+            ShareClipboard.Arm(Share);
+        }
+
+        prompt.text = Share != null ? $"{RunAgain}     {Controls.Copy}  copy result" : RunAgain;
 
         visibleAt = -1f;
         WaitingForInput = true;

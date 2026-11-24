@@ -43,6 +43,17 @@ public class ScriptedInputTests
         Assert.IsFalse(input.RestartPressed);
     }
 
+    [Test]
+    public void CopyIsOnlyTrueForOneTick()
+    {
+        var input = new ScriptedInput();
+        input.PressCopy();
+        input.Tick();
+        Assert.IsTrue(input.CopyPressed);
+        input.Tick();
+        Assert.IsFalse(input.CopyPressed);
+    }
+
     // A hold, so a state rather than an edge.
     [Test]
     public void RestartHeldHoldsUntilChanged()

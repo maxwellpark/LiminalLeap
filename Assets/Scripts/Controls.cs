@@ -8,6 +8,7 @@ public static class Controls
     public const string Restart = "R";
     public const string Pause = "P";
     public const string Daily = "ENTER";
+    public const string Copy = "C";
 
     public static string Summary =>
         $"{Steer}  steer     {Jump}  jump     {LookBack}  look back     {Leave}  leave     {Pause}  pause";

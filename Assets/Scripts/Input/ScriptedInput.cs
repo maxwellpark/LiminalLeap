@@ -5,6 +5,7 @@ public class ScriptedInput : IInputSource
     private bool releaseQueued;
     private bool restartQueued;
     private bool bankQueued;
+    private bool copyQueued;
 
     public float Horizontal { get; set; }
     public bool LookingBack { get; set; }
@@ -13,6 +14,7 @@ public class ScriptedInput : IInputSource
     public bool JumpReleased { get; private set; }
     public bool RestartPressed { get; private set; }
     public bool BankPressed { get; private set; }
+    public bool CopyPressed { get; private set; }
 
     public void PressJump()
     {
@@ -34,6 +36,11 @@ public class ScriptedInput : IInputSource
         bankQueued = true;
     }
 
+    public void PressCopy()
+    {
+        copyQueued = true;
+    }
+
     // Call once per frame, before whatever reads the input.
     public void Tick()
     {
@@ -41,10 +48,12 @@ public class ScriptedInput : IInputSource
         JumpReleased = releaseQueued;
         RestartPressed = restartQueued;
         BankPressed = bankQueued;
+        CopyPressed = copyQueued;
 
         jumpQueued = false;
         releaseQueued = false;
         restartQueued = false;
         bankQueued = false;
+        copyQueued = false;
     }
 }
