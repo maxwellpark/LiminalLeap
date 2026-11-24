@@ -117,6 +117,30 @@ public class PlacesTests
     }
 
     [Test]
+    public void RetuningAPlaceGivesItANewRule()
+    {
+        var office = Get("office");
+        var calls = office.Calls;
+        StoryLaps.Clear();
+
+        try
+        {
+            var before = StoryLaps.For(office);
+            office.Calls = calls + 1;
+
+            var after = StoryLaps.For(office);
+            Assert.AreNotSame(before, after, "the old target would still apply");
+            Assert.AreEqual(calls + 1, after.Required);
+            Assert.AreSame(after, StoryLaps.For(office), "an unchanged place should keep its rule");
+        }
+        finally
+        {
+            office.Calls = calls;
+            StoryLaps.Clear();
+        }
+    }
+
+    [Test]
     public void AdvancingWalksThePlacesThenFinishes()
     {
         var save = SaveData.Fresh();

@@ -18,7 +18,8 @@ public static class StoryLaps
             return null;
         }
 
-        if (Rule == null || placeId != place.Id)
+        // Retuned from the overlay counts as a new rule, and the count starts again.
+        if (Rule == null || placeId != place.Id || Rule.Required != place.Calls || Rule.Chance != place.AnomalyChance)
         {
             placeId = place.Id;
             Rule = new LapRule(Seeds.Next(), place.Calls, place.AnomalyChance);

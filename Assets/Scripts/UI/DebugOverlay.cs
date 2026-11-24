@@ -145,6 +145,7 @@ public class DebugOverlay : Singleton<DebugOverlay>
 
         DrawAttack();
         DrawFlags();
+        DrawLaps();
 
         GUILayout.Space(6f);
         GUILayout.Label("<b>Tuning</b>", RichLabel());
@@ -207,6 +208,28 @@ public class DebugOverlay : Singleton<DebugOverlay>
     }
 
     // Toggling here is in memory only, so an experiment can't quietly become your save.
+    // Read at the next restart, so a lap already laid keeps the answer it was laid with.
+    private void DrawLaps()
+    {
+        var place = RunMode.Story ? Places.ForRun() : null;
+        if (place == null || place.Calls <= 0)
+        {
+            return;
+        }
+
+        GUILayout.Space(6f);
+        GUILayout.Label($"<b>Laps</b>  {place.Short}, from the next restart", RichLabel());
+        place.Length = Mathf.RoundToInt(LapSlider($"lap length  {place.Length}", place.Length, 4 * LapRule.StretchPieces, 120));
+        place.Calls = Mathf.RoundToInt(LapSlider($"right calls  {place.Calls}", place.Calls, 1, 8));
+        place.AnomalyChance = LapSlider($"wrong chance  {place.AnomalyChance:F2}", place.AnomalyChance, 0f, 1f);
+    }
+
+    private static float LapSlider(string label, float value, float min, float max)
+    {
+        GUILayout.Label(label);
+        return GUILayout.HorizontalSlider(value, min, max);
+    }
+
     private void DrawFlags()
     {
         GUILayout.Space(6f);
