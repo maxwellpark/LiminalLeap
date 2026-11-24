@@ -58,7 +58,8 @@ harness, `scripts/check.sh`, and a 10 MB WebGL build.
 Not done:
 
 - No outside player has touched it. Most open design questions end in "needs a playtest".
-- Not on itch (#74). The CI deploy (#92) and CI tests (#19) wait on secrets.
+- Not on itch (#74). GitHub Actions is off, so tests and deploys run on a machine; the
+  workflows (#19, #92) aren't live.
 - The story (#91) has not been run in Unity.
 - `companyName` is now `maxwellpark` (#77), done before any public build so no player save
   is lost. It does move the local dev save.
@@ -107,7 +108,8 @@ Whether these anomalies read at speed is the open question, as #52 warned.
 
 1. Run #91 in Unity, fix what breaks, merge.
 2. ~~Company name (#77).~~ Done. The always-on flags (#75) still want a playtest.
-3. Publish to itch (#74, #92) and get 5 to 10 people playing.
+3. Publish to itch (#74) from a machine with `scripts/deploy-itch.sh`, and get 5 to 10
+   people playing.
 4. Anomalies (#52) as the headline feature, with the shareable daily line alongside.
 5. Loops (#51) once anomalies read, since recognising a repeat is the same skill.
 

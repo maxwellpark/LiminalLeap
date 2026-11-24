@@ -12,7 +12,7 @@ repo holds only `op://` references to it, in `op/<purpose>.env` (`op/itch.env`,
 
 - **The Mac, interactively:** the 1Password desktop app with CLI integration, unlocked by
   Touch ID. Nothing stored.
-- **Anywhere unattended** (a cloud session, GitHub Actions): a 1Password **service
+- **Anywhere unattended** (a cloud session): a 1Password **service
   account** token in `OP_SERVICE_ACCOUNT_TOKEN`. That token is the only secret stored
   outside 1Password, and it can only read the one vault.
 
@@ -28,9 +28,9 @@ is the vault holding only automation credentials, each revocable at its source.
 
 | Secret | 1Password item | Used by |
 |---|---|---|
-| itch API key | `LiminalLeap / itch / api-key` | `scripts/deploy-itch.sh`, deploy workflow |
-| Unity login | `LiminalLeap / unity / username`, `password` | `scripts/unity-activate.sh`, test and deploy workflows |
-| Service account token | not in the vault | cloud environment variable, GitHub Actions secret |
+| itch API key | `LiminalLeap / itch / api-key` | `scripts/deploy-itch.sh` |
+| Unity login | `LiminalLeap / unity / username`, `password` | `scripts/unity-activate.sh` |
+| Service account token | not in the vault | cloud environment variable |
 
 ## 1. The 1Password vault and service account
 
@@ -138,13 +138,9 @@ mid-session.
 
 ### GitHub Actions
 
-`tests.yml` and the deploy workflow (PR #92) both skip with a notice until their secrets
-exist. Today they read the Unity login from Actions secrets directly:
-
-- `UNITY_EMAIL`, `UNITY_PASSWORD`: the automation account
-- `OP_SERVICE_ACCOUNT_TOKEN`: deploy only, for the itch key
-
-See gap 3 for moving the Unity login behind 1Password as well.
+Off on this repo. Tests, builds and deploys run on a machine: the Mac, or a cloud session
+once Unity is activated there. `tests.yml` and the deploy workflow in #92 aren't live, and
+no Actions secrets are needed.
 
 ## Remaining gaps
 
@@ -153,25 +149,18 @@ See gap 3 for moving the Unity login behind 1Password as well.
 2. **The cloud environment can't reach 1Password.** It needs the `op` CLI, installed only
    on the owner's word, and 1Password's download and API hosts allowed. The API host
    depends on the account's sign-in address, so it gets added once that's known.
-3. **CI reads the Unity login twice over.** The workflows take `UNITY_EMAIL` and
-   `UNITY_PASSWORD` as their own secrets, while machines read them from 1Password. Either
-   accept the duplicate (simple, two places to rotate), or add a
-   `1password/load-secrets-action` step before the Unity steps, as deploy already does for
-   the itch key, so the only Actions secret is the token.
-4. **Nothing reinstalls Unity in a new cloud session.** Each new machine starts without
+3. **Nothing reinstalls Unity in a new cloud session.** Each new machine starts without
    the editor. Wants a setup script on the environment, saved once activation and the test
    run have worked, so it only contains steps known to work. It costs a several minute
    download per new machine.
-5. ~~**`scripts/check.sh` assumes the Mac.**~~ Done: `scripts/unity-path.sh` holds the
+4. ~~**`scripts/check.sh` assumes the Mac.**~~ Done: `scripts/unity-path.sh` holds the
    editor path, tool folder and launcher per OS, and `check.sh`, `build-web.sh` and
    `unity-activate.sh` read it. `check.sh --fast` is **verified** on Linux and catches a
    planted error. On a headless Linux box Unity runs under `xvfb-run`, which is
    **unverified** until there's a licence to run the suites with. A missing licence now
    says so instead of reporting no results.
-6. **The deploy workflow (PR #92) has never run.** Unmerged, and untested against
-   game-ci's builder with a custom build method.
-7. **The itch project isn't created or published** (#74). Account steps, then the first
+5. **The itch project isn't created or published** (#74). Account steps, then the first
    `scripts/deploy-itch.sh`.
-8. **Changing the company name moved local saves.** Unity keys PlayerPrefs by company and
+6. **Changing the company name moved local saves.** Unity keys PlayerPrefs by company and
    product name, so a Mac that played before the rename starts from an empty save.
    Expected, and better now than after players have saves.
