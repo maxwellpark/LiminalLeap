@@ -12,6 +12,7 @@ public class TrackPiece : MonoBehaviour
     public int Lap { get; set; }
     public bool EndsLap { get; set; }
     public AnomalyKind Anomaly { get; set; }
+    public int Ordinal { get; set; }        // its place in the run, as laid
 
     // Built by the generator the first time this piece is a fork, then toggled.
     public GameObject ForkWall { get; set; }

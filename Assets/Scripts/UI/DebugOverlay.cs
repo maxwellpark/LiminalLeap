@@ -207,7 +207,6 @@ public class DebugOverlay : Singleton<DebugOverlay>
         return text;
     }
 
-    // Toggling here is in memory only, so an experiment can't quietly become your save.
     // Read at the next restart, so a lap already laid keeps the answer it was laid with.
     private void DrawLaps()
     {
@@ -230,6 +229,7 @@ public class DebugOverlay : Singleton<DebugOverlay>
         return GUILayout.HorizontalSlider(value, min, max);
     }
 
+    // Toggling here is in memory only, so an experiment can't quietly become your save.
     private void DrawFlags()
     {
         GUILayout.Space(6f);

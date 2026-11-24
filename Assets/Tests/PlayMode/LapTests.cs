@@ -109,6 +109,9 @@ public class LapTests
     {
         var exits = new List<TrackPiece>();
         var deadline = 200;
+
+        // The generator makes the rule in Start, a frame after the test begins.
+        yield return null;
         var rule = StoryLaps.Rule;
 
         while (rule.Lap == 0 && deadline-- > 0)
@@ -119,6 +122,40 @@ public class LapTests
         Assert.AreEqual(1, rule.Lap, "never got past the first exit");
         Assert.AreEqual(0, rule.Streak);
         Assert.AreEqual(1, rule.CleanLap, "a wrong call should start again on a clean lap");
+    }
+
+    // Breaths only rule out hazards, so they mustn't push a lap's exit back and stretch it.
+    [UnityTest]
+    public IEnumerator BreathsDontStretchALap()
+    {
+        Features.Override(Feature.CalmSections, true);
+        player.position = Vector3.zero;
+        generator.ResetRun();
+        yield return null;
+
+        var perLap = new Dictionary<int, HashSet<int>>();
+        for (var step = 0; step < 400; step++)
+        {
+            foreach (var piece in generator.ActivePieces)
+            {
+                if (!perLap.TryGetValue(piece.Lap, out var ordinals))
+                {
+                    perLap[piece.Lap] = ordinals = new HashSet<int>();
+                }
+
+                ordinals.Add(piece.Ordinal);
+            }
+
+            player.position += Vector3.forward * 10f;
+            yield return null;
+        }
+
+        var length = Places.Story[0].Length;
+        Assert.Greater(perLap.Count, 4, "too few laps to prove anything");
+        for (var lap = 1; lap < perLap.Count - 1; lap++)
+        {
+            Assert.AreEqual(length, perLap[lap].Count, "lap " + lap + " was stretched or squeezed");
+        }
     }
 
     [UnityTest]

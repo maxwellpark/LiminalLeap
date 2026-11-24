@@ -82,10 +82,11 @@ public sealed class LapRule
         return pieceInLap >= start && pieceInLap < start + StretchPieces;
     }
 
-    // Skips one, since carrying on without a fade only ever means one more.
+    // As if the calls before it are right, since a wrong one fades the track away anyway.
     public int CountShown(int lap)
     {
-        return KindFor(lap) == AnomalyKind.WrongCount ? Streak + 2 : Streak;
+        var expected = Streak + Math.Max(0, lap - Lap);
+        return KindFor(lap) == AnomalyKind.WrongCount ? expected + 2 : expected;
     }
 
     // Dying doesn't call, so the same lap comes round again with the same answer.

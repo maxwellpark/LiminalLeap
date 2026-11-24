@@ -233,11 +233,23 @@ public class LapRuleTests
         {
             var wrong = rule.KindFor(lap) == AnomalyKind.WrongCount;
             sawWrong |= wrong;
-            Assert.AreEqual(wrong ? rule.Streak + 2 : rule.Streak, rule.CountShown(lap), "lap " + lap);
+            var expected = rule.Streak + (lap - rule.Lap);
+            Assert.AreEqual(wrong ? expected + 2 : expected, rule.CountShown(lap), "lap " + lap);
         }
 
         Assert.IsTrue(sawWrong, "no wrong count lap, so this proves nothing");
         Assert.AreEqual(rule.Streak, rule.CountShown(rule.CleanLap), "the clean lap has to tell the truth");
+    }
+
+    // Laid ahead of the call, the next lap's number has to be right already, or it ticks in view.
+    [Test]
+    public void TheNextLapAlreadyShowsTheCountItWillHave()
+    {
+        var rule = Rule(required: 9, chance: 0f);
+        var ahead = rule.CountShown(rule.Lap + 1);
+
+        rule.Call(tookExit: true);
+        Assert.AreEqual(ahead, rule.CountShown(rule.Lap), "the number changed once the call was made");
     }
 
     [Test]

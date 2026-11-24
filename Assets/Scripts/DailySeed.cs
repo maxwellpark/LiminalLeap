@@ -50,8 +50,10 @@ public static class RunMode
     // Unset when a scene is opened directly, so it keeps its own seed.
     public static bool FreshEachRun { get; private set; }
 
+    // A new start, so no lap carries over from the last time a place was run.
     public static void ChooseStory()
     {
+        StoryLaps.Clear();
         Story = true;
         Daily = false;
         FreshEachRun = true;
@@ -60,6 +62,7 @@ public static class RunMode
 
     public static void ChooseDaily()
     {
+        StoryLaps.Clear();
         Story = false;
         Daily = true;
         FreshEachRun = false;
@@ -69,6 +72,7 @@ public static class RunMode
 
     public static void ChooseFree()
     {
+        StoryLaps.Clear();
         Story = false;
         Daily = false;
         FreshEachRun = true;

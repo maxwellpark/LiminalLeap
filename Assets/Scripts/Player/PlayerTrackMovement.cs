@@ -502,8 +502,8 @@ public class PlayerTrackMovement : MonoBehaviour
         live = false;
 
         // Written before the dispatch, so whoever saves on death writes this run's ghost.
-        // Not for restarts.
-        if (outcome != RunOutcome.Abandoned)
+        // Not for restarts, nor the story, whose laps would chase arcade runs as the ghost.
+        if (outcome != RunOutcome.Abandoned && !RunMode.Story)
         {
             SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
         }

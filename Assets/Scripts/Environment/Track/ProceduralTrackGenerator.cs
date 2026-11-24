@@ -253,6 +253,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         }
 
         piece.Calm = Calm(spawned);
+        piece.Ordinal = spawned;
 
         spawned++;
         piece.gameObject.SetActive(true);
@@ -479,7 +480,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private static Hazard HazardOn(TrackPiece piece)
     {
         var wall = piece.ForkWall;
-        foreach (var hazard in piece.GetComponentsInChildren<Hazard>(true))
+        piece.GetComponentsInChildren(true, HazardBuffer);
+        foreach (var hazard in HazardBuffer)
         {
             if (wall == null || wall.activeSelf || !hazard.transform.IsChildOf(wall.transform))
             {
@@ -489,6 +491,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
         return null;
     }
+
+    private static readonly List<Hazard> HazardBuffer = new();
 
     private bool IsExit(int index)
     {
@@ -587,6 +591,16 @@ public class ProceduralTrackGenerator : MonoBehaviour
             }
         }
 
+        // Before the breath, which only rules out hazards: a lap's length is its exit's schedule.
+        if (Features.On(Feature.ExitDoors) && spawned >= nextExitAt)
+        {
+            var exit = FindExitIndex();
+            if (exit >= 0)
+            {
+                return exit;
+            }
+        }
+
         // A breath means nothing to survive, so nothing that can kill you goes in it.
         if (Calm(spawned))
         {
@@ -594,15 +608,6 @@ public class ProceduralTrackGenerator : MonoBehaviour
             if (clean >= 0)
             {
                 return clean;
-            }
-        }
-
-        if (Features.On(Feature.ExitDoors) && spawned >= nextExitAt)
-        {
-            var exit = FindExitIndex();
-            if (exit >= 0)
-            {
-                return exit;
             }
         }
 
