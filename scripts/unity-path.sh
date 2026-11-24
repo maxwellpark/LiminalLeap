@@ -17,7 +17,10 @@ fi
 
 # True while an editor has this project open, which holds the lock batch mode needs.
 unity_has_project_open() {
-  pgrep -if -- "-projectpath $1" >/dev/null 2>&1
+  # Escaped and anchored, so a path inside this one, or with regex characters, can't match.
+  local path
+  path=$(printf '%s' "$1" | sed 's/[][\.^$*+?(){}|/]/\\&/g')
+  pgrep -if -- "-projectpath ${path}( |$)" >/dev/null 2>&1
 }
 
 # Batch mode exits 198 when there's no licence, which otherwise reads as a missing result.

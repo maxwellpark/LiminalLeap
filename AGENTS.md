@@ -7,5 +7,5 @@
 # Traps
 
 - `check.sh --fast` hands every built assembly to the compiler, so it can't catch an asmdef missing a reference (the PlayMode tests once lacked `Unity.TextMeshPro`). A real Unity compile does: batch mode with `-quit` resolves packages and compiles every assembly even without a licence, then stops.
-- The generator rerolls a repeated or unscheduled piece only 16 times before taking what it rolled, so with one plain prefab it places stray exits. Tests that build a generator give it several plain pieces.
+- The generator rerolls a repeated or unscheduled piece only 16 times. Out of rerolls it now takes a plain piece rather than an unscheduled exit, which ended laps early, but with one plain prefab the repeat cap still can't hold, so tests that build a generator give it several.
 - A pooled piece keeps children added at runtime, like a fork's wall, switched off. Anything that reads a piece's contents counts active children only, and anything that adds one clears the piece's cached resettables (`TrackPiece.ForgetResettables`).

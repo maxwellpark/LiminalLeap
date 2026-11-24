@@ -86,7 +86,7 @@ public class RunSummary : Singleton<RunSummary>
         headline.text = $"OUT OF {place.Short.ToUpperInvariant()}";
         headline.color = RuntimeUi.Accent;
         score.text = string.Empty;
-        detail.text = $"{calls.Count} laps     {right} right     {calls.Count - right} wrong";
+        detail.text = $"{(calls.Count == 1 ? "1 lap" : $"{calls.Count} laps")}     {right} right     {calls.Count - right} wrong";
         strip.text = ShareLine.PlacePreview(calls);
         best.text = string.Empty;
 

@@ -465,8 +465,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
             return SignKind.ExitAhead;
         }
 
-        // Active only: a pooled piece keeps an old fork's wall, switched off.
-        var hazard = piece.GetComponentInChildren<Hazard>();
+        var hazard = HazardOn(piece);
         if (hazard != null)
         {
             return hazard.Jumpable ? SignKind.Jump : SignKind.Strafe;
@@ -474,6 +473,21 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
         // Flagged but nothing found. A vague warning beats a missed one.
         return piece.ContainsHazard ? SignKind.Strafe : SignKind.Clear;
+    }
+
+    // A pooled piece keeps an old fork's wall, switched off, which mustn't be signed as a hazard.
+    private static Hazard HazardOn(TrackPiece piece)
+    {
+        var wall = piece.ForkWall;
+        foreach (var hazard in piece.GetComponentsInChildren<Hazard>(true))
+        {
+            if (wall == null || wall.activeSelf || !hazard.transform.IsChildOf(wall.transform))
+            {
+                return hazard;
+            }
+        }
+
+        return null;
     }
 
     private bool IsExit(int index)
@@ -600,6 +614,13 @@ public class ProceduralTrackGenerator : MonoBehaviour
             index = rng.Next(piecePrefabs.Length);
         }
         while (((index == lastIndex && repeats >= maxRepeats) || IsExit(index)) && guard++ < 16);
+
+        // Out of rerolls, a repeat beats an exit nobody scheduled, which would end a lap early.
+        if (IsExit(index))
+        {
+            var flat = FindFlatIndex();
+            index = flat >= 0 ? flat : index;
+        }
 
         repeats = index == lastIndex ? repeats + 1 : 0;
         lastIndex = index;
