@@ -8,6 +8,11 @@ public class TrackPiece : MonoBehaviour
     // Set at spawn, so calm is a property of the track.
     public bool Calm { get; set; }
 
+    // Set at spawn in a place with laps: which lap, whether its exit ends it, what's wrong here.
+    public int Lap { get; set; }
+    public bool EndsLap { get; set; }
+    public AnomalyKind Anomaly { get; set; }
+
     // Which prefab this came from, so the pool hands back the same kind of piece.
     public int PrefabIndex { get; set; } = -1;
 

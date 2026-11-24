@@ -44,6 +44,12 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private int placeLength;
     private int runSeed;
 
+    // Set in a place with laps: the lap being laid, and how far into it.
+    private LapRule laps;
+    private int lap;
+    private int firstLap;
+    private int pieceInLap;
+
     public IReadOnlyList<TrackPiece> ActivePieces => active;
 
     private void Start()
@@ -75,12 +81,25 @@ public class ProceduralTrackGenerator : MonoBehaviour
         placeLength = place != null ? place.Length : 0;
         nextExitAt = ExitSchedule.First(placeLength, firstExitAfter);
 
+        // From the lap the player is on, so dying replays it and a call moves on from it.
+        laps = StoryLaps.For(place);
+        StoryLaps.Laying = laps != null;
+        lap = laps != null ? laps.Lap : 0;
+        firstLap = lap;
+        pieceInLap = 0;
+
         nextEnd = startPosition;
         nextForward = startForward.sqrMagnitude > 0f ? startForward.normalized : Vector3.forward;
         for (var i = 0; i < piecesAhead; i++)
         {
             SpawnNext();
         }
+    }
+
+    // Or the player would keep calling laps on a track that's gone.
+    private void OnDestroy()
+    {
+        StoryLaps.Laying = false;
     }
 
     private void Update()
@@ -93,7 +112,15 @@ public class ProceduralTrackGenerator : MonoBehaviour
         while (active.Count > 0
             && TrackChainer.ShouldRecycle(active[0].GetEndPosition(), active[0].GetEndForward(), player.position, recycleBehind))
         {
-            Recycle(active[0]);
+            var gone = active[0];
+
+            // Behind you and never taken, which is a call too. ResetRun recycles without asking.
+            if (laps != null && gone.EndsLap && gone.Lap == laps.Lap)
+            {
+                RanPast();
+            }
+
+            Recycle(gone);
             active.RemoveAt(0);
         }
 
@@ -131,10 +158,14 @@ public class ProceduralTrackGenerator : MonoBehaviour
             lastHazardAt = spawned;
         }
 
-        if (IsExit(index))
+        var exit = IsExit(index);
+        if (exit)
         {
             exitsSpawned++;
-            nextExitAt = ExitSchedule.Next(spawned, exitsSpawned, placeLength, firstExitAfter, exitGapGrowth, storyRetryGap);
+
+            // With laps, every exit is a call, so they come once a lap rather than as retries.
+            var gap = laps != null ? placeLength : storyRetryGap;
+            nextExitAt = ExitSchedule.Next(spawned, exitsSpawned, placeLength, firstExitAfter, exitGapGrowth, gap);
         }
 
         piece.Calm = Calm(spawned);
@@ -148,6 +179,12 @@ public class ProceduralTrackGenerator : MonoBehaviour
         if (stale != null)
         {
             stale.Hide();
+        }
+
+        var staleCount = piece.GetComponent<LapSign>();
+        if (staleCount != null)
+        {
+            staleCount.Hide();
         }
 
         // Pooled pieces come back with pickups still collected otherwise.
@@ -167,11 +204,72 @@ public class ProceduralTrackGenerator : MonoBehaviour
             piece.Scenery.Vary(runSeed + spawned);
         }
 
+        LayLap(piece, exit);
+
         active.Add(piece);
         Announce(piece);
 
         nextEnd = piece.GetEndPosition();
         nextForward = piece.GetEndForward();
+    }
+
+    private void LayLap(TrackPiece piece, bool exit)
+    {
+        piece.Lap = lap;
+        piece.EndsLap = false;
+        piece.Anomaly = AnomalyKind.None;
+
+        if (laps == null)
+        {
+            return;
+        }
+
+        if (laps.InStretch(lap, pieceInLap, placeLength))
+        {
+            piece.Anomaly = laps.KindFor(lap);
+            if (piece.Scenery != null)
+            {
+                piece.Scenery.MakeWrong(piece.Anomaly);
+            }
+        }
+
+        // Clear of the control signage on the first lap laid.
+        if (pieceInLap == (lap == firstLap ? straightLeadIn : 1))
+        {
+            var sign = piece.GetComponent<LapSign>();
+            if (sign == null)
+            {
+                sign = piece.gameObject.AddComponent<LapSign>();
+            }
+
+            sign.Paint(lap, lap == laps.CleanLap);
+        }
+
+        if (exit)
+        {
+            piece.EndsLap = true;
+            lap++;
+            pieceInLap = 0;
+        }
+        else
+        {
+            pieceInLap++;
+        }
+    }
+
+    private void RanPast()
+    {
+        if (laps.Call(tookExit: false) != LapCall.Wrong)
+        {
+            return;
+        }
+
+        // Back to the start. The pieces ahead were laid for a lap that isn't coming.
+        var mover = player.GetComponent<PlayerTrackMovement>();
+        if (mover != null)
+        {
+            mover.StartLap();
+        }
     }
 
     // Painted a few pieces back so it can be read before the thing it describes turns up.

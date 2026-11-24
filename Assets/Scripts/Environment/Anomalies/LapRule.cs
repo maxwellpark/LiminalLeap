@@ -6,7 +6,7 @@ public enum AnomalyKind
     WrongLight,      // a stretch of strip lights the wrong colour
     HangingPillars,  // pillars that stop short of the floor
     LowLights,       // strip lights hung at head height
-    BackwardsCount,  // the lap's count painted in mirror-writing
+    WrongCount,      // the floor count skips, when only a fade can change it
 }
 
 public enum LapCall
@@ -27,7 +27,7 @@ public sealed class LapRule
         AnomalyKind.WrongLight,
         AnomalyKind.HangingPillars,
         AnomalyKind.LowLights,
-        AnomalyKind.BackwardsCount,
+        AnomalyKind.WrongCount,
     };
 
     public int Seed { get; }
@@ -67,13 +67,19 @@ public sealed class LapRule
     public bool InStretch(int lap, int pieceInLap, int lapPieces)
     {
         var kind = KindFor(lap);
-        if (kind == AnomalyKind.None || kind == AnomalyKind.BackwardsCount)
+        if (kind == AnomalyKind.None || kind == AnomalyKind.WrongCount)
         {
             return false;
         }
 
         var start = StretchStart(lap, lapPieces);
         return pieceInLap >= start && pieceInLap < start + StretchPieces;
+    }
+
+    // Skips one, since carrying on without a fade only ever means one more.
+    public int CountShown(int lap)
+    {
+        return KindFor(lap) == AnomalyKind.WrongCount ? Streak + 2 : Streak;
     }
 
     // Dying doesn't call, so the same lap comes round again with the same answer.

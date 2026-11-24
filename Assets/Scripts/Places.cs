@@ -8,7 +8,9 @@ public sealed class Place
     public string Name;
     public string Short;        // "the office", for the summary
     public string Arrival;
-    public int Length;          // pieces to the exit
+    public int Length;          // pieces to the exit, and from one exit to the next
+    public int Calls;           // right calls in a row to get out, 0 for a single exit
+    public float AnomalyChance; // of any lap after the first being wrong
     public Color Fog;
     public float FogDensity;
     public Color Ambient;
@@ -23,7 +25,7 @@ public static class Places
         new()
         {
             Id = "office", Name = "Office after hours", Short = "the office",
-            Arrival = "Everyone went home hours ago.", Length = 120,
+            Arrival = "Everyone went home hours ago.", Length = 50, Calls = 2, AnomalyChance = 0.5f,
             Fog = new Color(0.07f, 0.08f, 0.09f), FogDensity = 0.018f,
             Ambient = new Color(0.16f, 0.17f, 0.2f), Light = new Color(0.82f, 0.86f, 0.8f),
             Rules = new[] { Feature.LyingSigns },
@@ -31,7 +33,7 @@ public static class Places
         new()
         {
             Id = "school", Name = "School at night", Short = "the school",
-            Arrival = "The lights only come on as you reach them.", Length = 150,
+            Arrival = "The lights only come on as you reach them.", Length = 60, Calls = 3, AnomalyChance = 0.5f,
             Fog = new Color(0.04f, 0.05f, 0.08f), FogDensity = 0.022f,
             Ambient = new Color(0.1f, 0.11f, 0.17f), Light = new Color(0.7f, 0.78f, 0.95f),
             Rules = new[] { Feature.LightAsResource },
@@ -39,7 +41,7 @@ public static class Places
         new()
         {
             Id = "house", Name = "A house that's almost yours", Short = "the house",
-            Arrival = "The hallway is longer than you remember.", Length = 180,
+            Arrival = "The hallway is longer than you remember.", Length = 70, Calls = 4, AnomalyChance = 0.5f,
             Fog = new Color(0.09f, 0.06f, 0.05f), FogDensity = 0.02f,
             Ambient = new Color(0.18f, 0.13f, 0.11f), Light = new Color(0.95f, 0.78f, 0.6f),
             Rules = new[] { Feature.LyingSigns, Feature.ShiftWhenUnobserved, Feature.GhostPursuer },

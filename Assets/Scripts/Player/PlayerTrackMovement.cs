@@ -48,6 +48,7 @@ public class PlayerTrackMovement : MonoBehaviour
     [SerializeField] private float deathPause = 0.75f;
     [SerializeField] private float completePause = 1.3f;  // long enough for the sting to land
     [SerializeField] private float abandonPause = 0.35f;  // a restart is a cut, not a beat
+    [SerializeField] private float lapFade = 0.35f;       // through an exit to the next lap
     [SerializeField] private float bobHeight = 0.07f;
     [SerializeField] private float bobStridesPerSecond = 3.4f; // at full speed
     [SerializeField] private float bobRollDegrees = 0.9f;
@@ -194,11 +195,47 @@ public class PlayerTrackMovement : MonoBehaviour
 
         if (exitsInside > 0 && InputRouter.Source.BankPressed)
         {
-            FinishRun(RunOutcome.Banked);
+            TakeExit();
             return;
         }
 
         HandleRestart(dt);
+    }
+
+    // In a place with laps an exit is a call, and only the last right one gets you out.
+    private void TakeExit()
+    {
+        var laps = StoryLaps.Current;
+        if (laps == null || laps.Call(tookExit: true) == LapCall.Leave)
+        {
+            FinishRun(RunOutcome.Banked);
+            return;
+        }
+
+        StartLap();
+    }
+
+    // Back to the start of the place for the next lap. Not a death, so nothing records it.
+    public void StartLap()
+    {
+        if (!dying)
+        {
+            StartCoroutine(LapSequence());
+        }
+    }
+
+    private System.Collections.IEnumerator LapSequence()
+    {
+        dying = true;
+        live = false;
+
+        ScreenFade.GetInstance().To(1f, lapFade);
+        yield return new WaitForSecondsRealtime(lapFade);
+
+        ResetRun();
+        ScreenFade.GetInstance().To(0f, lapFade);
+        dying = false;
+        live = true;
     }
 
     // Held, since R is next to E. Has to be let go between restarts.

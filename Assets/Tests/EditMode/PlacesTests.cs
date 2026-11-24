@@ -89,6 +89,33 @@ public class PlacesTests
         }
     }
 
+    // Each place asks for more right calls than the last.
+    [Test]
+    public void EveryPlaceHasLapsAndTheyGetLonger()
+    {
+        var previous = 0;
+        foreach (var place in Places.Story)
+        {
+            Assert.Greater(place.Calls, previous, place.Id);
+            Assert.That(place.AnomalyChance, Is.InRange(0.2f, 0.8f), place.Id);
+            Assert.GreaterOrEqual(place.Length, 4 * LapRule.StretchPieces, place.Id + " is too short for a stretch");
+            previous = place.Calls;
+        }
+    }
+
+    [Test]
+    public void TheLapRuleFollowsThePlace()
+    {
+        StoryLaps.Clear();
+        var office = StoryLaps.For(Get("office"));
+
+        Assert.AreSame(office, StoryLaps.For(Get("office")), "dying would reroll the lap");
+        Assert.AreNotSame(office, StoryLaps.For(Get("school")), "a new place kept the old count");
+        Assert.AreEqual(Get("school").Calls, StoryLaps.Rule.Required);
+        Assert.IsNull(StoryLaps.For(null));
+        StoryLaps.Clear();
+    }
+
     [Test]
     public void AdvancingWalksThePlacesThenFinishes()
     {

@@ -206,7 +206,7 @@ public class LapRuleTests
         var rule = Rule(chance: 1f, seed: 11);
         for (var lap = 1; lap < 200; lap++)
         {
-            if (rule.KindFor(lap) != AnomalyKind.BackwardsCount)
+            if (rule.KindFor(lap) != AnomalyKind.WrongCount)
             {
                 continue;
             }
@@ -219,7 +219,25 @@ public class LapRuleTests
             return;
         }
 
-        Assert.Fail("no backwards count in 200 laps, so this proves nothing");
+        Assert.Fail("no wrong count in 200 laps, so this proves nothing");
+    }
+
+    [Test]
+    public void TheCountIsHonestExceptOnAWrongCountLap()
+    {
+        var rule = Rule(chance: 1f, seed: 11);
+        rule.Call(tookExit: true);
+        var sawWrong = false;
+
+        for (var lap = 1; lap < 200; lap++)
+        {
+            var wrong = rule.KindFor(lap) == AnomalyKind.WrongCount;
+            sawWrong |= wrong;
+            Assert.AreEqual(wrong ? rule.Streak + 2 : rule.Streak, rule.CountShown(lap), "lap " + lap);
+        }
+
+        Assert.IsTrue(sawWrong, "no wrong count lap, so this proves nothing");
+        Assert.AreEqual(rule.Streak, rule.CountShown(rule.CleanLap), "the clean lap has to tell the truth");
     }
 
     [Test]

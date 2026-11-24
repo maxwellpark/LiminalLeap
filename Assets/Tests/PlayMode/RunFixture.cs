@@ -23,6 +23,7 @@ public class RunFixture
         Features.Override(Feature.LyingSigns, false);
         Features.Override(Feature.ExitDoors, false);
         RunMode.ChooseFree();
+        StoryLaps.Clear();
     }
 
     // Built inactive and activated in order: Awake fires the moment a component is added.
