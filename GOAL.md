@@ -34,4 +34,4 @@ players of short horror, and the streamers who play it.
 
 ## Last checked
 
-2026-11-24, at db92197.
+2026-11-24, at ba64c0a.

@@ -21,6 +21,8 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
 
 ## Ideas
 
+- A place's best counts only the last lap's score, since each lap resets it. Hidden in the
+  story today; matters if place bests are ever shown.
 - Forks in the story places, which need a design that fits the exit rule.
 - A tell for which door loops, if a blind choice plays as a coin flip.
 - Distance that lies (#54), once loops exist.
@@ -34,6 +36,10 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
 
 ## Done
 
+- 2026-11-24: audit pass (first-session player, robustness, hot paths, tests). Landed in
+  ba64c0a: laps kept their length through breaths, laps start afresh each run, story laps out
+  of the arcade ghost, the floor count held still, a lap test's missing frame. Not landed: a
+  place's best only sees its last lap's score, which the story never shows (Ideas).
 - 2026-11-24: the page marks itself ready (`data-ready="1"`) once the title is up, for
   `web-check --ready-marker` on a WebGL build.
 - 2026-11-24: forks in the arcade track, one door laying the track already run again (db92197).

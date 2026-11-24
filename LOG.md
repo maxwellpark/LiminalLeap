@@ -31,3 +31,12 @@ a licence, then tick the loops line; or a design for forks in the story.
 - The page marks itself ready once the title is up, so `web-check --ready-marker` can tell a
   booted build from a stuck loading bar. Checked by compile and the jslib in Node; a real
   web build needs the licence.
+- Audit pass by a review agent over the session's work, four lenses. No soft-lock found.
+  Landed in ba64c0a: due exits now beat a breath (the house's laps had stretched to 56),
+  lap state clears when a run mode is chosen, story laps no longer replace the arcade ghost,
+  the floor count shows what a lap will be if the calls before it are right so it never
+  changes in view, and a lap test waits for the generator's rule. 44 pure tests pass.
+
+End of session. Ready is empty again: every unmet goal line waits on the owner (the Unity
+licence and 1Password, the itch page, players), and so do merging #91 and #93 and pushing
+3bcd2ab and ba64c0a. Next: run every suite once there's a licence, then tick lines.
