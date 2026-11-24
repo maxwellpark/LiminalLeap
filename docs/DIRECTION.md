@@ -106,19 +106,24 @@ Whether these anomalies read at speed is the open question, as #52 warned.
 
 ## Roadmap
 
-1. Run #91 in Unity, fix what breaks, merge.
-2. ~~Company name (#77).~~ Done. The always-on flags (#75) still want a playtest.
-3. Publish to itch (#74) from a machine with `scripts/deploy-itch.sh`, and get 5 to 10
-   people playing.
-4. Anomalies (#52) as the headline feature, with the shareable daily line alongside.
-5. Loops (#51) once anomalies read, since recognising a repeat is the same skill.
+1. Run the suites for #91 and the anomaly PR in Unity, fix what breaks, merge both.
+2. ~~Company name (#77), anomalies (#52), the share line.~~ Built in the anomaly PR.
+3. Build what the review decided: the Copy button, the event strip, the story share line, the
+   summary preview, the daily taking a place's look only, and the cloud setup.
+4. Loops (#51), decided 2026-11-24 as the next feature: recognising a repeat is the same
+   skill as spotting an anomaly.
+5. Publish to itch (#74) from a machine with `scripts/deploy-itch.sh`, and get 5 to 10
+   people playing. The always-on flags (#75) still want that playtest.
 
 ## Open decisions
 
-- Whether the daily should inherit a place's rules. Today a daily on the house turns on
-  shifting, which #75 argued reads as a bug.
+None open. The ones taken are below.
 
-## Defaults to review
+## Decisions and defaults
+
+- Decided 2026-11-24: the pitch is "Exit 8 at a sprint: the only warning is in your mirror."
+- Decided 2026-11-24: the daily takes a place's look (fog, light, name) but keeps the
+  arcade's own flags, so shifting and the ghost never turn up in it unannounced. To build.
 
 Taken without a decision, since each is cheap to change.
 
