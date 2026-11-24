@@ -11,6 +11,7 @@ public enum Feature
     PursuerAttacks,
     CalmSections,
     LightAsResource,
+    Loops,
 }
 
 // Experiment toggles. Prefs hold manual overrides, test overrides stay in memory.
@@ -43,6 +44,7 @@ public static class Features
             Feature.GhostPursuer => false,
             Feature.ShiftWhenUnobserved => false,
             Feature.LightAsResource => false,
+            Feature.Loops => true,
             _ => throw new ArgumentOutOfRangeException(nameof(feature), feature, "no default set"),
         };
     }

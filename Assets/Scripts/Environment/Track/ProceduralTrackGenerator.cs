@@ -26,6 +26,11 @@ public class ProceduralTrackGenerator : MonoBehaviour
     [SerializeField] private int busyPieces = 22;   // stretch of ordinary track
     [SerializeField] private int calmPieces = 6;    // breath between them
 
+    [Header("Loops")]
+    [SerializeField] private int forkEvery = 24;
+    [SerializeField] private int firstForkAfter = 20;
+    [SerializeField] private int replayPieces = 10;     // how much track a looping door lays again
+
     [Header("Signage")]
     [SerializeField, Range(0f, 1f)] private float lieChance = 0.22f;
     [SerializeField] private int signLeadPieces = 3;     // reading room before the thing arrives
@@ -49,6 +54,22 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private int lap;
     private int firstLap;
     private int pieceInLap;
+
+    // Set in an arcade run with loops: spawning holds at a fork until the player picks a door.
+    private LoopRule loops;
+    private readonly TrackMemory memory = new(32);
+    private TrackMemory.Piece[] replay;
+    private int replayCount;
+    private int replayAt;
+    private int lastForkAt;
+    private TrackPiece pendingFork;
+
+    public bool HoldingAtFork => pendingFork != null;
+    public int ForksTaken { get; private set; }
+    public int LoopsTaken { get; private set; }
+    public int LoopDoorAhead => loops != null ? loops.LoopDoor(ForksTaken) : -1;
+    public TrackMemory Memory => memory;
+    public int Laid => spawned;
 
     public IReadOnlyList<TrackPiece> ActivePieces => active;
 
@@ -88,9 +109,20 @@ public class ProceduralTrackGenerator : MonoBehaviour
         firstLap = lap;
         pieceInLap = 0;
 
+        // The story's exits are already calls, so forks are for the arcade runs.
+        loops = !RunMode.Story && Features.On(Feature.Loops) ? new LoopRule(runSeed, forkEvery, firstForkAfter) : null;
+        replay ??= new TrackMemory.Piece[Mathf.Max(1, replayPieces)];
+        memory.Clear();
+        replayCount = 0;
+        replayAt = 0;
+        lastForkAt = int.MinValue / 2;
+        pendingFork = null;
+        ForksTaken = 0;
+        LoopsTaken = 0;
+
         nextEnd = startPosition;
         nextForward = startForward.sqrMagnitude > 0f ? startForward.normalized : Vector3.forward;
-        for (var i = 0; i < piecesAhead; i++)
+        for (var i = 0; i < piecesAhead && pendingFork == null; i++)
         {
             SpawnNext();
         }
@@ -124,10 +156,36 @@ public class ProceduralTrackGenerator : MonoBehaviour
             active.RemoveAt(0);
         }
 
-        while (active.Count < piecesAhead)
+        if (pendingFork != null)
+        {
+            TryCommit();
+        }
+
+        while (active.Count < piecesAhead && pendingFork == null)
         {
             SpawnNext();
         }
+    }
+
+    // Past the wall, the door the player went through decides what gets laid next.
+    private void TryCommit()
+    {
+        var wall = pendingFork.ForkWall.transform;
+        var toPlayer = player.position - wall.position;
+        if (Vector3.Dot(toPlayer, wall.forward) < 0f)
+        {
+            return;
+        }
+
+        if (LoopRule.DoorFor(Vector3.Dot(toPlayer, wall.right)) == loops.LoopDoor(ForksTaken))
+        {
+            replayCount = memory.CopyLast(replayPieces, replay);
+            replayAt = 0;
+            LoopsTaken++;
+        }
+
+        ForksTaken++;
+        pendingFork = null;
     }
 
     private void SpawnNext()
@@ -137,7 +195,33 @@ public class ProceduralTrackGenerator : MonoBehaviour
             return;
         }
 
-        var index = PickIndex();
+        var replaying = replayAt < replayCount;
+        var varySeed = replaying ? replay[replayAt].Seed : 0;
+        var fork = !replaying && ForkDue();
+
+        int index;
+        var remembered = -1;
+        if (replaying)
+        {
+            index = remembered = replay[replayAt++].Prefab;
+
+            // A breath still means nothing to survive, even on track already run.
+            if (Calm(spawned) && piecePrefabs[index] != null && piecePrefabs[index].ContainsHazard)
+            {
+                var clean = PickCleanIndex();
+                index = clean >= 0 ? clean : index;
+            }
+        }
+        else
+        {
+            index = fork ? FindFlatIndex() : PickIndex();
+            if (index < 0)
+            {
+                fork = false;
+                index = PickIndex();
+            }
+        }
+
         var piece = Take(index);
 
         // Back to back hazards are unavoidable: a jump covers more ground than one piece.
@@ -198,10 +282,33 @@ public class ProceduralTrackGenerator : MonoBehaviour
             piece.HasEndAnchor ? nextEnd : TrackChainer.NextPiecePosition(nextEnd, nextForward, piece.Length()),
             Quaternion.LookRotation(nextForward));
 
-        // Seeded off the ordinal, so the same seed lays out the same corridor.
+        // Seeded off the ordinal, so the same seed lays out the same corridor. A replay keeps its own.
+        if (!replaying)
+        {
+            varySeed = runSeed + spawned;
+        }
+
         if (piece.Scenery != null)
         {
-            piece.Scenery.Vary(runSeed + spawned);
+            piece.Scenery.Vary(varySeed);
+        }
+
+        if (piece.ForkWall != null)
+        {
+            piece.ForkWall.SetActive(false);
+        }
+
+        if (fork)
+        {
+            MakeFork(piece);
+            pendingFork = piece;
+            lastForkAt = spawned - 1;
+            lastHazardAt = spawned - 1;
+        }
+        else if (!exit)
+        {
+            // The original, not a swap made for spacing, or each loop drifts further from it.
+            memory.Add(new TrackMemory.Piece(remembered >= 0 ? remembered : index, varySeed));
         }
 
         LayLap(piece, exit);
@@ -211,6 +318,60 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
         nextEnd = piece.GetEndPosition();
         nextForward = piece.GetEndForward();
+    }
+
+    // Never in a breath or on top of another hazard, since the wall is one.
+    private bool ForkDue()
+    {
+        return loops != null
+            && loops.Due(spawned, lastForkAt)
+            && !Calm(spawned)
+            && spawned - lastHazardAt >= HazardGap();
+    }
+
+    // A wall across the middle lane with a doorway either side. Built once per pooled piece.
+    private static void MakeFork(TrackPiece piece)
+    {
+        if (piece.ForkWall == null)
+        {
+            var deck = piece.GetComponentInChildren<Renderer>();
+            var material = deck != null ? deck.sharedMaterial : null;
+            var wall = new GameObject("ForkWall");
+            wall.transform.SetParent(piece.transform, false);
+
+            // Halfway between start and end, whether the piece is placed by its start or its centre.
+            var end = piece.transform.InverseTransformPoint(piece.GetEndPosition());
+            wall.transform.localPosition = piece.HasEndAnchor ? new Vector3(0f, 0f, end.z * 0.5f) : Vector3.zero;
+
+            // Only the middle can kill: the side posts sit past where strafing reaches.
+            var middle = ForkPart(wall.transform, "Middle", new Vector3(0f, 1.5f, 0f), new Vector3(2.6f, 3f, 0.4f), material);
+            middle.GetComponent<Collider>().isTrigger = true;
+            middle.AddComponent<Hazard>().Fixed = true;
+
+            Object.Destroy(ForkPart(wall.transform, "LeftPost", new Vector3(-3.4f, 1.6f, 0f), new Vector3(1.2f, 3.2f, 0.4f), material).GetComponent<Collider>());
+            Object.Destroy(ForkPart(wall.transform, "RightPost", new Vector3(3.4f, 1.6f, 0f), new Vector3(1.2f, 3.2f, 0.4f), material).GetComponent<Collider>());
+            Object.Destroy(ForkPart(wall.transform, "Lintel", new Vector3(0f, 3.5f, 0f), new Vector3(8f, 0.6f, 0.4f), material).GetComponent<Collider>());
+
+            piece.ForkWall = wall;
+            piece.ForgetResettables();
+        }
+
+        piece.ForkWall.SetActive(true);
+    }
+
+    private static GameObject ForkPart(Transform parent, string name, Vector3 at, Vector3 size, Material material)
+    {
+        var part = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        part.name = name;
+        part.transform.SetParent(parent, false);
+        part.transform.localPosition = at;
+        part.transform.localScale = size;
+        if (material != null)
+        {
+            part.GetComponent<Renderer>().sharedMaterial = material;
+        }
+
+        return part;
     }
 
     private void LayLap(TrackPiece piece, bool exit)
@@ -304,7 +465,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
             return SignKind.ExitAhead;
         }
 
-        var hazard = piece.GetComponentInChildren<Hazard>(true);
+        // Active only: a pooled piece keeps an old fork's wall, switched off.
+        var hazard = piece.GetComponentInChildren<Hazard>();
         if (hazard != null)
         {
             return hazard.Jumpable ? SignKind.Jump : SignKind.Strafe;

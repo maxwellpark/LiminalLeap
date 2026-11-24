@@ -13,6 +13,9 @@ public class TrackPiece : MonoBehaviour
     public bool EndsLap { get; set; }
     public AnomalyKind Anomaly { get; set; }
 
+    // Built by the generator the first time this piece is a fork, then toggled.
+    public GameObject ForkWall { get; set; }
+
     // Which prefab this came from, so the pool hands back the same kind of piece.
     public int PrefabIndex { get; set; } = -1;
 
@@ -47,6 +50,12 @@ public class TrackPiece : MonoBehaviour
 
     public IRunResettable[] Resettables =>
         resettables ??= GetComponentsInChildren<IRunResettable>(true);
+
+    // After children are added at runtime, such as a fork's wall.
+    public void ForgetResettables()
+    {
+        resettables = null;
+    }
 
     public bool HasEndAnchor => endAnchor != null;
     public bool ContainsHazard => containsHazard;
