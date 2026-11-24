@@ -1,6 +1,6 @@
 # Goal
 
-Status: draft, not confirmed. Outcome, Done when and Out of scope change only on the owner's
+Status: confirmed 2026-11-24. Outcome, Done when and Out of scope change only on the owner's
 word. Detail and reasoning live in docs/DIRECTION.md.
 
 ## Outcome
