@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "LiminalLeap",
+        "Unity.TextMeshPro",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
