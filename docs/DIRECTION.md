@@ -43,9 +43,9 @@ None are runners. The runner shelf has no liminal horror. That gap is the positi
 | Shows | No HUD, no score, no toasts | Score, speed, multiplier, summary |
 | Job | First impression, what streamers play | Reason to come back |
 
-Decided 2026-11-24: the story is the front door and the daily is retention. That also
-answers #75: a place's rules decide the scoped flags, and nothing ships that a place
-doesn't use.
+Decided 2026-11-24: the story is the front door and the daily is retention. That narrows
+#75: each place decides lying signs, light, shifting and the ghost, so only the always-on
+flags are left to settle.
 
 ## State, as of 2026-11-24
 
@@ -86,7 +86,7 @@ Missing, best value for cost first:
 ## Roadmap
 
 1. Run #91 in Unity, fix what breaks, merge.
-2. ~~Decide the shipped flags (#75) and the company name (#77).~~ Done.
+2. ~~Company name (#77).~~ Done. The always-on flags (#75) still want a playtest.
 3. Publish to itch (#74, #92) and get 5 to 10 people playing.
 4. Anomalies (#52) as the headline feature, with the shareable daily line alongside.
 5. Loops (#51) once anomalies read, since recognising a repeat is the same skill.
