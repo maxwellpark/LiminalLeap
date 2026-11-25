@@ -20,5 +20,9 @@
     <Compile Include="../../../Assets/Tests/EditMode/DistanceReadoutTests.cs" Link="DistanceReadoutTests.cs" />
     <Compile Include="../../../Assets/Tests/EditMode/FloorsTests.cs" Link="FloorsTests.cs" />
     <Compile Include="../../../Assets/Tests/EditMode/ProceduralTexturesTests.cs" Link="ProceduralTexturesTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/SaveDataTests.cs" Link="SaveDataTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/PlaceMapTests.cs" Link="PlaceMapTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/GhostTraceTests.cs" Link="GhostTraceTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/VariantStatsTests.cs" Link="VariantStatsTests.cs" />
   </ItemGroup>
 </Project>

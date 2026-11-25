@@ -4,7 +4,21 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
-Nothing buildable is left for an unmet goal line: the rest wait on the owner, below.
+Map the space (#61), in slices, each its own PR:
+
+1. A place's laps are one fixed corridor: the same pieces, scenery, calm stretches and floor
+   every lap and every run, seeded from the place, with anomalies still drawn per lap. Changes
+   how the story plays, so it lands behind a flag first.
+2. Detour forks in a place's lap, clear of the anomaly stretch: the looping door replays the
+   last stretch without counting it toward the lap.
+3. The map's record per place in the save: forks reached and doors taken, anomalies seen,
+   floors and landmarks along the lap. The record itself is built (`PlaceMap`, save v5); what
+   remains is marking it during a run, which needs slices 1 and 2 to fix where things are.
+4. The map drawn between runs, on the run summary and the place's title card.
+5. The hidden door and second way out, once its content is designed (owner).
+
+Slices 1 and 2 change the generator in ways only the PlayMode suites can check, so they're
+safer once the Unity licence is set up.
 
 ## Blocked on owner
 
@@ -25,15 +39,14 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
 - A place's best counts only the last lap's score, since each lap resets it. Hidden in the
   story today; matters if place bests are ever shown.
 - Forks in the story places, which need a design that fits the exit rule.
-- Map the space (#61), per story place: decided 2026-11-25 that each place gets a fixed layout
-  with forks that a map uncovers over many runs. Needs a design round first, since the story
-  has no forks and every exit there is already a call.
 - Vertical and split pursuer attacks (#67), an attack director (#68), distorted telegraphs
   (#69), attacks per place (#70).
 - Statics out of the run state (#22), the new Input System (#7).
 
 ## Done
 
+- 2026-11-25: the map's record (`PlaceMap`), one per place in the save, which moves to v5. The
+  save code and its tests now run outside Unity too (`max/place-maps`).
 - 2026-11-25: the looping door's tell: on the fork piece, the pillars on the looping side stand
   as they did where that door's replay begins (`max/door-tell`). Its LoopTests check is written
   but not run.

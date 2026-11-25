@@ -126,8 +126,24 @@ None open. The ones taken are below.
   piece, which stand (which ones, and how tall) as they did on the first piece of the stretch
   that door lays again. Lights hang down the middle, so they stay as they were. To change:
   `ProceduralTrackGenerator.EchoReplay` and `TrackScenery.Echo`.
-- Decided 2026-11-25: Map the space (#61) maps each story place, which gets a fixed layout with
-  forks for the map to uncover over many runs. Its design comes before any build.
+- Decided 2026-11-25: Map the space (#61) maps each story place. The design round settled:
+  - Forks in a place are detours, not calls: a fork mid-lap, clear of the anomaly stretch, where
+    one door carries on to the lap's exit and the other loops back over the last stretch,
+    costing time while the pursuer gains. The count and the exit rule don't change.
+  - Each place also hides one door that leads to a secret stretch and a second way out. Its
+    content (what the stretch is, what the second ending gives) still needs designing.
+  - A place's layout is fixed and the same for every player, so maps and routes can be shared.
+    Anomalies still vary lap to lap.
+  - The map shows only between runs: on the run summary and the place's title card.
+  - It records forks and the doors taken, where anomalies were seen, and the place's floors
+    and landmarks, so it reads as a floor plan.
+- Default 2026-11-25 [needs-review]: a map mark is a place along the lap (the piece's position
+  in it), a kind (floor, landmark, anomaly, fork, looping door, onward door) and a value. A
+  door counts as known once taken either way. To change: `PlaceMap`.
+- Default 2026-11-25 [needs-review]: "fixed per place" means every lap of a place is the same
+  corridor, as in Exit 8, with the anomaly the only difference. It sharpens the baseline the
+  exit rule already relies on, and gives the map one corridor to fill in. To change: say laps
+  should differ, and each lap gets its own fixed layout instead.
 - Decided 2026-11-25: the dev scene (`MovementTestScene`) stays in builds. Players can't reach
   it, it costs almost nothing, and it is the title screen's fallback and the manual test scene.
   #76 closed for this.

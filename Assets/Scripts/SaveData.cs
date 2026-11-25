@@ -99,7 +99,7 @@ public class PlaceRecord
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 4;
+    public const int CurrentVersion = 5;
 
     public int Version = CurrentVersion;
     public float HighScore;
@@ -113,6 +113,7 @@ public class SaveData
     public int StoryPlace;
     public int StoryFinishes;
     public List<PlaceRecord> PlaceBests = new();
+    public List<PlaceMap> Maps = new();
 
     public static SaveData Fresh()
     {
@@ -129,7 +130,7 @@ public class SaveData
             return false;
         }
 
-        // v2 added the ghost and variant stats, v3 the daily bests, v4 the story. Only fields to fill in.
+        // v2 ghost and variant stats, v3 daily bests, v4 story, v5 place maps: only fields to fill in.
         Version = CurrentVersion;
         return true;
     }
@@ -182,6 +183,23 @@ public class SaveData
         return record;
     }
 
+    public PlaceMap Map(string id)
+    {
+        EnsureFields();
+
+        for (var i = 0; i < Maps.Count; i++)
+        {
+            if (Maps[i].Id == id)
+            {
+                return Maps[i];
+            }
+        }
+
+        var map = new PlaceMap { Id = id };
+        Maps.Add(map);
+        return map;
+    }
+
     public PlaceRecord PlaceBest(string id)
     {
         EnsureFields();
@@ -223,5 +241,6 @@ public class SaveData
         Variants ??= new List<VariantRecord>();
         Dailies ??= new List<DailyRecord>();
         PlaceBests ??= new List<PlaceRecord>();
+        Maps ??= new List<PlaceMap>();
     }
 }

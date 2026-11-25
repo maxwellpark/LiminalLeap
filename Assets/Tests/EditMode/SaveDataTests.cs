@@ -80,4 +80,41 @@ public class SaveDataTests
         s.Migrate();
         Assert.AreEqual(1234f, s.HighScore, "upgrading a save must not cost the player their score");
     }
+
+    // A save from before the maps loads with no list at all, which must not throw.
+    [Test]
+    public void AnOldSaveGainsAnEmptyMap()
+    {
+        var s = SaveData.Fresh();
+        s.Version = 4;
+        s.Maps = null;
+
+        Assert.IsTrue(s.Migrate());
+        Assert.IsNotNull(s.Maps);
+        Assert.AreEqual(0, s.Map("office").Marks.Count);
+    }
+
+    [Test]
+    public void EachPlaceHasOneMap()
+    {
+        var s = SaveData.Fresh();
+        s.Map("office").Mark(3, MapMarkKind.Fork);
+
+        Assert.AreSame(s.Map("office"), s.Map("office"));
+        Assert.AreEqual(1, s.Map("office").Marks.Count);
+        Assert.AreEqual(0, s.Map("school").Marks.Count, "one place's map isn't another's");
+        Assert.AreEqual(2, s.Maps.Count);
+    }
+
+    [Test]
+    public void APlacesBestKeepsTheHigherScoreAndCountsEveryRun()
+    {
+        var s = SaveData.Fresh();
+
+        Assert.IsTrue(s.PlaceBest("office").Record(300f));
+        Assert.IsFalse(s.PlaceBest("office").Record(120f), "a lower score isn't a best");
+        Assert.AreEqual(300f, s.PlaceBest("office").BestScore);
+        Assert.AreEqual(2, s.PlaceBest("office").Runs);
+        Assert.AreEqual(0, s.PlaceBest("school").Runs);
+    }
 }
