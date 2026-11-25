@@ -17,7 +17,9 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
   `check.sh`'s test runner. `publish-itch.sh` likely misses butler's login on macOS meanwhile.
 - The itch page (#74), its account steps and the first push. Blocks "A WebGL build is on itch".
 - Outside players for a story place. Blocks "At least 5 people outside the project".
-- Pushing the branch: commits from this session wait on the owner's word.
+- Merging #94 (which replaced #93, on `max/anomalies-loops`) and #91 under it: #91 then #94,
+  #94 alone, or after the suites run. Pushing from this machine also needs a blocked-terms file,
+  since max-kit's shared hooks refuse pushes without one.
 
 ## Ideas
 
