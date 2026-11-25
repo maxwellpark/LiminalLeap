@@ -23,6 +23,7 @@ still no licence on this machine. Anything marked "not run" is written but unpro
 | 10 | The `Surfaces` flag off means all linoleum | `FloorTests.WithTheFlagOffItIsAllLinoleum` (not run) | not run | unverified |
 | 11 | Floorboard seams run down the length of the run | `ProceduralTexturesTests.StripesRunOneWay` | pass | verified |
 | 12 | A pooled piece goes back to the baked linoleum when reused | `TrackPiece.SetFloor` keeps the prefab's material from the first call | by reading | verified by reading |
+| 12a | A fork's wall is built from the track material, whatever floor the piece is wearing | `MakeFork` takes `TrackPiece.BakedFloor` (fixed after review) | by reading | verified by reading |
 | 13 | No frame drop the first time a new floor appears | the three floor materials are built at run start | by reading | unverified in a build |
 | 14 | Every assembly compiles in Unity 6000.2.15f1 | batch compile, no errors | pass | verified |
 
@@ -38,8 +39,8 @@ still no licence on this machine. Anything marked "not run" is written but unpro
 
 ## Numbers
 
-- Tests outside Unity: 67 passed, 0 failed. 21 are new here: 10 for floors and the 11 texture
-  tests (one new), which now run outside Unity too.
+- Tests outside Unity: 74 passed, 0 failed, with #95 merged in. 21 are from this PR: 10 for
+  floors and the 11 texture tests (one new), which now run outside Unity too.
 - Coverage of the pure rules: line 100%, branch 98.4% overall. `FloorRule` and `FloorFeel` are
   100% / 100%. The gap is in the older `ProceduralTextures` code, measured here for the first time.
 - Complexity: `FloorRule.At` is 4, `TrackPiece.SetFloor` 6 and `Stripes` 4. `ResetRun` rose
