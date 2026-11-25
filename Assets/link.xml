@@ -1,0 +1,7 @@
+<!-- Kept through engine stripping: the pursuer's body is a capsule primitive made at runtime,
+     and no scene or prefab uses a CapsuleCollider, so a WebGL build would drop the class. -->
+<linker>
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+  </assembly>
+</linker>

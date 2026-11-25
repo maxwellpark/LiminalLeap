@@ -45,6 +45,10 @@ safer once the Unity licence is set up.
 
 ## Done
 
+- 2026-11-25: the GitHub workflows are gone, since Actions is off and they never ran; #92's
+  deploy workflow closed unmerged, as `scripts/deploy-itch.sh` deploys from a machine. The web
+  build now generates its scenes first, which it needed: `scripts/build-web.sh` built a 10 MB
+  WebGL build here (`max/no-actions`).
 - 2026-11-25: the map's record (`PlaceMap`), one per place in the save, which moves to v5. The
   save code and its tests now run outside Unity too (`max/place-maps`).
 - 2026-11-25: the looping door's tell: on the fork piece, the pillars on the looping side stand

@@ -58,8 +58,8 @@ harness, `scripts/check.sh`, and a 10 MB WebGL build.
 Not done:
 
 - No outside player has touched it. Most open design questions end in "needs a playtest".
-- Not on itch (#74). GitHub Actions is off, so tests and deploys run on a machine; the
-  workflows (#19, #92) aren't live.
+- Not on itch (#74). GitHub Actions is off and the repo has no workflows, so tests, builds
+  and deploys run on a machine.
 - The story (#91) has not been run in Unity.
 - `companyName` is now `maxwellpark` (#77), done before any public build so no player save
   is lost. It does move the local dev save.

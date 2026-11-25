@@ -19,7 +19,7 @@ launcher app with no relation to itch.io. itch's butler is not in Homebrew.
   scripts/install-butler.sh    # official itch CDN -> ~/.local/bin
   butler login                 # opens a browser, stores credentials
 
-CI instead wants BUTLER_API_KEY set, from https://itch.io/user/settings/api-keys
+Unattended, scripts/deploy-itch.sh sets BUTLER_API_KEY from 1Password instead.
 EOF
   exit 1
 fi
