@@ -78,6 +78,23 @@ public class PursuerTests
         Assert.Less(dot, -0.9f, $"mirror is not facing backwards, dot={dot:F2}");
     }
 
+    // Signs have two readings, and each camera only sees its own.
+    [UnityTest]
+    public IEnumerator EachViewSeesItsOwnSignLayer()
+    {
+        yield return Seconds(0.3f);
+
+        var mirror = RearView.GetInstance().MirrorCamera;
+        var main = Camera.main;
+        var forward = 1 << Presentation.ForwardOnlyLayer;
+        var mirrored = 1 << Presentation.MirrorOnlyLayer;
+
+        Assert.AreNotEqual(0, main.cullingMask & forward, "the forward view lost its signs");
+        Assert.AreEqual(0, main.cullingMask & mirrored, "the forward view can read the mirror's truth");
+        Assert.AreNotEqual(0, mirror.cullingMask & mirrored, "the mirror can't read the truth");
+        Assert.AreEqual(0, mirror.cullingMask & forward, "the mirror shows the lie");
+    }
+
     [UnityTest]
     public IEnumerator DeathPutsItBack()
     {

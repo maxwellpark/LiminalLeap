@@ -2,7 +2,7 @@
 # Push the WebGL build to itch with the API key resolved from 1Password at run time.
 #
 # Usage:
-#   scripts/deploy-itch.sh            push using the reference in scripts/itch.env
+#   scripts/deploy-itch.sh            push using the reference in op/itch.env
 #   scripts/deploy-itch.sh --check    confirm the reference resolves, without revealing it
 #
 # The point of this wrapper: the key is never written to disk, never in the repo, and
@@ -12,11 +12,11 @@
 # Honest about the boundary: this stops accidental disclosure and casual reading. It is
 # not a sandbox. Anything that can read its own environment can transform the value and
 # print it, so masking is a strong default rather than a guarantee. The real containment
-# is the service account below being scoped to one vault holding one revocable key.
+# is the service account below being scoped to one vault of revocable automation keys.
 set -euo pipefail
 
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
-ENV_FILE="$SCRIPTS/itch.env"
+ENV_FILE="$SCRIPTS/../op/itch.env"
 
 if ! command -v op >/dev/null 2>&1; then
   cat <<'EOF'
@@ -27,10 +27,10 @@ if ! command -v op >/dev/null 2>&1; then
 Then either:
   - Desktop app: enable Settings > Developer > "Integrate with 1Password CLI".
     Interactive use, unlocks with Touch ID.
-  - Unattended or agent use: create a service account scoped to a vault that holds
-    only the itch key, and export its token:
+  - Unattended or agent use: create a read-only service account scoped to the
+    LiminalLeap vault, and export its token:
       export OP_SERVICE_ACCOUNT_TOKEN=...
-    Scoped to one vault so the blast radius is one credential, revocable at itch.io.
+    Scoped to one vault of automation credentials, each revocable at its source.
 EOF
   exit 1
 fi

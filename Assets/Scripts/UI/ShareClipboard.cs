@@ -1,0 +1,71 @@
+using UnityEngine;
+#if UNITY_WEBGL && !UNITY_EDITOR
+using System.Runtime.InteropServices;
+#endif
+
+// Browsers only copy inside the click, which Unity hears a frame late, so the page copies.
+public static class ShareClipboard
+{
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [DllImport("__Internal")] private static extern void ShareClipboardArm(string text);
+    [DllImport("__Internal")] private static extern void ShareClipboardTarget(float x, float y, float width, float height);
+    [DllImport("__Internal")] private static extern void ShareClipboardDisarm();
+    [DllImport("__Internal")] private static extern int ShareClipboardTakeCopied();
+#endif
+
+    private static string armed;
+    private static bool copied;
+
+    public static bool Armed => armed != null;
+
+    public static void Arm(string text)
+    {
+        armed = text;
+        copied = false;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        ShareClipboardArm(text);
+#endif
+    }
+
+    public static void Disarm()
+    {
+        armed = null;
+        copied = false;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        ShareClipboardDisarm();
+#endif
+    }
+
+    // Where the Copy button is, in screen pixels, so the page knows which clicks to copy on.
+    public static void Target(Rect screen)
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        ShareClipboardTarget(screen.x, screen.y, screen.width, screen.height);
+#endif
+    }
+
+    // A no-op on WebGL, where the page has already copied in its own click handler.
+    public static void Copy()
+    {
+        if (armed == null)
+        {
+            return;
+        }
+
+#if !UNITY_WEBGL || UNITY_EDITOR
+        GUIUtility.systemCopyBuffer = armed;
+        copied = true;
+#endif
+    }
+
+    // True once per copy, however it happened.
+    public static bool TakeCopied()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        copied |= ShareClipboardTakeCopied() == 1;
+#endif
+        var result = copied;
+        copied = false;
+        return result;
+    }
+}

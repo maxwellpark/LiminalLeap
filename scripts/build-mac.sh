@@ -6,14 +6,16 @@
 # and knowing it does. WebGL is still the thing that ships.
 set -euo pipefail
 
-UNITY="${UNITY:-/Applications/Unity/Hub/Editor/6000.2.15f1/Unity.app/Contents/MacOS/Unity}"
 PROJECT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source-path=SCRIPTDIR source=unity-path.sh
+. "$PROJECT/scripts/unity-path.sh"
 OUT="$PROJECT/Build/Mac"
 LOG="$PROJECT/Build/build-mac.log"
 
 [ -x "$UNITY" ] || { echo "No Unity at $UNITY. Set UNITY=<path>."; exit 1; }
 
-if pgrep -f "Unity.app/Contents/MacOS/Unity" >/dev/null 2>&1; then
+# Only this project's editor holds the lock, so another project can stay open.
+if unity_has_project_open "$PROJECT"; then
   echo "Close the Unity editor first, it holds the project lock."
   exit 1
 fi

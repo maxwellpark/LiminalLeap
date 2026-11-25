@@ -42,12 +42,24 @@ public class GameManager : Singleton<GameManager>
         var kept = evt.Outcome != RunOutcome.Died || !Features.On(Feature.ExitDoors);
         var score = kept ? PlayerTrackMovement.Score : 0f;
 
-        SaveStore.Data.RecordRun(
-            score, evt.DistanceCovered, evt.Outcome, Features.VariantKey());
-
-        if (RunMode.Daily && !string.IsNullOrEmpty(RunMode.Day))
+        if (RunMode.Story)
         {
-            SaveStore.Data.Daily(RunMode.Day).Record(score, evt.DistanceCovered);
+            // Hidden in the story, so kept per place; ForRun is still the place just left.
+            var place = Places.ForRun();
+            if (place != null)
+            {
+                SaveStore.Data.PlaceBest(place.Id).Record(score);
+            }
+        }
+        else
+        {
+            SaveStore.Data.RecordRun(
+                score, evt.DistanceCovered, evt.Outcome, Features.VariantKey());
+
+            if (RunMode.Daily && !string.IsNullOrEmpty(RunMode.Day))
+            {
+                SaveStore.Data.Daily(RunMode.Day).Record(score, evt.DistanceCovered);
+            }
         }
 
         SaveStore.Save();

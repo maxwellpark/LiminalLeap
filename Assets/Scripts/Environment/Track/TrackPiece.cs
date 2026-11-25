@@ -8,8 +8,20 @@ public class TrackPiece : MonoBehaviour
     // Set at spawn, so calm is a property of the track.
     public bool Calm { get; set; }
 
+    // Set at spawn in a place with laps: which lap, whether its exit ends it, what's wrong here.
+    public int Lap { get; set; }
+    public bool EndsLap { get; set; }
+    public AnomalyKind Anomaly { get; set; }
+    public int Ordinal { get; set; }
+
+    // Built by the generator the first time this piece is a fork, then toggled.
+    public GameObject ForkWall { get; set; }
+
     // Which prefab this came from, so the pool hands back the same kind of piece.
     public int PrefabIndex { get; set; } = -1;
+
+    // Set at spawn. The player reads it for grip and bob.
+    public Floor Floor { get; private set; }
 
     // Lets the generator space hazard pieces apart without inspecting their children.
     [SerializeField] private bool containsHazard;
@@ -19,6 +31,11 @@ public class TrackPiece : MonoBehaviour
 
     private Renderer cachedRenderer;
     private bool rendererLookedUp;
+
+    // The slab under the player, and the linoleum the prefab was baked with.
+    private Renderer floorRenderer;
+    private Material bakedFloor;
+    private bool floorLookedUp;
     private IRunResettable[] resettables;
 
     // Cached, as GetComponentsInChildren allocates.
@@ -42,6 +59,33 @@ public class TrackPiece : MonoBehaviour
 
     public IRunResettable[] Resettables =>
         resettables ??= GetComponentsInChildren<IRunResettable>(true);
+
+    // After children are added at runtime, such as a fork's wall.
+    public void ForgetResettables()
+    {
+        resettables = null;
+    }
+
+    // The prefab's own track material, whatever floor it's wearing, for anything built on it.
+    public Material BakedFloor
+    {
+        get
+        {
+            LookUpFloor();
+            return bakedFloor;
+        }
+    }
+
+    public void SetFloor(Floor floor)
+    {
+        Floor = floor;
+        LookUpFloor();
+
+        if (floorRenderer != null)
+        {
+            floorRenderer.sharedMaterial = floor == Floor.Linoleum ? bakedFloor : MaterialLibrary.ForFloor(floor);
+        }
+    }
 
     public bool HasEndAnchor => endAnchor != null;
     public bool ContainsHazard => containsHazard;
@@ -90,6 +134,20 @@ public class TrackPiece : MonoBehaviour
     private Vector3 FallbackEnd()
     {
         return transform.position + 0.5f * Length() * transform.forward;
+    }
+
+    // Before the first swap, so the baked material is the one kept.
+    private void LookUpFloor()
+    {
+        if (floorLookedUp)
+        {
+            return;
+        }
+
+        floorLookedUp = true;
+        var visual = transform.Find("Visual");
+        floorRenderer = visual != null ? visual.GetComponent<Renderer>() : null;
+        bakedFloor = floorRenderer != null ? floorRenderer.sharedMaterial : null;
     }
 
     private Renderer CachedRenderer()

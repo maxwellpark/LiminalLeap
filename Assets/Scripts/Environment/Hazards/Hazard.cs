@@ -13,6 +13,9 @@ public class Hazard : MonoBehaviour, IRunResettable
 
     public bool Jumpable => jumpable;
 
+    // Never moved by the shifter: a fork's wall has to keep both doorways where they are.
+    public bool Fixed { get; set; }
+
     // For the shifter, instead of searching the scene.
     public static IReadOnlyList<Hazard> Live => live;
 

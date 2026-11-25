@@ -74,11 +74,32 @@ public class DailyRecord
     }
 }
 
+// Best per place in the story.
+[Serializable]
+public class PlaceRecord
+{
+    public string Id;
+    public int Runs;
+    public float BestScore;
+
+    public bool Record(float score)
+    {
+        Runs++;
+        if (score <= BestScore)
+        {
+            return false;
+        }
+
+        BestScore = score;
+        return true;
+    }
+}
+
 // Versioned so an old save can be migrated rather than binned.
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
 
     public int Version = CurrentVersion;
     public float HighScore;
@@ -88,6 +109,10 @@ public class SaveData
     public GhostTrace Ghost = new();
     public List<VariantRecord> Variants = new();
     public List<DailyRecord> Dailies = new();
+
+    public int StoryPlace;
+    public int StoryFinishes;
+    public List<PlaceRecord> PlaceBests = new();
 
     public static SaveData Fresh()
     {
@@ -104,7 +129,7 @@ public class SaveData
             return false;
         }
 
-        // v2 added the ghost and variant stats, v3 the daily bests. Only fields to fill in.
+        // v2 added the ghost and variant stats, v3 the daily bests, v4 the story. Only fields to fill in.
         Version = CurrentVersion;
         return true;
     }
@@ -157,6 +182,23 @@ public class SaveData
         return record;
     }
 
+    public PlaceRecord PlaceBest(string id)
+    {
+        EnsureFields();
+
+        for (var i = 0; i < PlaceBests.Count; i++)
+        {
+            if (PlaceBests[i].Id == id)
+            {
+                return PlaceBests[i];
+            }
+        }
+
+        var record = new PlaceRecord { Id = id };
+        PlaceBests.Add(record);
+        return record;
+    }
+
     public VariantRecord Variant(string key)
     {
         EnsureFields();
@@ -180,5 +222,6 @@ public class SaveData
         Ghost ??= new GhostTrace();
         Variants ??= new List<VariantRecord>();
         Dailies ??= new List<DailyRecord>();
+        PlaceBests ??= new List<PlaceRecord>();
     }
 }

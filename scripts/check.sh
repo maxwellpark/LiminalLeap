@@ -12,8 +12,9 @@
 set -uo pipefail
 
 PROJECT="$(cd "$(dirname "$0")/.." && pwd)"
-UNITY="${UNITY:-/Applications/Unity/Hub/Editor/6000.2.15f1/Unity.app/Contents/MacOS/Unity}"
-UC="$(dirname "$(dirname "$UNITY")")"
+# shellcheck source-path=SCRIPTDIR source=unity-path.sh
+. "$PROJECT/scripts/unity-path.sh"
+UC="$UNITY_TOOLS"
 WORK="${TMPDIR:-/tmp}/liminalleap-check"
 mkdir -p "$WORK"
 
@@ -84,7 +85,7 @@ fi
 [ "$FAST" = "1" ] && { [ "$fail" = "0" ] && echo -e "\nCHECK OK (typecheck only)" || echo -e "\nCHECK FAILED"; exit "$fail"; }
 
 # Everything past here needs the project lock.
-if pgrep -f "Unity.app/Contents/MacOS/Unity" >/dev/null 2>&1; then
+if unity_has_project_open "$PROJECT"; then
   echo -e "\nEditor is open, so the suites cannot run. Close it, or use --fast."
   exit 1
 fi
@@ -110,26 +111,28 @@ PY
 
 for mode in EditMode PlayMode; do
   step "$mode tests"
-  "$UNITY" -batchmode -projectPath "$PROJECT" -runTests -testPlatform "$mode" \
-    -testResults "$WORK/$mode.xml" -logFile "$WORK/$mode.log" -accept-apiupdate >/dev/null 2>&1
-  results "$mode" "$WORK/$mode.xml" || fail=1
+  rm -f "$WORK/$mode.xml"
+  code=0
+  "${UNITY_RUN[@]}" -batchmode -projectPath "$PROJECT" -runTests -testPlatform "$mode" \
+    -testResults "$WORK/$mode.xml" -logFile "$WORK/$mode.log" -accept-apiupdate >/dev/null 2>&1 || code=$?
+  results "$mode" "$WORK/$mode.xml" || { fail=1; unity_licence_hint "$code"; }
   grep -E "^ALLOC" "$WORK/$mode.log" 2>/dev/null
 done
 
 if [ "$FULL" = "1" ]; then
   step "assets and scenes"
-  "$UNITY" -batchmode -quit -projectPath "$PROJECT" \
+  "${UNITY_RUN[@]}" -batchmode -quit -projectPath "$PROJECT" \
     -executeMethod TrackPiecePrefabs.GenerateFromCommandLine \
     -logFile "$WORK/prefabs.log" -accept-apiupdate >/dev/null 2>&1
   grep -E "MATERIALS BAKED|PIECES GENERATED" "$WORK/prefabs.log" || { echo "prefab generation failed"; fail=1; }
 
   rm -rf "$PROJECT/Assets/Scenes/Generated"
-  "$UNITY" -batchmode -quit -projectPath "$PROJECT" \
+  "${UNITY_RUN[@]}" -batchmode -quit -projectPath "$PROJECT" \
     -executeMethod TestSceneGenerator.GenerateFromCommandLine -seed 1700 -count 3 \
     -logFile "$WORK/scenes.log" -accept-apiupdate >/dev/null 2>&1
 
   step "validator"
-  "$UNITY" -batchmode -quit -projectPath "$PROJECT" \
+  "${UNITY_RUN[@]}" -batchmode -quit -projectPath "$PROJECT" \
     -executeMethod SceneValidator.ValidateFromCommandLine \
     -logFile "$WORK/validate.log" -accept-apiupdate >/dev/null 2>&1
   grep -E "VALIDATE" "$WORK/validate.log" || { echo "validator produced nothing"; fail=1; }

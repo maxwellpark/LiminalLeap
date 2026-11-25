@@ -94,3 +94,9 @@ Build/dist/
 
 # Native builds, regenerate with scripts/build-mac.sh
 Build/Mac/
+
+# Built outside Unity by scripts/acceptance.sh
+tools/acceptance/**/bin/
+tools/acceptance/**/obj/
+# Hand-written, unlike the ones Unity generates above
+!tools/acceptance/**/*.csproj

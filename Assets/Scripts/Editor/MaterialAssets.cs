@@ -15,7 +15,11 @@ public static class MaterialAssets
 
         foreach (Surface surface in Enum.GetValues(typeof(Surface)))
         {
-            Bake(surface);
+            // The floors are built at run start and never referenced by a prefab.
+            if (!MaterialLibrary.IsFloor(surface))
+            {
+                Bake(surface);
+            }
         }
 
         AssetDatabase.SaveAssets();

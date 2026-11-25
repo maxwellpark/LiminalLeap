@@ -10,36 +10,33 @@ public class TrackScenery : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float lightChance = 0.8f;
     [SerializeField] private float heightVariation = 2.5f;
 
+    [Header("Anomalies")]
+    [SerializeField] private Color wrongLight = new(1f, 0.32f, 0.18f);
+    [SerializeField] private float hangGap = 2f;       // floor to the bottom of a hanging pillar
+    [SerializeField] private float lowLightHeight = 3.2f;
+
+    // Made on first use: a property block can't be built while the type loads.
+    private static MaterialPropertyBlock tint;
+    private static MaterialPropertyBlock plain;
+
     private Transform[] pillars;
     private Transform[] lights;
+    private Renderer[] lightRenderers;
     private Vector3[] pillarRest;
+    private Vector3[] pillarRestPosition;
+    private Vector3[] lightRestPosition;
     private bool captured;
+    private bool wrong;
 
     // Seeded by piece ordinal, so the same seed gives the same corridor.
     public void Vary(int seed)
     {
         Capture();
+        Restore();
 
         for (var i = 0; i < pillars.Length; i++)
         {
-            var pillar = pillars[i];
-            if (pillar == null)
-            {
-                continue;
-            }
-
-            var on = Hash01(seed, i * 7 + 1) < pillarChance;
-            pillar.gameObject.SetActive(on);
-
-            if (!on)
-            {
-                continue;
-            }
-
-            // Varying height makes it read as a different building.
-            var rest = pillarRest[i];
-            var tall = rest.y + (Hash01(seed, i * 7 + 2) - 0.5f) * heightVariation;
-            pillar.localScale = new Vector3(rest.x, Mathf.Max(2f, tall), rest.z);
+            VaryPillar(i, seed);
         }
 
         for (var i = 0; i < lights.Length; i++)
@@ -47,6 +44,118 @@ public class TrackScenery : MonoBehaviour
             if (lights[i] != null)
             {
                 lights[i].gameObject.SetActive(Hash01(seed, i * 11 + 3) < lightChance);
+            }
+        }
+    }
+
+    // The pillars on one side (-1 left, 1 right) as `seed` stood them, the rest left alone.
+    public void Echo(int seed, int side)
+    {
+        Capture();
+
+        for (var i = 0; i < pillars.Length; i++)
+        {
+            if (System.Math.Sign(pillarRestPosition[i].x) == side)
+            {
+                VaryPillar(i, seed);
+            }
+        }
+    }
+
+    private void VaryPillar(int i, int seed)
+    {
+        var pillar = pillars[i];
+        if (pillar == null)
+        {
+            return;
+        }
+
+        var on = Hash01(seed, i * 7 + 1) < pillarChance;
+        pillar.gameObject.SetActive(on);
+
+        if (!on)
+        {
+            return;
+        }
+
+        // Varying height makes it read as a different building.
+        var rest = pillarRest[i];
+        var tall = rest.y + (Hash01(seed, i * 7 + 2) - 0.5f) * heightVariation;
+        pillar.localScale = new Vector3(rest.x, Mathf.Max(2f, tall), rest.z);
+    }
+
+    // Against a baseline Vary never produces, or it isn't wrong, just varied.
+    public void MakeWrong(AnomalyKind kind)
+    {
+        Capture();
+
+        switch (kind)
+        {
+            case AnomalyKind.WrongLight:
+                tint ??= new MaterialPropertyBlock();
+                tint.SetColor("_Color", wrongLight);
+                tint.SetColor("_EmissionColor", wrongLight * 1.6f);
+                for (var i = 0; i < lights.Length; i++)
+                {
+                    lights[i].gameObject.SetActive(true);
+                    if (lightRenderers[i] != null)
+                    {
+                        lightRenderers[i].SetPropertyBlock(tint);
+                    }
+                }
+
+                break;
+
+            case AnomalyKind.HangingPillars:
+                for (var i = 0; i < pillars.Length; i++)
+                {
+                    var pillar = pillars[i];
+                    pillar.gameObject.SetActive(true);
+                    var rest = pillarRestPosition[i];
+                    pillar.localPosition = new Vector3(rest.x, hangGap + pillar.localScale.y * 0.5f, rest.z);
+                }
+
+                break;
+
+            case AnomalyKind.LowLights:
+                for (var i = 0; i < lights.Length; i++)
+                {
+                    lights[i].gameObject.SetActive(true);
+                    var rest = lightRestPosition[i];
+                    lights[i].localPosition = new Vector3(rest.x, lowLightHeight, rest.z);
+                }
+
+                break;
+
+            default:
+                return;
+        }
+
+        wrong = true;
+    }
+
+    // Pooled pieces come back carrying whatever was wrong with them last time.
+    private void Restore()
+    {
+        if (!wrong)
+        {
+            return;
+        }
+
+        wrong = false;
+        plain ??= new MaterialPropertyBlock();
+
+        for (var i = 0; i < pillars.Length; i++)
+        {
+            pillars[i].localPosition = pillarRestPosition[i];
+        }
+
+        for (var i = 0; i < lights.Length; i++)
+        {
+            lights[i].localPosition = lightRestPosition[i];
+            if (lightRenderers[i] != null)
+            {
+                lightRenderers[i].SetPropertyBlock(plain);
             }
         }
     }
@@ -64,9 +173,19 @@ public class TrackScenery : MonoBehaviour
         lights = Collect(transform.Find(LightHolder));
 
         pillarRest = new Vector3[pillars.Length];
+        pillarRestPosition = new Vector3[pillars.Length];
         for (var i = 0; i < pillars.Length; i++)
         {
-            pillarRest[i] = pillars[i] != null ? pillars[i].localScale : Vector3.one;
+            pillarRest[i] = pillars[i].localScale;
+            pillarRestPosition[i] = pillars[i].localPosition;
+        }
+
+        lightRenderers = new Renderer[lights.Length];
+        lightRestPosition = new Vector3[lights.Length];
+        for (var i = 0; i < lights.Length; i++)
+        {
+            lightRenderers[i] = lights[i].GetComponentInChildren<Renderer>(true);
+            lightRestPosition[i] = lights[i].localPosition;
         }
     }
 
