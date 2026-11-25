@@ -15,5 +15,8 @@
     <Compile Include="../../../Assets/Scripts/DistanceReadout.cs" Link="DistanceReadout.cs" />
     <Compile Include="../../../Assets/Scripts/Environment/Track/Floors.cs" Link="Floors.cs" />
     <Compile Include="../../../Assets/Scripts/Environment/Visual/ProceduralTextures.cs" Link="ProceduralTextures.cs" />
+    <Compile Include="../../../Assets/Scripts/SaveData.cs" Link="SaveData.cs" />
+    <Compile Include="../../../Assets/Scripts/GhostTrace.cs" Link="GhostTrace.cs" />
+    <Compile Include="../../../Assets/Scripts/PlaceMap.cs" Link="PlaceMap.cs" />
   </ItemGroup>
 </Project>

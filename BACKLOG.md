@@ -12,7 +12,8 @@ Map the space (#61), in slices, each its own PR:
 2. Detour forks in a place's lap, clear of the anomaly stretch: the looping door replays the
    last stretch without counting it toward the lap.
 3. The map's record per place in the save: forks reached and doors taken, anomalies seen,
-   floors and landmarks along the lap.
+   floors and landmarks along the lap. The record itself is built (`PlaceMap`, save v5); what
+   remains is marking it during a run, which needs slices 1 and 2 to fix where things are.
 4. The map drawn between runs, on the run summary and the place's title card.
 5. The hidden door and second way out, once its content is designed (owner).
 
@@ -44,6 +45,8 @@ safer once the Unity licence is set up.
 
 ## Done
 
+- 2026-11-25: the map's record (`PlaceMap`), one per place in the save, which moves to v5. The
+  save code and its tests now run outside Unity too (`max/place-maps`).
 - 2026-11-25: the looping door's tell: on the fork piece, the pillars on the looping side stand
   as they did where that door's replay begins (`max/door-tell`). Its LoopTests check is written
   but not run.

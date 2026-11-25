@@ -137,6 +137,9 @@ None open. The ones taken are below.
   - The map shows only between runs: on the run summary and the place's title card.
   - It records forks and the doors taken, where anomalies were seen, and the place's floors
     and landmarks, so it reads as a floor plan.
+- Default 2026-11-25 [needs-review]: a map mark is a place along the lap (the piece's position
+  in it), a kind (floor, landmark, anomaly, fork, looping door, onward door) and a value. A
+  door counts as known once taken either way. To change: `PlaceMap`.
 - Default 2026-11-25 [needs-review]: "fixed per place" means every lap of a place is the same
   corridor, as in Exit 8, with the anomaly the only difference. It sharpens the baseline the
   exit rule already relies on, and gives the map one corridor to fill in. To change: say laps
