@@ -66,17 +66,20 @@ public class TrackPiece : MonoBehaviour
         resettables = null;
     }
 
+    // The prefab's own track material, whatever floor it's wearing, for anything built on it.
+    public Material BakedFloor
+    {
+        get
+        {
+            LookUpFloor();
+            return bakedFloor;
+        }
+    }
+
     public void SetFloor(Floor floor)
     {
         Floor = floor;
-
-        if (!floorLookedUp)
-        {
-            floorLookedUp = true;
-            var visual = transform.Find("Visual");
-            floorRenderer = visual != null ? visual.GetComponent<Renderer>() : null;
-            bakedFloor = floorRenderer != null ? floorRenderer.sharedMaterial : null;
-        }
+        LookUpFloor();
 
         if (floorRenderer != null)
         {
@@ -131,6 +134,20 @@ public class TrackPiece : MonoBehaviour
     private Vector3 FallbackEnd()
     {
         return transform.position + 0.5f * Length() * transform.forward;
+    }
+
+    // Before the first swap, so the baked material is the one kept.
+    private void LookUpFloor()
+    {
+        if (floorLookedUp)
+        {
+            return;
+        }
+
+        floorLookedUp = true;
+        var visual = transform.Find("Visual");
+        floorRenderer = visual != null ? visual.GetComponent<Renderer>() : null;
+        bakedFloor = floorRenderer != null ? floorRenderer.sharedMaterial : null;
     }
 
     private Renderer CachedRenderer()

@@ -45,6 +45,11 @@ public static class MaterialLibrary
         };
     }
 
+    public static bool IsFloor(Surface surface)
+    {
+        return surface is Surface.Carpet or Surface.Tile or Surface.Boards;
+    }
+
     // Editor domain reloads leave stale destroyed materials behind.
     public static void Clear()
     {

@@ -356,8 +356,9 @@ public class ProceduralTrackGenerator : MonoBehaviour
     {
         if (piece.ForkWall == null)
         {
+            // The baked track material, not the floor the piece happens to be wearing now.
             var deck = piece.GetComponentInChildren<Renderer>();
-            var material = deck != null ? deck.sharedMaterial : null;
+            var material = piece.BakedFloor != null ? piece.BakedFloor : deck != null ? deck.sharedMaterial : null;
             var wall = new GameObject("ForkWall");
             wall.transform.SetParent(piece.transform, false);
 
