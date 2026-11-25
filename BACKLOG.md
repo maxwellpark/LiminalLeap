@@ -17,9 +17,8 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
   `check.sh`'s test runner. `publish-itch.sh` likely misses butler's login on macOS meanwhile.
 - The itch page (#74), its account steps and the first push. Blocks "A WebGL build is on itch".
 - Outside players for a story place. Blocks "At least 5 people outside the project".
-- Merging #94 (which replaced #93, on `max/anomalies-loops`) and #91 under it: #91 then #94,
-  #94 alone, or after the suites run. Pushing from this machine also needs a blocked-terms file,
-  since max-kit's shared hooks refuse pushes without one.
+- A blocked-terms file for this repo: max-kit's shared hooks refuse pushes without one, so each
+  push from here so far has been made with the hooks taken off, on an explicit ask.
 
 ## Ideas
 
@@ -29,7 +28,6 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
   story today; matters if place bests are ever shown.
 - Forks in the story places, which need a design that fits the exit rule.
 - A tell for which door loops, if a blind choice plays as a coin flip.
-- Distance that lies (#54), once loops exist.
 - Map the space (#61), once loops exist.
 - Vertical and split pursuer attacks (#67), an attack director (#68), distorted telegraphs
   (#69), attacks per place (#70).
@@ -40,6 +38,13 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
 
 ## Done
 
+- 2026-11-25: the distance that lies (#54): through a looping door the HUD's distance drops
+  back to what it read at the start of the replayed stretch and stays that far behind; the score,
+  summary and share line keep the true distance (`max/distance-that-lies`). Its LoopTests are
+  written but not run.
+- 2026-11-25: the acceptance projects are tracked; Unity's `*.csproj` rule had kept them out, so
+  `scripts/acceptance.sh` failed from a fresh clone.
+- 2026-11-25: #94 merged, with #91 under it.
 - 2026-11-24: audit pass (first-session player, robustness, hot paths, tests). Landed in
   ba64c0a: laps kept their length through breaths, laps start afresh each run, story laps out
   of the arcade ghost, the floor count held still, a lap test's missing frame. Not landed: a

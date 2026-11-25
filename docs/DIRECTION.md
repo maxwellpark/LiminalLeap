@@ -121,6 +121,12 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-25 [needs-review]: the HUD's distance lies only through a looping door. It
+  rewinds to the reading at the start of the replayed stretch once the player reaches it, and
+  each replayed piece reads what it read the first time, so the same numbers come round again.
+  It stays behind from then on. The score, the run summary, the ghost and the share line all
+  keep the true distance, so a run still compares fairly. To change: `DistanceReadout`, and
+  `UIManager`, the only place that reads it.
 - Default 2026-11-24 [needs-review]: loops are on in the arcade runs (daily and free) and off
   in the story: a fork every 24 pieces after the first 20, the looping door picked from the
   run's seed, replaying the last 10 pieces. Why: the story's exits are already calls. To change:

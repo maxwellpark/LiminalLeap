@@ -1,0 +1,17 @@
+<!-- The game's pure rules, built outside Unity so coverage and transcripts can run anywhere. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../Assets/Scripts/Environment/Anomalies/LapRule.cs" Link="LapRule.cs" />
+    <Compile Include="../../../Assets/Scripts/Environment/Track/LoopRule.cs" Link="LoopRule.cs" />
+    <Compile Include="../../../Assets/Scripts/Environment/Track/TrackMemory.cs" Link="TrackMemory.cs" />
+    <Compile Include="../../../Assets/Scripts/RunStrip.cs" Link="RunStrip.cs" />
+    <Compile Include="../../../Assets/Scripts/ShareLine.cs" Link="ShareLine.cs" />
+    <Compile Include="../../../Assets/Scripts/DistanceReadout.cs" Link="DistanceReadout.cs" />
+  </ItemGroup>
+</Project>

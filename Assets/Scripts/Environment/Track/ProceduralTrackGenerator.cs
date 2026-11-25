@@ -64,6 +64,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private int lastForkAt;
     private TrackPiece pendingFork;
 
+    // End to end, as the player counts distance, and how far the HUD will read short of it there.
+    private float laidMetres;
+    private float laidBehind;
+
     public bool HoldingAtFork => pendingFork != null;
     public int ForksTaken { get; private set; }
     public int LoopsTaken { get; private set; }
@@ -117,6 +121,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
         replayAt = 0;
         lastForkAt = int.MinValue / 2;
         pendingFork = null;
+        laidMetres = 0f;
+        laidBehind = 0f;
         ForksTaken = 0;
         LoopsTaken = 0;
 
@@ -197,6 +203,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
         var replaying = replayAt < replayCount;
         var varySeed = replaying ? replay[replayAt].Seed : 0;
+        var shownBefore = replaying ? replay[replayAt].Start : 0f;
         var fork = !replaying && ForkDue();
 
         int index;
@@ -299,6 +306,13 @@ public class ProceduralTrackGenerator : MonoBehaviour
             piece.ForkWall.SetActive(false);
         }
 
+        // Laid again, so the HUD reads here what it read the first time.
+        if (replaying && laidMetres - shownBefore != laidBehind)
+        {
+            laidBehind = laidMetres - shownBefore;
+            PlayerTrackMovement.Readout.From(laidMetres, laidBehind);
+        }
+
         if (fork)
         {
             MakeFork(piece);
@@ -309,7 +323,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         else if (!exit)
         {
             // The original, not a swap made for spacing, or each loop drifts further from it.
-            memory.Add(new TrackMemory.Piece(remembered >= 0 ? remembered : index, varySeed));
+            memory.Add(new TrackMemory.Piece(remembered >= 0 ? remembered : index, varySeed, laidMetres - laidBehind));
         }
 
         LayLap(piece, exit);
@@ -317,6 +331,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         active.Add(piece);
         Announce(piece);
 
+        laidMetres += Vector3.Distance(nextEnd, piece.GetEndPosition());
         nextEnd = piece.GetEndPosition();
         nextForward = piece.GetEndForward();
     }
