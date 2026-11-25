@@ -4,10 +4,7 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
-- Split `ProceduralTrackGenerator.SpawnNext` (complexity 28, about 135 lines) into picking,
-  placing and laying. Decided 2026-11-25 to do it before the Unity suites can run, so it gets a
-  careful review and leans on the compile and the rules outside Unity. After #95 and Surfaces
-  merge, since both touch it.
+Nothing buildable is left for an unmet goal line: the rest wait on the owner, below.
 
 ## Blocked on owner
 
@@ -38,6 +35,11 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Done
 
+- 2026-11-25: `SpawnNext` split into choosing, taking, readying, placing and remembering a
+  piece (complexity 31 down to 8 at most), as a pure refactor checked by review rather than the
+  Unity suites, which still can't run here.
+- 2026-11-25: #95 and #96 merged, after a review that fixed an exit shifting the replayed
+  distances, the fork wall taking its piece's floor, and the floors being baked as assets.
 - 2026-11-25: surfaces (#56): linoleum, carpet, wet tile and floorboards, each with its own
   look, grip, bob and landing sound. Arcade runs change floor every 8 to 14 pieces from the
   run's seed; each story place keeps one (`max/surfaces`). FloorTests and the LoopTests floor
