@@ -1,0 +1,21 @@
+<!-- The pure rules' EditMode tests, run under plain .NET with coverage. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <ProjectReference Include="../Rules/Rules.csproj" />
+    <Compile Include="../../../Assets/Tests/EditMode/LapRuleTests.cs" Link="LapRuleTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/LoopRuleTests.cs" Link="LoopRuleTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/RunStripTests.cs" Link="RunStripTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/ShareLineTests.cs" Link="ShareLineTests.cs" />
+  </ItemGroup>
+</Project>
