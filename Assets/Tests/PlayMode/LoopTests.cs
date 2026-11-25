@@ -18,6 +18,7 @@ public class LoopTests
     public void SetUp()
     {
         RunFixture.IsolateFlags();
+        PlayerTrackMovement.Readout.Reset();
         savedPlace = SaveStore.Data.StoryPlace;
         Features.Override(Feature.Loops, true);
         Features.Override(Feature.CalmSections, false);
@@ -132,6 +133,28 @@ public class LoopTests
         }
 
         CollectionAssert.AreEqual(expected, after.GetRange(0, count), "the looping door should lay what came before the fork");
+    }
+
+    // Ten remembered pieces of 10 m plus the fork: past it, the readout is back where the stretch began.
+    [UnityTest]
+    public IEnumerator TheLoopingDoorRewindsTheReadout()
+    {
+        yield return UntilFork();
+        yield return Through(generator.LoopDoorAhead);
+
+        PlayerTrackMovement.Readout.Advance(1000f);
+        Assert.AreEqual(890f, PlayerTrackMovement.Readout.Shown(1000f), 0.5f);
+    }
+
+    [UnityTest]
+    public IEnumerator TheOtherDoorLeavesTheReadoutTrue()
+    {
+        yield return UntilFork();
+        var loopDoor = generator.LoopDoorAhead;
+        yield return Through(loopDoor == LoopRule.LeftDoor ? LoopRule.RightDoor : LoopRule.LeftDoor);
+
+        PlayerTrackMovement.Readout.Advance(1000f);
+        Assert.AreEqual(1000f, PlayerTrackMovement.Readout.Shown(1000f));
     }
 
     [UnityTest]

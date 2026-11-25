@@ -64,6 +64,9 @@ public class ProceduralTrackGenerator : MonoBehaviour
     private int lastForkAt;
     private TrackPiece pendingFork;
 
+    // End to end, as the player counts distance, so a loop's rewind lands on the same numbers.
+    private float laidMetres;
+
     public bool HoldingAtFork => pendingFork != null;
     public int ForksTaken { get; private set; }
     public int LoopsTaken { get; private set; }
@@ -117,6 +120,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         replayAt = 0;
         lastForkAt = int.MinValue / 2;
         pendingFork = null;
+        laidMetres = 0f;
         ForksTaken = 0;
         LoopsTaken = 0;
 
@@ -182,6 +186,11 @@ public class ProceduralTrackGenerator : MonoBehaviour
             replayCount = memory.CopyLast(replayPieces, replay);
             replayAt = 0;
             LoopsTaken++;
+
+            if (replayCount > 0)
+            {
+                PlayerTrackMovement.Readout.Loop(laidMetres, replay[0].Start);
+            }
         }
 
         ForksTaken++;
@@ -309,7 +318,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         else if (!exit)
         {
             // The original, not a swap made for spacing, or each loop drifts further from it.
-            memory.Add(new TrackMemory.Piece(remembered >= 0 ? remembered : index, varySeed));
+            memory.Add(new TrackMemory.Piece(remembered >= 0 ? remembered : index, varySeed, laidMetres));
         }
 
         LayLap(piece, exit);
@@ -317,6 +326,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         active.Add(piece);
         Announce(piece);
 
+        laidMetres += Vector3.Distance(nextEnd, piece.GetEndPosition());
         nextEnd = piece.GetEndPosition();
         nextForward = piece.GetEndForward();
     }
