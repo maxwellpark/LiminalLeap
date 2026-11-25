@@ -107,6 +107,17 @@ public class ShareLineTests
     }
 
     [Test]
+    public void ALongPlaceIsCappedInTheLineAndThePreview()
+    {
+        var calls = new bool[ShareLine.MaxBlocks + 3];
+        var lines = Lines(ShareLine.ForPlace("the house", calls));
+
+        StringAssert.EndsWith("+" + ShareLine.Door, lines[1]);
+        StringAssert.EndsWith("+", ShareLine.PlacePreview(calls));
+        Assert.AreEqual(ShareLine.MaxBlocks, ShareLine.PlacePreview(calls).Split('\u25A1').Length - 1);
+    }
+
+    [Test]
     public void OneLapSaysLap()
     {
         StringAssert.Contains("out after 1 lap \u00B7", ShareLine.ForPlace("the school", new[] { true }));

@@ -263,6 +263,32 @@ public class LapRuleTests
         CollectionAssert.AreEqual(new[] { false, true, true }, rule.History);
     }
 
+    // The pieces that look wrong are exactly the four from the stretch's start.
+    [Test]
+    public void AWrongLapIsWrongOnlyInsideItsStretch()
+    {
+        var rule = Rule(chance: 1f, seed: 11);
+        for (var lap = 1; lap < 200; lap++)
+        {
+            var kind = rule.KindFor(lap);
+            if (kind == AnomalyKind.WrongCount)
+            {
+                continue;
+            }
+
+            var start = rule.StretchStart(lap, 40);
+            for (var piece = 0; piece < 40; piece++)
+            {
+                var inside = piece >= start && piece < start + LapRule.StretchPieces;
+                Assert.AreEqual(inside, rule.InStretch(lap, piece, 40), $"lap {lap} piece {piece}");
+            }
+
+            return;
+        }
+
+        Assert.Fail("no scenery anomaly in 200 laps, so this proves nothing");
+    }
+
     [Test]
     public void ACleanLapHasNoStretch()
     {

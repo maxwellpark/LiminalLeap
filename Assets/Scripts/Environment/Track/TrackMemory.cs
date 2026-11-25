@@ -17,7 +17,6 @@ public sealed class TrackMemory
     private int next;
 
     public int Count { get; private set; }
-    public int Capacity => ring.Length;
 
     public TrackMemory(int capacity)
     {
