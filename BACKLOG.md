@@ -23,6 +23,8 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
 
 ## Ideas
 
+- Split `ProceduralTrackGenerator.SpawnNext` (complexity 28, 132 lines; was 12 and 70) into
+  picking, placing and laying, once the PlayMode suites can run to catch a slip.
 - A place's best counts only the last lap's score, since each lap resets it. Hidden in the
   story today; matters if place bests are ever shown.
 - Forks in the story places, which need a design that fits the exit rule.
