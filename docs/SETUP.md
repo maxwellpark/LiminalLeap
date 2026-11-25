@@ -138,9 +138,9 @@ mid-session.
 
 ### GitHub Actions
 
-Off on this repo. Tests, builds and deploys run on a machine: the Mac, or a cloud session
-once Unity is activated there. `tests.yml` and the deploy workflow in #92 aren't live, and
-no Actions secrets are needed.
+Off on this repo, which has no workflows. Tests, builds and deploys run on a machine: the Mac,
+or a cloud session once Unity is activated there. No Actions secrets are needed. The old
+workflows are in git history if Actions is ever turned back on.
 
 ## Decided, to build
 

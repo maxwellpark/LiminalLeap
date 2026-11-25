@@ -20,6 +20,15 @@ DEV=""
 [ "${1:-}" = "--dev" ] && DEV="-dev"
 
 mkdir -p "$PROJECT/Build"
+
+# The generated scenes aren't committed, and the build lists them. Same seeds as check.sh --full.
+echo "Generating scenes (log: $PROJECT/Build/scenes.log)"
+rm -rf "$PROJECT/Assets/Scenes/Generated"
+"${UNITY_RUN[@]}" -batchmode -quit -projectPath "$PROJECT" \
+  -executeMethod TestSceneGenerator.GenerateFromCommandLine -seed 1700 -count 3 \
+  -logFile "$PROJECT/Build/scenes.log" -accept-apiupdate \
+  || { echo "Scene generation failed, see Build/scenes.log"; exit 1; }
+
 echo "Building WebGL to $OUT (log: $LOG)"
 
 "${UNITY_RUN[@]}" -batchmode -quit -projectPath "$PROJECT" \
