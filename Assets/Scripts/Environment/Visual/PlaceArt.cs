@@ -7,8 +7,7 @@ public static class PlaceArt
     private static readonly Dictionary<string, Material> Materials = new();
     private static readonly Dictionary<string, GameObject[]> PropSets = new();
 
-    // Every texture covers 2 m and repeats: the floor slab is 8 x 10 m, a wall 10 x 9.5 m and
-    // the ceiling 17.2 x 10 m (TrackPiece.Dress).
+    // Each texture covers 2 m; the surface sizes are in TrackPiece.Dress.
     private static readonly Vector2 FloorTiling = new(4f, 5f);
     private static readonly Vector2 WallTiling = new(5f, 4.75f);
     private static readonly Vector2 CeilingTiling = new(8.6f, 5f);

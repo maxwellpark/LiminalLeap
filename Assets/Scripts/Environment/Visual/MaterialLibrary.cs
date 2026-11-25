@@ -45,8 +45,7 @@ public static class MaterialLibrary
         };
     }
 
-    // For a generated texture: lit like the track, white so it keeps its colours, and repeated
-    // `tiling` times across the surface it's on.
+    // For a generated texture: lit like the track, and white so it keeps its colours.
     public static Material FromTexture(string name, Texture2D texture, Vector2 tiling)
     {
         var material = new Material(Shader.Find("Standard")) { name = name, mainTexture = texture, color = Color.white };

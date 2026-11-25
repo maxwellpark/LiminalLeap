@@ -1,0 +1,30 @@
+# Art sources
+
+Where each generated file came from, as `docs/ART.md` asks. Model licences were read from the
+licence text, not remembered.
+
+## Model
+
+Stable Diffusion 1.5 (`stable-diffusion-v1-5/stable-diffusion-v1-5`, revision
+`451f4fe16113bff5a5d2269ed5ad43b0592e9a14`), the fp16 safetensors weights, each checked
+against its published sha256. Run on a CPU with diffusers 0.31.0 and
+PyTorch 2.5.1, at 512 x 512, 25 steps of DPM-Solver multistep, guidance 7, with circular
+padding in every convolution so the output tiles.
+
+Licence: CreativeML OpenRAIL-M. Section 6: "Licensor claims no rights in the Output You
+generate using the Model. You are accountable for the Output you generate and its subsequent
+uses." It allows commercial use and names no countries; its use restrictions (Attachment A)
+are about harmful uses, which game textures aren't.
+
+Negative prompt for all: "perspective, shadows, vignette, text, watermark, logo, people,
+objects, furniture, blurry, frame, border"
+
+## Files
+
+| File | Prompt | Seed | Finished with |
+|---|---|---|---|
+| `Resources/Art/Floors/Carpet.png` | seamless tileable texture, close-up of short pile commercial office carpet, grey-blue, fine uniform fibres, top-down, flat even lighting, no pattern | 29 | `tools/art/tiles.py carpet` |
+| `Resources/Art/Places/office/Ceiling.png` | seamless tileable texture, close-up of a white mineral fibre ceiling tile surface, small fissures and pinholes, uniform, flat even lighting, straight on | 17 | `tools/art/tiles.py ceiling` |
+| `Resources/Art/Places/office/Wall.png` | seamless tileable texture, off-white painted plasterboard office wall, faint scuffs, flat lighting, straight on | 11 | `tools/art/tiles.py plain` |
+
+Each was saved fresh by `tiles.py`, so it carries no generator metadata.
