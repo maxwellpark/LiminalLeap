@@ -24,9 +24,7 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 1. The office's 3 to 5 props, generated and committed by following `docs/ART.md`. On the
    owner's machine, since image-to-3D needs a GPU. Its textures are done.
-2. Walls that follow a turn: a wall is one straight 10 m section per piece, so a turning
-   piece leaves a dark gap along its outside edge. Worth doing once real art shows it.
-3. The props as map landmarks, once the map is marked during runs.
+2. The props as map landmarks, once the map is marked during runs.
 
 ## Blocked on owner
 
@@ -53,6 +51,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-25: walls, ceiling and side floor reach 0.6 m past a turning piece's end, across
+  the wedge a 7 degree turn opens at the walls (`max/wall-turns`).
 - 2026-11-25: the office's carpet, wall and ceiling textures, generated on a CPU with Stable
   Diffusion 1.5 (sources in `Assets/Art/Sources.md`) and finished by
   `tools/art/tiles.py`. Textures repeat every 2 m, and a place with walls gets floor out to
