@@ -4,8 +4,7 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
-- A faint tell for the looping door: the looping side of a fork repeats something from the
-  stretch it lays again, so an attentive player can read the fork. Decided 2026-11-25.
+Nothing buildable is left for an unmet goal line: the rest wait on the owner, below.
 
 ## Blocked on owner
 
@@ -35,6 +34,9 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Done
 
+- 2026-11-25: the looping door's tell: on the fork piece, the pillars on the looping side stand
+  as they did where that door's replay begins (`max/door-tell`). Its LoopTests check is written
+  but not run.
 - 2026-11-25: `build-mac.sh` takes Unity's path from `scripts/unity-path.sh` and refuses only
   while this project is open, as the web build does. Not run: it needs a Mac.
 - 2026-11-25: `SpawnNext` split into choosing, taking, readying, placing and remembering a

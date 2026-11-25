@@ -392,6 +392,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         if (laying.Fork)
         {
             MakeFork(piece);
+            EchoReplay(piece);
             pendingFork = piece;
             lastForkAt = spawned - 1;
             lastHazardAt = spawned - 1;
@@ -402,6 +403,17 @@ public class ProceduralTrackGenerator : MonoBehaviour
             var prefab = laying.Remembered >= 0 ? laying.Remembered : laying.Index;
             memory.Add(new TrackMemory.Piece(prefab, laying.Seed, laidMetres - laidBehind, laying.Floor));
         }
+    }
+
+    // The tell: the looping side's pillars stand as they did where its replay begins.
+    private void EchoReplay(TrackPiece fork)
+    {
+        if (fork.Scenery == null || !memory.TryOldestOfLast(replayPieces, out var first))
+        {
+            return;
+        }
+
+        fork.Scenery.Echo(first.Seed, LoopDoorAhead == LoopRule.LeftDoor ? -1 : 1);
     }
 
     // Never in a breath or on top of another hazard, since the wall is one.

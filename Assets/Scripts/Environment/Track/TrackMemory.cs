@@ -46,6 +46,20 @@ public sealed class TrackMemory
         return n;
     }
 
+    // The first of the last `count`, which is where a looping door's replay begins.
+    public bool TryOldestOfLast(int count, out Piece piece)
+    {
+        var n = System.Math.Min(count, Count);
+        if (n <= 0)
+        {
+            piece = default;
+            return false;
+        }
+
+        piece = ring[(next - n + ring.Length * 2) % ring.Length];
+        return true;
+    }
+
     public void Clear()
     {
         next = 0;

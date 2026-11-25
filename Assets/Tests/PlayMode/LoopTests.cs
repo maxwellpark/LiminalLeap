@@ -163,6 +163,41 @@ public class LoopTests
         Assert.AreEqual(1000f, PlayerTrackMovement.Readout.Shown(1000f));
     }
 
+    // The tell: on the looping side the fork's pillars stand as they did where the replay begins.
+    [UnityTest]
+    public IEnumerator TheLoopingSideStandsAsTheReplayBegins()
+    {
+        yield return UntilFork();
+        var replayPieces = (int)typeof(ProceduralTrackGenerator)
+            .GetField("replayPieces", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(generator);
+        Assert.IsTrue(generator.Memory.TryOldestOfLast(replayPieces, out var first));
+
+        var reference = MakePiece("Reference").Scenery;
+        reference.Vary(first.Seed);
+        var side = generator.LoopDoorAhead == LoopRule.LeftDoor ? -1 : 1;
+        var forkPillars = Fork().transform.Find(TrackScenery.PillarHolder);
+        var referencePillars = reference.transform.Find(TrackScenery.PillarHolder);
+
+        var looked = 0;
+        for (var i = 0; i < forkPillars.childCount; i++)
+        {
+            if (System.Math.Sign(forkPillars.GetChild(i).localPosition.x) != side)
+            {
+                continue;
+            }
+
+            looked++;
+            var expected = referencePillars.GetChild(i);
+            Assert.AreEqual(expected.gameObject.activeSelf, forkPillars.GetChild(i).gameObject.activeSelf, "pillar " + i);
+            if (expected.gameObject.activeSelf)
+            {
+                Assert.AreEqual(expected.localScale, forkPillars.GetChild(i).localScale, "pillar " + i);
+            }
+        }
+
+        Assert.AreEqual(4, looked);
+    }
+
     [UnityTest]
     public IEnumerator TheOtherDoorGoesOn()
     {
@@ -234,6 +269,21 @@ public class LoopTests
         var anchor = new GameObject("End").transform;
         anchor.SetParent(go.transform, false);
         anchor.localPosition = new Vector3(0f, 0f, 10f);
+
+        // Pillars in a lane either side, so the fork's tell has something to stand.
+        var pillars = new GameObject(TrackScenery.PillarHolder).transform;
+        pillars.SetParent(go.transform, false);
+        foreach (var x in new[] { -3.5f, 3.5f })
+        {
+            for (var z = 0; z < 4; z++)
+            {
+                var pillar = new GameObject("Pillar").transform;
+                pillar.SetParent(pillars, false);
+                pillar.localPosition = new Vector3(x, 4f, z * 2.5f);
+            }
+        }
+
+        go.AddComponent<TrackScenery>();
 
         var piece = go.AddComponent<TrackPiece>();
         SetField(piece, "endAnchor", anchor);
