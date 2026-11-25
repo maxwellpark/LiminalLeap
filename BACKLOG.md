@@ -4,7 +4,8 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
-Nothing buildable is left for an unmet goal line: the rest wait on the owner, below.
+- A faint tell for the looping door: the looping side of a fork repeats something from the
+  stretch it lays again, so an attentive player can read the fork. Decided 2026-11-25.
 
 ## Blocked on owner
 
@@ -25,12 +26,12 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
 - A place's best counts only the last lap's score, since each lap resets it. Hidden in the
   story today; matters if place bests are ever shown.
 - Forks in the story places, which need a design that fits the exit rule.
-- A tell for which door loops, if a blind choice plays as a coin flip.
-- Map the space (#61), once loops exist.
+- Map the space (#61), per story place: decided 2026-11-25 that each place gets a fixed layout
+  with forks that a map uncovers over many runs. Needs a design round first, since the story
+  has no forks and every exit there is already a call.
 - Vertical and split pursuer attacks (#67), an attack director (#68), distorted telegraphs
   (#69), attacks per place (#70).
 - Statics out of the run state (#22), the new Input System (#7).
-- The dev scene out of shipped builds (#76).
 
 ## Done
 

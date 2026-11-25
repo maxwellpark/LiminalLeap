@@ -121,6 +121,12 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Decided 2026-11-25: the looping door gets a faint tell in the world, so a fork can be read.
+- Decided 2026-11-25: Map the space (#61) maps each story place, which gets a fixed layout with
+  forks for the map to uncover over many runs. Its design comes before any build.
+- Decided 2026-11-25: the dev scene (`MovementTestScene`) stays in builds. Players can't reach
+  it, it costs almost nothing, and it is the title screen's fallback and the manual test scene.
+  #76 closed for this.
 - Default 2026-11-25 [needs-review]: the HUD's distance lies only through a looping door. It
   rewinds to the reading at the start of the replayed stretch once the player reaches it, and
   each replayed piece reads what it read the first time, so the same numbers come round again.
