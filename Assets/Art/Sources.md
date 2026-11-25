@@ -26,5 +26,11 @@ objects, furniture, blurry, frame, border"
 | `Resources/Art/Floors/Carpet.png` | seamless tileable texture, close-up of short pile commercial office carpet, grey-blue, fine uniform fibres, top-down, flat even lighting, no pattern | 29 | `tools/art/tiles.py carpet` |
 | `Resources/Art/Places/office/Ceiling.png` | seamless tileable texture, close-up of a white mineral fibre ceiling tile surface, small fissures and pinholes, uniform, flat even lighting, straight on | 17 | `tools/art/tiles.py ceiling` |
 | `Resources/Art/Places/office/Wall.png` | seamless tileable texture, off-white painted plasterboard office wall, faint scuffs, flat lighting, straight on | 11 | `tools/art/tiles.py plain` |
+| `Resources/Art/Floors/Linoleum.png` | seamless tileable texture, close-up of speckled vinyl school corridor floor, pale grey-green with small flecks, top-down, flat even lighting, no pattern | 7 | `tools/art/tiles.py plain` at 0.6 |
+| `Resources/Art/Places/school/Wall.png` | seamless tileable texture, close-up of painted concrete block surface, pale cream paint, slight pores, flat even lighting, straight on, no lines | 7 | `tools/art/tiles.py blocks` |
+| `Resources/Art/Places/school/Ceiling.png` | the office ceiling's prompt | 29 | `tools/art/tiles.py ceiling` |
+| `Resources/Art/Floors/Boards.png` | seamless tileable texture, close-up of worn oak wood grain, warm mid brown, top-down, flat even lighting, straight grain | 7 | `tools/art/tiles.py boards` |
+| `Resources/Art/Places/house/Wall.png` | seamless tileable texture, faded old wallpaper, small muted floral pattern, pale yellow and grey, flat lighting, straight on | 31 | `tools/art/tiles.py plain` at 0.7 |
+| `Resources/Art/Places/house/Ceiling.png` | seamless tileable texture, close-up of off-white textured plaster ceiling, gentle stipple, flat even lighting, straight up | 7 | `tools/art/tiles.py plain` at 0.82 |
 
 Each was saved fresh by `tiles.py`, so it carries no generator metadata.

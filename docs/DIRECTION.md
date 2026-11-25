@@ -121,6 +121,11 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-25 [needs-review]: the school and the house follow the office. The school
+  has speckled grey-green vinyl, painted blockwork and suspended ceiling tiles; the house has
+  oak floorboards, faded floral wallpaper and a textured plaster ceiling. Floor art is per floor
+  kind, so the vinyl is every linoleum stretch and the oak every boards stretch, free runs
+  included. To change: the files in `Assets/Resources/Art`, made as `docs/ART.md` says.
 - Decided 2026-11-25: an Art pass with locally generated textures and models, starting with the
   office: floor, wall and ceiling textures and 3 to 5 landmark props the map can record. The
   WebGL build may grow to 25 MB in all (10 MB now). A Claude session on the owner's machine

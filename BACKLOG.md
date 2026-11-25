@@ -51,6 +51,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-25: the school's and the house's textures, and linoleum and boards everywhere, made
+  the office's way (`max/school-house-textures`).
 - 2026-11-25: walls, ceiling and side floor reach 0.6 m past a turning piece's end, across
   the wedge a 7 degree turn opens at the walls (`max/wall-turns`).
 - 2026-11-25: the office's carpet, wall and ceiling textures, generated on a CPU with Stable
