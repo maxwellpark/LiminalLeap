@@ -19,7 +19,7 @@ fi
 unity_has_project_open() {
   # Escaped and anchored, so a path inside this one, or with regex characters, can't match.
   local path
-  path=$(printf '%s' "$1" | sed 's/[][\.^$*+?(){}|/]/\\&/g')
+  path=$(printf '%s' "${1%/}" | sed 's/[][\.^$*+?(){}|/]/\\&/g')
   pgrep -if -- "-projectpath ${path}( |$)" >/dev/null 2>&1
 }
 

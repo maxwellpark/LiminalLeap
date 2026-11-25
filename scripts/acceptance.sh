@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# The numbers in docs/acceptance: coverage of the pure rules, transcripts of what they decide,
-# and complexity of every C# file changed against a base. Needs the .NET 8 SDK; lizard is optional.
+# Regenerates docs/acceptance's numbers; needs the .NET 8 SDK, lizard optional.
 #
 # Usage: scripts/acceptance.sh [base]    base defaults to origin/master
 set -uo pipefail
@@ -43,7 +42,9 @@ LIZARD="${LIZARD:-$(command -v lizard || true)}"
 if [ -z "$LIZARD" ]; then
   echo "SKIP: no lizard (pip install lizard, or set LIZARD=<path>)"
 else
-  mapfile -t files < <(git -C "$PROJECT" diff --name-only --diff-filter=AM "$BASE"...HEAD -- 'Assets/Scripts' | grep '\.cs$')
+  # A read loop, not mapfile, which the Mac's bash 3.2 lacks.
+  files=()
+  while IFS= read -r f; do files+=("$f"); done < <(git -C "$PROJECT" diff --name-only --diff-filter=AM "$BASE"...HEAD -- 'Assets/Scripts' | grep '\.cs$')
   if [ "${#files[@]}" -gt 0 ]; then
     (cd "$PROJECT" && "$LIZARD" --csv "${files[@]}" 2>/dev/null) | python3 -c '
 import csv, sys

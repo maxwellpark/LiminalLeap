@@ -466,7 +466,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
             return SignKind.ExitAhead;
         }
 
-        var hazard = HazardOn(piece);
+        // Active only, which also skips an old fork's wall a pooled piece keeps switched off.
+        var hazard = piece.GetComponentInChildren<Hazard>();
         if (hazard != null)
         {
             return hazard.Jumpable ? SignKind.Jump : SignKind.Strafe;
@@ -475,24 +476,6 @@ public class ProceduralTrackGenerator : MonoBehaviour
         // Flagged but nothing found. A vague warning beats a missed one.
         return piece.ContainsHazard ? SignKind.Strafe : SignKind.Clear;
     }
-
-    // A pooled piece keeps an old fork's wall, switched off, which mustn't be signed as a hazard.
-    private static Hazard HazardOn(TrackPiece piece)
-    {
-        var wall = piece.ForkWall;
-        piece.GetComponentsInChildren(true, HazardBuffer);
-        foreach (var hazard in HazardBuffer)
-        {
-            if (wall == null || wall.activeSelf || !hazard.transform.IsChildOf(wall.transform))
-            {
-                return hazard;
-            }
-        }
-
-        return null;
-    }
-
-    private static readonly List<Hazard> HazardBuffer = new();
 
     private bool IsExit(int index)
     {
