@@ -20,6 +20,16 @@ Map the space (#61), in slices, each its own PR:
 Slices 1 and 2 change the generator in ways only the PlayMode suites can check, so they're
 safer once the Unity licence is set up.
 
+Art pass, the office first (decided 2026-11-25), each its own PR:
+
+1. Per-place art: a place can name its own floor, wall and ceiling materials and its
+   landmark props, falling back to the procedural ones. Cloud.
+2. A size budget: fail when the WebGL build passes 25 MB, and report what grew. Cloud.
+3. `docs/ART.md`: the pipeline, with prompts, texture sizes and tiling, poly and size limits
+   per prop, the metadata strip, the licence check and where files go. Cloud.
+4. The office's textures and 3 to 5 props, generated and committed. On the owner's machine.
+5. The props as map landmarks, once the map is marked during runs.
+
 ## Blocked on owner
 
 - Unity licence on a cloud machine: the automation Unity ID, the LiminalLeap 1Password vault
