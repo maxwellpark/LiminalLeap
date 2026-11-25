@@ -10,7 +10,6 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     [SerializeField] private float closeRate = 3.5f;
     [SerializeField] private float recoverRate = 6f;
     [SerializeField] private float speedRelief = 2.5f;
-    [SerializeField] private float speedDraw = 3f;      // replaces relief under SpeedSummons
     [SerializeField] private float lungeWithin = 12f;
     [SerializeField] private float lungeMultiplier = 2.2f;
     [SerializeField] private float bodyHeight = 2.4f;
@@ -64,7 +63,6 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
     public override void Init()
     {
         var attacks = Features.On(Feature.PursuerAttacks);
-        var summons = Features.On(Feature.SpeedSummons);
 
         settings = new PursuitModel.Settings
         {
@@ -73,8 +71,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
             RecoverRate = attacks ? 0f : recoverRate,
             IgnoreObservation = attacks,
             MaxDistance = startDistance,
-            SpeedRelief = summons ? 0f : attacks ? attack.SpeedReliefDuringAttacks : speedRelief,
-            SpeedDraw = summons ? speedDraw : 0f,
+            SpeedRelief = attacks ? attack.SpeedReliefDuringAttacks : speedRelief,
             LungeWithin = lungeWithin,
             LungeMultiplier = lungeMultiplier,
         };

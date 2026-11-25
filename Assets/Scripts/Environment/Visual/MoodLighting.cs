@@ -44,6 +44,32 @@ public class MoodLighting : Singleton<MoodLighting>, IRunResettable
     {
         front = LightFront.Start(lightFront);
         Darkness = 0f;
+
+        var place = Places.ForRun();
+        if (place != null)
+        {
+            fogColour = place.Fog;
+            fogDensity = place.FogDensity;
+            ambient = place.Ambient;
+            keyColour = place.Light;
+        }
+
+        // Init applies these itself once the key light exists.
+        if (key == null)
+        {
+            return;
+        }
+
+        RenderSettings.fogColor = fogColour;
+        RenderSettings.fogDensity = fogDensity;
+        RenderSettings.ambientLight = ambient;
+        key.color = keyColour;
+
+        var cam = Camera.main;
+        if (cam != null)
+        {
+            cam.backgroundColor = fogColour;
+        }
     }
 
     public override void Init()

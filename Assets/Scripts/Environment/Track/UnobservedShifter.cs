@@ -67,7 +67,7 @@ public class UnobservedShifter : Singleton<UnobservedShifter>, IRunResettable
         for (var i = 0; i < hazards.Count; i++)
         {
             var body = hazards[i].transform;
-            if (Vector3.Distance(body.position, player) < minDistanceAhead)
+            if (hazards[i].Fixed || Vector3.Distance(body.position, player) < minDistanceAhead)
             {
                 continue;
             }

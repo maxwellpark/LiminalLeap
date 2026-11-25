@@ -1,0 +1,214 @@
+using System;
+using NUnit.Framework;
+
+public class PlacesTests
+{
+    [SetUp]
+    public void SetUp()
+    {
+        Features.IsolateForTests();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Features.ClearOverrides();
+        Features.ClearPlace();
+    }
+
+    private static Place Get(string id)
+    {
+        return Array.Find(Places.Story, p => p.Id == id);
+    }
+
+    [Test]
+    public void TheStoryRunsOfficeSchoolHouse()
+    {
+        Assert.AreEqual(new[] { "office", "school", "house" }, Array.ConvertAll(Places.Story, p => p.Id));
+    }
+
+    [Test]
+    public void EachPlaceHasALengthAndWords()
+    {
+        foreach (var place in Places.Story)
+        {
+            Assert.Greater(place.Length, 0, place.Id);
+            Assert.IsNotEmpty(place.Name, place.Id);
+            Assert.IsNotEmpty(place.Short, place.Id);
+            Assert.IsNotEmpty(place.Arrival, place.Id);
+            Assert.IsNotNull(place.Rules, place.Id);
+        }
+    }
+
+    // As the design doc assigns them.
+    [Test]
+    public void EachPlaceBringsItsOwnRule()
+    {
+        Places.Apply(Get("office"));
+        Assert.IsTrue(Features.On(Feature.LyingSigns));
+        Assert.IsFalse(Features.On(Feature.LightAsResource));
+        Assert.IsFalse(Features.On(Feature.ShiftWhenUnobserved));
+        Assert.IsFalse(Features.On(Feature.GhostPursuer));
+
+        Places.Apply(Get("school"));
+        Assert.IsFalse(Features.On(Feature.LyingSigns));
+        Assert.IsTrue(Features.On(Feature.LightAsResource));
+        Assert.IsFalse(Features.On(Feature.ShiftWhenUnobserved));
+        Assert.IsFalse(Features.On(Feature.GhostPursuer));
+
+        Places.Apply(Get("house"));
+        Assert.IsTrue(Features.On(Feature.LyingSigns));
+        Assert.IsFalse(Features.On(Feature.LightAsResource));
+        Assert.IsTrue(Features.On(Feature.ShiftWhenUnobserved));
+        Assert.IsTrue(Features.On(Feature.GhostPursuer));
+    }
+
+    [Test]
+    public void APlaceOnlyDecidesItsScopedRules()
+    {
+        Places.Apply(Get("house"));
+
+        foreach (var feature in Features.All)
+        {
+            if (Array.IndexOf(Places.Scoped, feature) < 0)
+            {
+                Assert.AreEqual(Features.DefaultFor(feature), Features.On(feature), feature.ToString());
+            }
+        }
+    }
+
+    [Test]
+    public void NoPlaceFallsBackToTheFlags()
+    {
+        Places.Apply(Get("house"));
+        Places.Apply(null);
+
+        foreach (var feature in Places.Scoped)
+        {
+            Assert.AreEqual(Features.DefaultFor(feature), Features.On(feature), feature.ToString());
+        }
+    }
+
+    // Each place asks for more right calls than the last.
+    [Test]
+    public void EveryPlaceHasLapsAndTheyGetLonger()
+    {
+        var previous = 0;
+        foreach (var place in Places.Story)
+        {
+            Assert.Greater(place.Calls, previous, place.Id);
+            Assert.That(place.AnomalyChance, Is.InRange(0.2f, 0.8f), place.Id);
+            Assert.GreaterOrEqual(place.Length, 4 * LapRule.StretchPieces, place.Id + " is too short for a stretch");
+            previous = place.Calls;
+        }
+    }
+
+    [Test]
+    public void TheLapRuleFollowsThePlace()
+    {
+        StoryLaps.Clear();
+        var office = StoryLaps.For(Get("office"));
+
+        Assert.AreSame(office, StoryLaps.For(Get("office")), "dying would reroll the lap");
+        Assert.AreNotSame(office, StoryLaps.For(Get("school")), "a new place kept the old count");
+        Assert.AreEqual(Get("school").Calls, StoryLaps.Rule.Required);
+        Assert.IsNull(StoryLaps.For(null));
+        StoryLaps.Clear();
+    }
+
+    [Test]
+    public void RetuningAPlaceGivesItANewRule()
+    {
+        var office = Get("office");
+        var calls = office.Calls;
+        StoryLaps.Clear();
+
+        try
+        {
+            var before = StoryLaps.For(office);
+            office.Calls = calls + 1;
+
+            var after = StoryLaps.For(office);
+            Assert.AreNotSame(before, after, "the old target would still apply");
+            Assert.AreEqual(calls + 1, after.Required);
+            Assert.AreSame(after, StoryLaps.For(office), "an unchanged place should keep its rule");
+        }
+        finally
+        {
+            office.Calls = calls;
+            StoryLaps.Clear();
+        }
+    }
+
+    [Test]
+    public void AdvancingWalksThePlacesThenFinishes()
+    {
+        var save = SaveData.Fresh();
+
+        Assert.IsFalse(Places.Advance(save));
+        Assert.AreEqual(1, save.StoryPlace);
+
+        Assert.IsFalse(Places.Advance(save));
+        Assert.AreEqual(2, save.StoryPlace);
+
+        Assert.IsTrue(Places.Advance(save), "out of the house should end the story");
+        Assert.AreEqual(0, save.StoryPlace, "a finished story starts over");
+        Assert.AreEqual(1, save.StoryFinishes);
+    }
+
+    [Test]
+    public void TheLastPlaceHasNoNext()
+    {
+        Assert.AreSame(Get("school"), Places.Next(Get("office")));
+        Assert.AreSame(Get("house"), Places.Next(Get("school")));
+        Assert.IsNull(Places.Next(Get("house")));
+    }
+
+    [Test]
+    public void TheDailyTakesALookButNoRules()
+    {
+        try
+        {
+            RunMode.ChooseDaily();
+            Assert.IsNotNull(Places.ForRun(), "the daily should still wear a place");
+            Assert.IsNull(Places.RulesForRun(), "the daily picked up a place's rules");
+
+            Places.Apply(Places.RulesForRun());
+            foreach (var feature in Places.Scoped)
+            {
+                Assert.AreEqual(Features.DefaultFor(feature), Features.On(feature), feature.ToString());
+            }
+
+            RunMode.ChooseStory();
+            Assert.AreSame(Places.ForRun(), Places.RulesForRun(), "the story should keep its rules");
+        }
+        finally
+        {
+            RunMode.ChooseFree();
+        }
+    }
+
+    [Test]
+    public void TheDailyPlaceIsFixedByTheSeed()
+    {
+        foreach (var seed in new[] { 0, 1, 2, 7, int.MaxValue, -5 })
+        {
+            Assert.AreSame(Places.ForDaily(seed), Places.ForDaily(seed));
+            Assert.Contains(Places.ForDaily(seed), Places.Story);
+        }
+    }
+
+    [Test]
+    public void PlaceBestsAreKeptPerPlace()
+    {
+        var save = SaveData.Fresh();
+
+        Assert.IsTrue(save.PlaceBest("office").Record(100f));
+        Assert.IsFalse(save.PlaceBest("office").Record(50f));
+        Assert.IsTrue(save.PlaceBest("school").Record(30f));
+
+        Assert.AreEqual(100f, save.PlaceBest("office").BestScore);
+        Assert.AreEqual(30f, save.PlaceBest("school").BestScore);
+        Assert.AreEqual(2, save.PlaceBest("office").Runs);
+    }
+}

@@ -48,6 +48,7 @@ public class PlayerTrackMovement : MonoBehaviour
     [SerializeField] private float deathPause = 0.75f;
     [SerializeField] private float completePause = 1.3f;  // long enough for the sting to land
     [SerializeField] private float abandonPause = 0.35f;  // a restart is a cut, not a beat
+    [SerializeField] private float lapFade = 0.35f;       // through an exit to the next lap
     [SerializeField] private float bobHeight = 0.07f;
     [SerializeField] private float bobStridesPerSecond = 3.4f; // at full speed
     [SerializeField] private float bobRollDegrees = 0.9f;
@@ -68,6 +69,9 @@ public class PlayerTrackMovement : MonoBehaviour
     public static float SpeedFraction { get; private set; }
 
     public static float Score { get; private set; }
+
+    // Read by the summary after the run ends, so it's only cleared when the next one starts.
+    public static RunStrip Strip { get; } = new();
     public static float Multiplier { get; private set; } = 1f;
 
     // Where you sit across the track, so the pursuer can aim at a lane without a reference.
@@ -113,6 +117,9 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private void Start()
     {
+        PageReady.Mark();
+        Places.Apply(Places.RulesForRun());
+
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true; // we drive the transform; keep triggers, drop the physics fight
         trackManager = TrackManager.GetInstance();
@@ -128,6 +135,7 @@ public class PlayerTrackMovement : MonoBehaviour
         InCalm = false;
         runTime = 0f;
         ghostRecorder.Reset();
+        Strip.Reset();
         TrackCentre = basePos;
         live = true;
 
@@ -151,6 +159,7 @@ public class PlayerTrackMovement : MonoBehaviour
         RunSummary.GetInstance();
         Onboarding.GetInstance();
         PauseMenu.GetInstance();
+        PlaceCard.GetInstance().Show(Places.ForRun());
     }
 
     private void Update()
@@ -189,13 +198,55 @@ public class PlayerTrackMovement : MonoBehaviour
         runTime += dt;
         ghostRecorder.Sample(runTime, DistanceCovered);
 
+        var mirror = RearView.Instance;
+        if (mirror != null && mirror.IsRaised)
+        {
+            Strip.Mark(DistanceCovered, StretchMark.LookedBack);
+        }
+
         if (exitsInside > 0 && InputRouter.Source.BankPressed)
+        {
+            TakeExit();
+            return;
+        }
+
+        HandleRestart(dt);
+    }
+
+    // In a place with laps an exit is a call, and only the last right one gets you out.
+    private void TakeExit()
+    {
+        var laps = StoryLaps.Current;
+        if (laps == null || laps.Call(tookExit: true) == LapCall.Leave)
         {
             FinishRun(RunOutcome.Banked);
             return;
         }
 
-        HandleRestart(dt);
+        StartLap();
+    }
+
+    // Back to the start of the place for the next lap. Not a death, so nothing records it.
+    public void StartLap()
+    {
+        if (!dying)
+        {
+            StartCoroutine(LapSequence());
+        }
+    }
+
+    private System.Collections.IEnumerator LapSequence()
+    {
+        dying = true;
+        live = false;
+
+        ScreenFade.GetInstance().To(1f, lapFade);
+        yield return new WaitForSecondsRealtime(lapFade);
+
+        ResetRun();
+        ScreenFade.GetInstance().To(0f, lapFade);
+        dying = false;
+        live = true;
     }
 
     // Held, since R is next to E. Has to be let go between restarts.
@@ -383,7 +434,9 @@ public class PlayerTrackMovement : MonoBehaviour
         if (other.GetComponent<ExitDoor>() != null)
         {
             exitsInside++;
-            ToastManager.GetInstance().Show($"E to leave with {Score:F0}");
+            ToastManager.GetInstance().Show(Presentation.Arcade
+                ? $"{Controls.Leave} to leave with {Score:F0}"
+                : $"{Controls.Leave}   open");
             return;
         }
 
@@ -425,7 +478,8 @@ public class PlayerTrackMovement : MonoBehaviour
     public void RegisterNearMiss(float reward)
     {
         nearMissBonus = Mathf.Min(nearMissBonus + reward, maxNearMissBonus);
-        ToastManager.GetInstance().Show($"Near miss   x{Multiplier:F1}");
+        Strip.Mark(DistanceCovered, StretchMark.NearMiss);
+        ToastManager.GetInstance().ShowArcade($"Near miss   x{Multiplier:F1}");
     }
 
     public void KillPlayer()
@@ -448,8 +502,8 @@ public class PlayerTrackMovement : MonoBehaviour
         live = false;
 
         // Written before the dispatch, so whoever saves on death writes this run's ghost.
-        // Not for restarts.
-        if (outcome != RunOutcome.Abandoned)
+        // Not for restarts, nor the story, whose laps would chase arcade runs as the ghost.
+        if (outcome != RunOutcome.Abandoned && !RunMode.Story)
         {
             SaveStore.Data.Ghost = GhostTrace.Best(SaveStore.Data.Ghost, ghostRecorder.Build());
         }
@@ -483,8 +537,23 @@ public class PlayerTrackMovement : MonoBehaviour
             yield return null;
         }
 
+        // Out of a place moves the story on, and out of the last one ends it.
+        if (outcome == RunOutcome.Banked && RunMode.Story)
+        {
+            var finished = Places.Advance(SaveStore.Data);
+            SaveStore.Save();
+
+            if (finished)
+            {
+                Time.timeScale = 1f;
+                PauseMenu.LoadTitle();
+                yield break;
+            }
+        }
+
         ResetRun();
         ScreenFade.GetInstance().To(0f, 0.35f);
+        PlaceCard.GetInstance().Show(Places.ForRun());
         dying = false;
         live = true;
     }
@@ -514,12 +583,14 @@ public class PlayerTrackMovement : MonoBehaviour
         var reward = pursuer != null ? pursuer.AttackConfig.ScoreRewardOnDodge : 0f;
 
         Score += reward * Multiplier;
+        Strip.Mark(DistanceCovered, StretchMark.Dodged);
         fovKick = pickupFovKick;
-        ToastManager.GetInstance().Show($"Dodged   +{reward * Multiplier:F0}");
+        ToastManager.GetInstance().ShowArcade($"Dodged   +{reward * Multiplier:F0}");
     }
 
     private void ResetRun()
     {
+        Places.Apply(Places.RulesForRun());
         trackManager.ResetRun();
         basePos = startingPosition;
         TrackCentre = basePos;
@@ -540,6 +611,7 @@ public class PlayerTrackMovement : MonoBehaviour
         restartHeldFor = 0f;
         restartArmed = false; // R also dismisses the summary, so it must come up before it counts
         ghostRecorder.Reset();
+        Strip.Reset();
         CurrentSpeed = startingSpeed;
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
     }

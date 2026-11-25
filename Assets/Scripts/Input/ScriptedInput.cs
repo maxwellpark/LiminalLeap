@@ -5,6 +5,7 @@ public class ScriptedInput : IInputSource
     private bool releaseQueued;
     private bool restartQueued;
     private bool bankQueued;
+    private bool pointerQueued;
 
     public float Horizontal { get; set; }
     public bool LookingBack { get; set; }
@@ -13,6 +14,8 @@ public class ScriptedInput : IInputSource
     public bool JumpReleased { get; private set; }
     public bool RestartPressed { get; private set; }
     public bool BankPressed { get; private set; }
+    public UnityEngine.Vector2 Pointer { get; set; }
+    public bool PointerPressed { get; private set; }
 
     public void PressJump()
     {
@@ -34,6 +37,11 @@ public class ScriptedInput : IInputSource
         bankQueued = true;
     }
 
+    public void PressPointer()
+    {
+        pointerQueued = true;
+    }
+
     // Call once per frame, before whatever reads the input.
     public void Tick()
     {
@@ -41,10 +49,12 @@ public class ScriptedInput : IInputSource
         JumpReleased = releaseQueued;
         RestartPressed = restartQueued;
         BankPressed = bankQueued;
+        PointerPressed = pointerQueued;
 
         jumpQueued = false;
         releaseQueued = false;
         restartQueued = false;
         bankQueued = false;
+        pointerQueued = false;
     }
 }

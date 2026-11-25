@@ -33,8 +33,9 @@ public class AttackPrompt : Singleton<AttackPrompt>
 
         pursuer = pursuer != null ? pursuer : Pursuer.Instance;
         var model = pursuer != null ? pursuer.Attack : null;
+        // The daily spells it out. The story leaves it to the mirror and the sound.
         var live = model != null && Features.On(Feature.PursuerAttacks) && model.InFlight
-            && PlayerTrackMovement.Running;
+            && PlayerTrackMovement.Running && Presentation.Arcade;
 
         shown = Mathf.MoveTowards(shown, live ? 1f : 0f, fadeSpeed * Time.deltaTime);
 

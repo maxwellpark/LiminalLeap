@@ -25,9 +25,13 @@ public class ToastManager : Singleton<ToastManager>
         SetAlpha(0f);
     }
 
+    public string LastMessage { get; private set; }
+
     // Replaces rather than queues, which dropped most at speed.
     public void Show(string message)
     {
+        LastMessage = message;
+
         if (label != null)
         {
             label.text = message;
@@ -35,6 +39,15 @@ public class ToastManager : Singleton<ToastManager>
 
         elapsed = 0f;
         showing = true;
+    }
+
+    // Score, combos and rewards. Nothing in the story.
+    public void ShowArcade(string message)
+    {
+        if (Presentation.Arcade)
+        {
+            Show(message);
+        }
     }
 
     public void Clear()
