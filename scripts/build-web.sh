@@ -28,6 +28,9 @@ rm -rf "$PROJECT/Assets/Scenes/Generated"
   -executeMethod TestSceneGenerator.GenerateFromCommandLine -seed 1700 -count 3 \
   -logFile "$PROJECT/Build/scenes.log" -accept-apiupdate \
   || { echo "Scene generation failed, see Build/scenes.log"; exit 1; }
+# Unity can log a failed generation and still exit 0, so count the scenes it reports.
+SCENES=$(grep -c '^GENERATED ' "$PROJECT/Build/scenes.log" || true)
+[ "$SCENES" -eq 3 ] || { echo "Generated $SCENES of 3 scenes, see Build/scenes.log"; exit 1; }
 
 echo "Building WebGL to $OUT (log: $LOG)"
 
