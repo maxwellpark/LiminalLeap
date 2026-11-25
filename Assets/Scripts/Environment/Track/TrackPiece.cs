@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // End anchor, not Renderer.bounds, which only held for pieces facing +Z.
@@ -31,6 +32,13 @@ public class TrackPiece : MonoBehaviour
 
     private Renderer cachedRenderer;
     private bool rendererLookedUp;
+
+    // Built on first use, so a piece with no place art carries nothing extra.
+    private GameObject leftWall;
+    private GameObject rightWall;
+    private GameObject ceilingPart;
+    private readonly Dictionary<GameObject, GameObject> propsStood = new();
+    private const uint PropChance = 35;   // percent of pieces that stand a prop
 
     // The slab under the player, and the linoleum the prefab was baked with.
     private Renderer floorRenderer;
@@ -83,8 +91,20 @@ public class TrackPiece : MonoBehaviour
 
         if (floorRenderer != null)
         {
-            floorRenderer.sharedMaterial = floor == Floor.Linoleum ? bakedFloor : MaterialLibrary.ForFloor(floor);
+            var generated = PlaceArt.ForFloor(floor);
+            floorRenderer.sharedMaterial = generated != null ? generated
+                : floor == Floor.Linoleum ? bakedFloor
+                : MaterialLibrary.ForFloor(floor);
         }
+    }
+
+    // A place's walls, ceiling and props, where it has art for them. Null hides that part.
+    public void Dress(Material wall, Material ceiling, GameObject[] props, int seed)
+    {
+        SetPart(ref leftWall, "WallLeft", new Vector3(-8.5f, 4.75f, 5f), new Vector3(0.2f, 9.5f, 10f), wall);
+        SetPart(ref rightWall, "WallRight", new Vector3(8.5f, 4.75f, 5f), new Vector3(0.2f, 9.5f, 10f), wall);
+        SetPart(ref ceilingPart, "Ceiling", new Vector3(0f, 9.5f, 5f), new Vector3(17.2f, 0.2f, 10f), ceiling);
+        StandProp(props, seed);
     }
 
     public bool HasEndAnchor => endAnchor != null;
@@ -134,6 +154,90 @@ public class TrackPiece : MonoBehaviour
     private Vector3 FallbackEnd()
     {
         return transform.position + 0.5f * Length() * transform.forward;
+    }
+
+    // Boxes rather than quads, so it doesn't matter which way a face points.
+    private void SetPart(ref GameObject part, string name, Vector3 at, Vector3 size, Material material)
+    {
+        if (material == null)
+        {
+            if (part != null)
+            {
+                part.SetActive(false);
+            }
+
+            return;
+        }
+
+        if (part == null)
+        {
+            part = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            part.name = name;
+            DestroyImmediate(part.GetComponent<Collider>());
+            part.transform.SetParent(transform, false);
+            part.transform.localPosition = at;
+            part.transform.localScale = size;
+            ForgetResettables();
+        }
+
+        part.GetComponent<Renderer>().sharedMaterial = material;
+        part.SetActive(true);
+    }
+
+    // Chosen from the piece's seed, so a replay stands the same prop.
+    private void StandProp(GameObject[] props, int seed)
+    {
+        foreach (var stood in propsStood.Values)
+        {
+            stood.SetActive(false);
+        }
+
+        if (props == null || props.Length == 0)
+        {
+            return;
+        }
+
+        var roll = Hash(seed);
+        if (roll % 100 >= PropChance)
+        {
+            return;
+        }
+
+        var prefab = props[(int)(roll / 100 % (uint)props.Length)];
+        if (prefab == null)
+        {
+            return;
+        }
+
+        if (!propsStood.TryGetValue(prefab, out var prop))
+        {
+            prop = Instantiate(prefab, transform, false);
+            foreach (var collider in prop.GetComponentsInChildren<Collider>(true))
+            {
+                DestroyImmediate(collider);
+            }
+
+            propsStood[prefab] = prop;
+            ForgetResettables();
+        }
+
+        var left = (roll / 7919 & 1) == 0;
+        prop.transform.localPosition = new Vector3(left ? -5.2f : 5.2f, 0f, 5f);
+        prop.transform.localRotation = Quaternion.Euler(0f, left ? 90f : -90f, 0f);
+        prop.SetActive(true);
+    }
+
+
+    private static uint Hash(int seed)
+    {
+        unchecked
+        {
+            var h = (uint)(seed * 73856093) ^ 0x9e3779b9u;
+            h ^= h >> 13;
+            h *= 0x85ebca6b;
+            h ^= h >> 16;
+            return h;
+        }
     }
 
     // Before the first swap, so the baked material is the one kept.

@@ -45,6 +45,23 @@ public static class MaterialLibrary
         };
     }
 
+    // For a generated texture: lit like the track, and white so the texture keeps its colours.
+    public static Material FromTexture(string name, Texture2D texture)
+    {
+        var material = new Material(Shader.Find("Standard")) { name = name, mainTexture = texture, color = Color.white };
+        if (material.HasProperty("_Glossiness"))
+        {
+            material.SetFloat("_Glossiness", 0.1f);
+        }
+
+        if (material.HasProperty("_Metallic"))
+        {
+            material.SetFloat("_Metallic", 0f);
+        }
+
+        return material;
+    }
+
     public static bool IsFloor(Surface surface)
     {
         return surface is Surface.Carpet or Surface.Tile or Surface.Boards;

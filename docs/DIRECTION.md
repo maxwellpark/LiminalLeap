@@ -121,6 +121,13 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Decided 2026-11-25: an Art pass with locally generated textures and models, starting with the
+  office: floor, wall and ceiling textures and 3 to 5 landmark props the map can record. The
+  WebGL build may grow to 25 MB in all (10 MB now). A Claude session on the owner's machine
+  runs the generation with max-kit's GPU skills; cloud sessions do the code, the size check
+  and the browser check. Assets are committed, never generated at runtime, so a lap's baseline
+  stays fixed for the exit rule. Generator metadata is stripped before commit, each model's
+  licence is checked for use in the UK, and the procedural textures stay as the fallback.
 - Decided 2026-11-25: the looping door gets a faint tell in the world, so a fork can be read.
 - Default 2026-11-25 [needs-review]: the tell is the pillars on the looping side of the fork
   piece, which stand (which ones, and how tall) as they did on the first piece of the stretch

@@ -65,6 +65,11 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
     // A place keeps its own floor; an arcade run changes floor in stretches.
     private FloorRule floors;
+
+    // The art of the place this run looks like: a story place, or the one a daily wears.
+    private Material lookWall;
+    private Material lookCeiling;
+    private GameObject[] lookProps;
     private TrackMemory.Piece[] replay;
     private int replayCount;
     private int replayAt;
@@ -110,6 +115,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
         exitsSpawned = 0;
 
         var place = RunMode.Story ? Places.ForRun() : null;
+        var look = Places.ForRun();
+        lookWall = PlaceArt.Wall(look);
+        lookCeiling = PlaceArt.Ceiling(look);
+        lookProps = PlaceArt.Props(look);
         placeLength = place != null ? place.Length : 0;
         nextExitAt = ExitSchedule.First(placeLength, firstExitAfter);
 
@@ -372,6 +381,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         }
 
         piece.SetFloor(laying.Floor);
+        piece.Dress(lookWall, lookCeiling, lookProps, laying.Seed);
 
         if (piece.ForkWall != null)
         {
