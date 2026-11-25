@@ -5,11 +5,13 @@ public sealed class TrackMemory
     {
         public readonly int Prefab;
         public readonly int Seed;   // what the scenery was varied with
+        public readonly Floor Floor;
 
-        public Piece(int prefab, int seed)
+        public Piece(int prefab, int seed, Floor floor = Floor.Linoleum)
         {
             Prefab = prefab;
             Seed = seed;
+            Floor = floor;
         }
     }
 

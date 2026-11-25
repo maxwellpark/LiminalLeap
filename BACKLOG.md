@@ -4,7 +4,10 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
-Nothing buildable is left for an unmet goal line: the rest wait on the owner, below.
+- Split `ProceduralTrackGenerator.SpawnNext` (complexity 28, about 135 lines) into picking,
+  placing and laying. Decided 2026-11-25 to do it before the Unity suites can run, so it gets a
+  careful review and leans on the compile and the rules outside Unity. After #95 and Surfaces
+  merge, since both touch it.
 
 ## Blocked on owner
 
@@ -23,23 +26,23 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
 
 ## Ideas
 
-- Split `ProceduralTrackGenerator.SpawnNext` (complexity 28, 132 lines; was 12 and 70) into
-  picking, placing and laying, once the PlayMode suites can run to catch a slip.
 - A place's best counts only the last lap's score, since each lap resets it. Hidden in the
   story today; matters if place bests are ever shown.
 - Forks in the story places, which need a design that fits the exit rule.
 - A tell for which door loops, if a blind choice plays as a coin flip.
-- Distance that lies (#54), once loops exist.
 - Map the space (#61), once loops exist.
 - Vertical and split pursuer attacks (#67), an attack director (#68), distorted telegraphs
   (#69), attacks per place (#70).
-- Surfaces that behave differently (#56).
 - Statics out of the run state (#22), the new Input System (#7).
 - The dev scene out of shipped builds (#76).
 - `build-mac.sh` sourcing `scripts/unity-path.sh`.
 
 ## Done
 
+- 2026-11-25: surfaces (#56): linoleum, carpet, wet tile and floorboards, each with its own
+  look, grip, bob and landing sound. Arcade runs change floor every 8 to 14 pieces from the
+  run's seed; each story place keeps one (`max/surfaces`). FloorTests and the LoopTests floor
+  check are written but not run.
 - 2026-11-24: audit pass (first-session player, robustness, hot paths, tests). Landed in
   ba64c0a: laps kept their length through breaths, laps start afresh each run, story laps out
   of the arcade ghost, the floor count held still, a lap test's missing frame. Not landed: a

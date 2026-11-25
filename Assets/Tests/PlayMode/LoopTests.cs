@@ -21,6 +21,7 @@ public class LoopTests
         savedPlace = SaveStore.Data.StoryPlace;
         Features.Override(Feature.Loops, true);
         Features.Override(Feature.CalmSections, false);
+        Features.Override(Feature.Surfaces, true);
         RunMode.ChooseFree();
 
         prefabHolder = new GameObject("Prefabs");
@@ -112,6 +113,7 @@ public class LoopTests
 
         // New pieces are read off the end, since pieces from before the fork are still listed.
         var after = new List<int>();
+        var floorsAfter = new List<Floor>();
         for (var step = 0; step < 40 && after.Count < count; step++)
         {
             var pieces = generator.ActivePieces;
@@ -119,6 +121,7 @@ public class LoopTests
             for (var i = pieces.Count - fresh; i < pieces.Count; i++)
             {
                 after.Add(pieces[i].PrefabIndex);
+                floorsAfter.Add(pieces[i].Floor);
             }
 
             player.position += Vector3.forward * 10f;
@@ -126,12 +129,15 @@ public class LoopTests
         }
 
         var expected = new List<int>();
+        var expectedFloors = new List<Floor>();
         for (var i = 0; i < count; i++)
         {
             expected.Add(remembered[i].Prefab);
+            expectedFloors.Add(remembered[i].Floor);
         }
 
         CollectionAssert.AreEqual(expected, after.GetRange(0, count), "the looping door should lay what came before the fork");
+        CollectionAssert.AreEqual(expectedFloors, floorsAfter.GetRange(0, count), "and on the same floors");
     }
 
     [UnityTest]

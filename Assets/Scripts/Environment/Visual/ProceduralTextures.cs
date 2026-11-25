@@ -62,6 +62,27 @@ public static class ProceduralTextures
         return pixels;
     }
 
+    // Lines one way only, as the seams between floorboards.
+    public static float[] Stripes(int size, int count, float lineWidth)
+    {
+        size = Math.Max(2, size);
+        count = Math.Max(1, count);
+        lineWidth = Clamp01(lineWidth);
+
+        var pixels = new float[size * size];
+
+        for (var y = 0; y < size; y++)
+        {
+            for (var x = 0; x < size; x++)
+            {
+                var isLine = Fract(x / (float)size * count) < lineWidth * 0.5f;
+                pixels[y * size + x] = isLine ? 0f : 1f;
+            }
+        }
+
+        return pixels;
+    }
+
     public static float[] Multiply(float[] a, float[] b, float bStrength)
     {
         var pixels = new float[a.Length];

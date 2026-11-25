@@ -23,6 +23,7 @@ public class RunFixture
         Features.Override(Feature.LyingSigns, false);
         Features.Override(Feature.ExitDoors, false);
         Features.Override(Feature.Loops, false);
+        Features.Override(Feature.Surfaces, false);
         RunMode.ChooseFree();
         StoryLaps.Clear();
     }

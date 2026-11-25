@@ -20,6 +20,9 @@ public class TrackPiece : MonoBehaviour
     // Which prefab this came from, so the pool hands back the same kind of piece.
     public int PrefabIndex { get; set; } = -1;
 
+    // Set at spawn. The player reads it for grip and bob.
+    public Floor Floor { get; private set; }
+
     // Lets the generator space hazard pieces apart without inspecting their children.
     [SerializeField] private bool containsHazard;
 
@@ -28,6 +31,11 @@ public class TrackPiece : MonoBehaviour
 
     private Renderer cachedRenderer;
     private bool rendererLookedUp;
+
+    // The slab under the player, and the linoleum the prefab was baked with.
+    private Renderer floorRenderer;
+    private Material bakedFloor;
+    private bool floorLookedUp;
     private IRunResettable[] resettables;
 
     // Cached, as GetComponentsInChildren allocates.
@@ -56,6 +64,24 @@ public class TrackPiece : MonoBehaviour
     public void ForgetResettables()
     {
         resettables = null;
+    }
+
+    public void SetFloor(Floor floor)
+    {
+        Floor = floor;
+
+        if (!floorLookedUp)
+        {
+            floorLookedUp = true;
+            var visual = transform.Find("Visual");
+            floorRenderer = visual != null ? visual.GetComponent<Renderer>() : null;
+            bakedFloor = floorRenderer != null ? floorRenderer.sharedMaterial : null;
+        }
+
+        if (floorRenderer != null)
+        {
+            floorRenderer.sharedMaterial = floor == Floor.Linoleum ? bakedFloor : MaterialLibrary.ForFloor(floor);
+        }
     }
 
     public bool HasEndAnchor => endAnchor != null;

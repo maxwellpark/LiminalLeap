@@ -12,6 +12,7 @@ public enum Feature
     CalmSections,
     LightAsResource,
     Loops,
+    Surfaces,
 }
 
 // Experiment toggles. Prefs hold manual overrides, test overrides stay in memory.
@@ -45,6 +46,7 @@ public static class Features
             Feature.ShiftWhenUnobserved => false,
             Feature.LightAsResource => false,
             Feature.Loops => true,
+            Feature.Surfaces => true,
             _ => throw new ArgumentOutOfRangeException(nameof(feature), feature, "no default set"),
         };
     }

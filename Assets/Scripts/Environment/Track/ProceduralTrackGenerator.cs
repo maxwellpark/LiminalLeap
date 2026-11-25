@@ -31,6 +31,10 @@ public class ProceduralTrackGenerator : MonoBehaviour
     [SerializeField] private int firstForkAfter = 20;
     [SerializeField] private int replayPieces = 10;     // how much track a looping door lays again
 
+    [Header("Floors")]
+    [SerializeField] private int shortestFloor = 8;     // pieces in an arcade run's stretch of one floor
+    [SerializeField] private int longestFloor = 14;
+
     [Header("Signage")]
     [SerializeField, Range(0f, 1f)] private float lieChance = 0.22f;
     [SerializeField] private int signLeadPieces = 3;     // reading room before the thing arrives
@@ -58,6 +62,9 @@ public class ProceduralTrackGenerator : MonoBehaviour
     // Set in an arcade run with loops: spawning holds at a fork until the player picks a door.
     private LoopRule loops;
     private readonly TrackMemory memory = new(32);
+
+    // A place keeps its own floor; an arcade run changes floor in stretches.
+    private FloorRule floors;
     private TrackMemory.Piece[] replay;
     private int replayCount;
     private int replayAt;
@@ -111,6 +118,17 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
         // The story's exits are already calls, so forks are for the arcade runs.
         loops = !RunMode.Story && Features.On(Feature.Loops) ? new LoopRule(runSeed, forkEvery, firstForkAfter) : null;
+        floors = !Features.On(Feature.Surfaces) ? FloorRule.Only(Floor.Linoleum)
+            : place != null ? FloorRule.Only(place.Floor)
+            : new FloorRule(runSeed, shortestFloor, longestFloor);
+
+        // Built now, or the first carpet or tile generates its texture mid-run and drops a frame.
+        if (Features.On(Feature.Surfaces))
+        {
+            MaterialLibrary.ForFloor(Floor.Carpet);
+            MaterialLibrary.ForFloor(Floor.Tile);
+            MaterialLibrary.ForFloor(Floor.Boards);
+        }
         replay ??= new TrackMemory.Piece[Mathf.Max(1, replayPieces)];
         memory.Clear();
         replayCount = 0;
@@ -197,6 +215,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
 
         var replaying = replayAt < replayCount;
         var varySeed = replaying ? replay[replayAt].Seed : 0;
+        var floor = replaying ? replay[replayAt].Floor : floors.At(spawned);
         var fork = !replaying && ForkDue();
 
         int index;
@@ -294,6 +313,8 @@ public class ProceduralTrackGenerator : MonoBehaviour
             piece.Scenery.Vary(varySeed);
         }
 
+        piece.SetFloor(floor);
+
         if (piece.ForkWall != null)
         {
             piece.ForkWall.SetActive(false);
@@ -309,7 +330,7 @@ public class ProceduralTrackGenerator : MonoBehaviour
         else if (!exit)
         {
             // The original, not a swap made for spacing, or each loop drifts further from it.
-            memory.Add(new TrackMemory.Piece(remembered >= 0 ? remembered : index, varySeed));
+            memory.Add(new TrackMemory.Piece(remembered >= 0 ? remembered : index, varySeed, floor));
         }
 
         LayLap(piece, exit);
