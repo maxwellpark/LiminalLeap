@@ -263,7 +263,7 @@ public class LapRuleTests
         CollectionAssert.AreEqual(new[] { false, true, true }, rule.History);
     }
 
-    // The pieces that look wrong are exactly the four from the stretch's start.
+    // A stretch that leaked past its pieces would put the anomaly where the lap can't show it.
     [Test]
     public void AWrongLapIsWrongOnlyInsideItsStretch()
     {

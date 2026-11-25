@@ -44,8 +44,7 @@ public class GameManager : Singleton<GameManager>
 
         if (RunMode.Story)
         {
-            // Hidden in the story, so kept per place and out of the arcade's best and its stats.
-            // Still the place just left: the story only moves on once the summary is dismissed.
+            // Hidden in the story, so kept per place; ForRun is still the place just left.
             var place = Places.ForRun();
             if (place != null)
             {
