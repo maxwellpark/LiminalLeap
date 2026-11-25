@@ -14,8 +14,9 @@ licence on this machine, so anything marked "not run" is written but unproven.
 |---|---|---|---|---|
 | 1 | Without a loop the HUD tells the truth | `DistanceReadoutTests.WithoutALoopItTellsTheTruth`, transcript | pass | verified (rule) |
 | 2 | Through a looping door the HUD rewinds to the reading at the start of the replayed stretch, then counts on in step | `ThroughALoopTheNumbersRepeat`, transcript | pass | verified (rule) |
-| 3 | The rewind waits until the replay starts, so the door's own piece still counts on | `ItCountsOnUntilTheReplayStarts`, transcript (209 m then 100 m) | pass | verified (rule) |
-| 4 | Loops add up | `LoopsAddUp` | pass | verified (rule) |
+| 3 | The rewind waits until the replay starts, so the door's own piece still counts on | `ItCountsOnUntilTheReplayStarts`, transcript (209 m then 90 m) | pass | verified (rule) |
+| 4 | Each replayed piece reads what it read the first time, even where an exit was left out of the replay | `AGapInTheReplaySkipsAheadAsTheFirstRunDid`, transcript (149 m then 160 m) | pass | verified (rule); generator by trace |
+| 4a | Changes passed in one frame land on the last; loops add up, since the memory holds what the HUD read | `SeveralChangesPassedInOneFrameLandOnTheLast`; `TrackMemory.Piece.Start` | pass | verified (rule); second loop by trace |
 | 5 | It never reads below 0 or ahead of the truth | `ItNeverReadsBelowZeroOrRunsAhead` | pass | verified (rule) |
 | 6 | Each new run starts truthful, and a rewind still waiting doesn't carry over | `ResetStartsTruthfulAgain`; `Readout.Reset()` next to both `Strip.Reset()` calls | pass | verified (rule); wiring by reading |
 | 7 | In the generator, the looping door puts the HUD 110 m behind (10 remembered pieces of 10 m plus the fork) | `LoopTests.TheLoopingDoorRewindsTheReadout` (PlayMode) | not run | unverified |
@@ -37,25 +38,31 @@ licence on this machine, so anything marked "not run" is written but unproven.
 
 ## Numbers
 
-- Tests outside Unity: 52 passed, 0 failed (6 new).
+- Tests outside Unity: 53 passed, 0 failed (7 new).
 - Coverage of the pure rules: line 100%, branch 100%. `DistanceReadout` alone: 100% / 100%.
-- Complexity: `DistanceReadout` methods are 1 or 2. `TryCommit` goes from 3 to 4. `SpawnNext`
-  stays at 28 and is still in Ideas to split.
+- Complexity: `DistanceReadout` methods are 1 to 3. `TryCommit` is unchanged at 3. `SpawnNext`
+  rises from 28 to 31, from laying the readout's changes with each replayed piece; splitting it
+  is the next Ready item.
 
 ## Transcript
 
-From `scripts/acceptance.sh`, the real `TrackMemory` and `DistanceReadout`:
+From `scripts/acceptance.sh`, the real `TrackMemory` and `DistanceReadout`, scheduled as the
+generator does for each piece it lays again:
 
 ```
-== The HUD distance through a looping door: 10 m pieces, the fork is piece 20
-   the door is taken; the replay starts at 210 m and repeats the track from 100 m
+== The HUD distance through a looping door: 10 m pieces, an exit at piece 15, the fork is piece 20
+   Exits aren't laid again, so the replay is 10 pieces over 110 m of the first run.
    true  150 m   HUD  150 m
+   true  159 m   HUD  159 m
+   true  160 m   HUD  160 m
    true  205 m   HUD  205 m
    true  209 m   HUD  209 m
-   true  210 m   HUD  100 m
-   true  260 m   HUD  150 m
+   true  210 m   HUD   90 m
+   true  260 m   HUD  140 m
+   true  269 m   HUD  149 m
+   true  270 m   HUD  160 m
    true  310 m   HUD  200 m
-   true  500 m   HUD  390 m
+   true  400 m   HUD  290 m
 ```
 
 ## By hand

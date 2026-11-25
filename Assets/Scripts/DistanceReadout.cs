@@ -1,27 +1,24 @@
-// What the HUD admits to: through a looping door it rewinds, so the numbers repeat.
+using System.Collections.Generic;
+
+// What the HUD admits to: on track laid again it reads what it read the first time.
 public sealed class DistanceReadout
 {
-    private float rewindAt = float.PositiveInfinity;
-    private float rewindBy;
+    // Each change waits until the player reaches the piece it was laid for.
+    private readonly Queue<(float At, float Behind)> pending = new();
 
     public float Behind { get; private set; }   // metres the readout is short of the truth
 
-    // Waits until the player reaches the replay, so the door's own piece still counts on.
-    public void Loop(float resumeAt, float replayFrom)
+    // From `at` metres of true distance on, read `behind` metres short.
+    public void From(float at, float behind)
     {
-        if (resumeAt > replayFrom)
-        {
-            rewindAt = resumeAt;
-            rewindBy = resumeAt - replayFrom;
-        }
+        pending.Enqueue((at, System.Math.Max(0f, behind)));
     }
 
     public void Advance(float trueDistance)
     {
-        if (trueDistance >= rewindAt)
+        while (pending.Count > 0 && trueDistance >= pending.Peek().At)
         {
-            Behind += rewindBy;
-            rewindAt = float.PositiveInfinity;
+            Behind = pending.Dequeue().Behind;
         }
     }
 
@@ -33,6 +30,6 @@ public sealed class DistanceReadout
     public void Reset()
     {
         Behind = 0f;
-        rewindAt = float.PositiveInfinity;
+        pending.Clear();
     }
 }

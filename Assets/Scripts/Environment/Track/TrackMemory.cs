@@ -5,7 +5,7 @@ public sealed class TrackMemory
     {
         public readonly int Prefab;
         public readonly int Seed;   // what the scenery was varied with
-        public readonly float Start; // metres into the run where it began
+        public readonly float Start; // what the HUD read where it began
 
         public Piece(int prefab, int seed, float start = 0f)
         {

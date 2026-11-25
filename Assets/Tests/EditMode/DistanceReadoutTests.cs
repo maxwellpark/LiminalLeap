@@ -6,6 +6,7 @@ public class DistanceReadoutTests
     public void WithoutALoopItTellsTheTruth()
     {
         var readout = new DistanceReadout();
+        readout.Advance(412f);
 
         Assert.AreEqual(412f, readout.Shown(412f));
     }
@@ -14,7 +15,7 @@ public class DistanceReadoutTests
     public void ThroughALoopTheNumbersRepeat()
     {
         var readout = new DistanceReadout();
-        readout.Loop(resumeAt: 300f, replayFrom: 200f);
+        readout.From(300f, 100f);
 
         readout.Advance(300f);
         Assert.AreEqual(200f, readout.Shown(300f));
@@ -26,50 +27,64 @@ public class DistanceReadoutTests
     public void ItCountsOnUntilTheReplayStarts()
     {
         var readout = new DistanceReadout();
-        readout.Loop(resumeAt: 300f, replayFrom: 200f);
+        readout.From(300f, 100f);
 
         readout.Advance(295f);
         Assert.AreEqual(295f, readout.Shown(295f), "still on the door's own piece");
+        Assert.AreEqual(0f, readout.Behind);
         readout.Advance(300f);
         Assert.AreEqual(200f, readout.Shown(300f));
     }
 
+    // A piece left out of the replay, as an exit is: the numbers skip where it stood, as they did.
     [Test]
-    public void LoopsAddUp()
+    public void AGapInTheReplaySkipsAheadAsTheFirstRunDid()
     {
         var readout = new DistanceReadout();
-        readout.Loop(300f, 200f);
-        readout.Advance(300f);
-        readout.Loop(500f, 420f);
-        readout.Advance(500f);
+        readout.From(300f, 110f);
+        readout.From(340f, 100f);
 
-        Assert.AreEqual(320f, readout.Shown(500f));
-        Assert.AreEqual(180f, readout.Behind);
+        readout.Advance(330f);
+        Assert.AreEqual(220f, readout.Shown(330f));
+        readout.Advance(340f);
+        Assert.AreEqual(240f, readout.Shown(340f));
+    }
+
+    [Test]
+    public void SeveralChangesPassedInOneFrameLandOnTheLast()
+    {
+        var readout = new DistanceReadout();
+        readout.From(100f, 50f);
+        readout.From(110f, 40f);
+        readout.From(500f, 0f);
+
+        readout.Advance(120f);
+        Assert.AreEqual(40f, readout.Behind);
     }
 
     [Test]
     public void ItNeverReadsBelowZeroOrRunsAhead()
     {
         var readout = new DistanceReadout();
-        readout.Loop(100f, 0f);
+        readout.From(100f, 100f);
         readout.Advance(100f);
         Assert.AreEqual(0f, readout.Shown(100f));
 
-        readout.Loop(150f, 180f);
+        readout.From(150f, -30f);
         readout.Advance(200f);
-        Assert.AreEqual(100f, readout.Shown(200f), "a replay from further on mustn't push the readout ahead");
+        Assert.AreEqual(200f, readout.Shown(200f), "a negative lag mustn't push the readout ahead");
     }
 
     [Test]
     public void ResetStartsTruthfulAgain()
     {
         var readout = new DistanceReadout();
-        readout.Loop(300f, 200f);
+        readout.From(300f, 100f);
         readout.Advance(300f);
-        readout.Loop(500f, 400f);
+        readout.From(500f, 120f);
         readout.Reset();
         readout.Advance(600f);
 
-        Assert.AreEqual(600f, readout.Shown(600f), "neither the rewind taken nor the one waiting survives");
+        Assert.AreEqual(600f, readout.Shown(600f), "neither the change taken nor the one waiting survives");
     }
 }
