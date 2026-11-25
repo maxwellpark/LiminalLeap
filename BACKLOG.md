@@ -4,10 +4,8 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
-- Split `ProceduralTrackGenerator.SpawnNext` (complexity 28, about 135 lines) into picking,
-  placing and laying. Decided 2026-11-25 to do it before the Unity suites can run, so it gets a
-  careful review and leans on the compile and the rules outside Unity. After #95 and Surfaces
-  merge, since both touch it.
+- A faint tell for the looping door: the looping side of a fork repeats something from the
+  stretch it lays again, so an attentive player can read the fork. Decided 2026-11-25.
 
 ## Blocked on owner
 
@@ -28,16 +26,22 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 - A place's best counts only the last lap's score, since each lap resets it. Hidden in the
   story today; matters if place bests are ever shown.
 - Forks in the story places, which need a design that fits the exit rule.
-- A tell for which door loops, if a blind choice plays as a coin flip.
-- Map the space (#61), once loops exist.
+- Map the space (#61), per story place: decided 2026-11-25 that each place gets a fixed layout
+  with forks that a map uncovers over many runs. Needs a design round first, since the story
+  has no forks and every exit there is already a call.
 - Vertical and split pursuer attacks (#67), an attack director (#68), distorted telegraphs
   (#69), attacks per place (#70).
 - Statics out of the run state (#22), the new Input System (#7).
-- The dev scene out of shipped builds (#76).
-- `build-mac.sh` sourcing `scripts/unity-path.sh`.
 
 ## Done
 
+- 2026-11-25: `build-mac.sh` takes Unity's path from `scripts/unity-path.sh` and refuses only
+  while this project is open, as the web build does. Not run: it needs a Mac.
+- 2026-11-25: `SpawnNext` split into choosing, taking, readying, placing and remembering a
+  piece (complexity 31 down to 8 at most), as a pure refactor checked by review rather than the
+  Unity suites, which still can't run here.
+- 2026-11-25: #95 and #96 merged, after a review that fixed an exit shifting the replayed
+  distances, the fork wall taking its piece's floor, and the floors being baked as assets.
 - 2026-11-25: surfaces (#56): linoleum, carpet, wet tile and floorboards, each with its own
   look, grip, bob and landing sound. Arcade runs change floor every 8 to 14 pieces from the
   run's seed; each story place keeps one (`max/surfaces`). FloorTests and the LoopTests floor

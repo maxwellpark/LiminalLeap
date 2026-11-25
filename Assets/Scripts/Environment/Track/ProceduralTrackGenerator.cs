@@ -212,6 +212,19 @@ public class ProceduralTrackGenerator : MonoBehaviour
         pendingFork = null;
     }
 
+    // What the next piece will be, decided before any of it is laid.
+    private struct Laying
+    {
+        public int Index;
+        public int Remembered;     // the prefab a replay was asked for, or -1 for fresh track
+        public bool Replaying;
+        public bool Fork;
+        public int Seed;           // what the scenery is varied with
+        public float ShownBefore;  // what the HUD read here the first time, on a replay
+        public Floor Floor;
+    }
+
+    // In this order, as each step reads `spawned` and the rng where the one before left them.
     private void SpawnNext()
     {
         if (piecePrefabs == null || piecePrefabs.Length == 0)
@@ -219,39 +232,69 @@ public class ProceduralTrackGenerator : MonoBehaviour
             return;
         }
 
-        var replaying = replayAt < replayCount;
-        var varySeed = replaying ? replay[replayAt].Seed : 0;
-        var shownBefore = replaying ? replay[replayAt].Start : 0f;
-        var floor = replaying ? replay[replayAt].Floor : floors.At(spawned);
-        var fork = !replaying && ForkDue();
+        var laying = Choose();
+        var piece = TakeSpaced(ref laying.Index);
 
-        int index;
-        var remembered = -1;
-        if (replaying)
+        var exit = IsExit(laying.Index);
+        if (exit)
         {
-            index = remembered = replay[replayAt++].Prefab;
+            ScheduleNextExit();
+        }
+
+        Ready(piece);
+        Place(piece, ref laying);
+        Remember(piece, laying, exit);
+
+        LayLap(piece, exit);
+
+        active.Add(piece);
+        Announce(piece);
+
+        laidMetres += Vector3.Distance(nextEnd, piece.GetEndPosition());
+        nextEnd = piece.GetEndPosition();
+        nextForward = piece.GetEndForward();
+    }
+
+    private Laying Choose()
+    {
+        var laying = new Laying { Remembered = -1, Replaying = replayAt < replayCount };
+
+        if (laying.Replaying)
+        {
+            var from = replay[replayAt++];
+            laying.Seed = from.Seed;
+            laying.ShownBefore = from.Start;
+            laying.Floor = from.Floor;
+            laying.Index = laying.Remembered = from.Prefab;
 
             // A breath still means nothing to survive, even on track already run.
-            if (Calm(spawned) && piecePrefabs[index] != null && piecePrefabs[index].ContainsHazard)
+            if (Calm(spawned) && piecePrefabs[laying.Index] != null && piecePrefabs[laying.Index].ContainsHazard)
             {
                 var clean = PickCleanIndex();
-                index = clean >= 0 ? clean : index;
+                laying.Index = clean >= 0 ? clean : laying.Index;
             }
-        }
-        else
-        {
-            index = fork ? FindFlatIndex() : PickIndex();
-            if (index < 0)
-            {
-                fork = false;
-                index = PickIndex();
-            }
+
+            return laying;
         }
 
+        laying.Floor = floors.At(spawned);
+        laying.Fork = ForkDue();
+        laying.Index = laying.Fork ? FindFlatIndex() : PickIndex();
+        if (laying.Index < 0)
+        {
+            laying.Fork = false;
+            laying.Index = PickIndex();
+        }
+
+        return laying;
+    }
+
+    // Back to back hazards are unavoidable: a jump covers more ground than one piece.
+    // Random, or every swap was the same prefab.
+    private TrackPiece TakeSpaced(ref int index)
+    {
         var piece = Take(index);
 
-        // Back to back hazards are unavoidable: a jump covers more ground than one piece.
-        // Random, or every swap was the same prefab.
         if (piece.ContainsHazard && spawned - lastHazardAt < HazardGap())
         {
             var clean = PickCleanIndex();
@@ -268,16 +311,21 @@ public class ProceduralTrackGenerator : MonoBehaviour
             lastHazardAt = spawned;
         }
 
-        var exit = IsExit(index);
-        if (exit)
-        {
-            exitsSpawned++;
+        return piece;
+    }
 
-            // With laps, every exit is a call, so they come once a lap rather than as retries.
-            var gap = laps != null ? placeLength : storyRetryGap;
-            nextExitAt = ExitSchedule.Next(spawned, exitsSpawned, placeLength, firstExitAfter, exitGapGrowth, gap);
-        }
+    private void ScheduleNextExit()
+    {
+        exitsSpawned++;
 
+        // With laps, every exit is a call, so they come once a lap rather than as retries.
+        var gap = laps != null ? placeLength : storyRetryGap;
+        nextExitAt = ExitSchedule.Next(spawned, exitsSpawned, placeLength, firstExitAfter, exitGapGrowth, gap);
+    }
+
+    // Counts the piece as laid and clears what it carried from its last time out of the pool.
+    private void Ready(TrackPiece piece)
+    {
         piece.Calm = Calm(spawned);
         piece.Ordinal = spawned;
 
@@ -304,37 +352,44 @@ public class ProceduralTrackGenerator : MonoBehaviour
         {
             resettables[i].ResetForNewRun();
         }
+    }
 
+    private void Place(TrackPiece piece, ref Laying laying)
+    {
         piece.transform.SetPositionAndRotation(
             piece.HasEndAnchor ? nextEnd : TrackChainer.NextPiecePosition(nextEnd, nextForward, piece.Length()),
             Quaternion.LookRotation(nextForward));
 
         // Seeded off the ordinal, so the same seed lays out the same corridor. A replay keeps its own.
-        if (!replaying)
+        if (!laying.Replaying)
         {
-            varySeed = runSeed + spawned;
+            laying.Seed = runSeed + spawned;
         }
 
         if (piece.Scenery != null)
         {
-            piece.Scenery.Vary(varySeed);
+            piece.Scenery.Vary(laying.Seed);
         }
 
-        piece.SetFloor(floor);
+        piece.SetFloor(laying.Floor);
 
         if (piece.ForkWall != null)
         {
             piece.ForkWall.SetActive(false);
         }
+    }
 
+    // What a looping door will need to lay this again, or the fork that holds the track here.
+    private void Remember(TrackPiece piece, Laying laying, bool exit)
+    {
         // Laid again, so the HUD reads here what it read the first time.
-        if (replaying && laidMetres - shownBefore != laidBehind)
+        if (laying.Replaying && laidMetres - laying.ShownBefore != laidBehind)
         {
-            laidBehind = laidMetres - shownBefore;
+            laidBehind = laidMetres - laying.ShownBefore;
             PlayerTrackMovement.Readout.From(laidMetres, laidBehind);
         }
 
-        if (fork)
+        if (laying.Fork)
         {
             MakeFork(piece);
             pendingFork = piece;
@@ -344,17 +399,9 @@ public class ProceduralTrackGenerator : MonoBehaviour
         else if (!exit)
         {
             // The original, not a swap made for spacing, or each loop drifts further from it.
-            memory.Add(new TrackMemory.Piece(remembered >= 0 ? remembered : index, varySeed, laidMetres - laidBehind, floor));
+            var prefab = laying.Remembered >= 0 ? laying.Remembered : laying.Index;
+            memory.Add(new TrackMemory.Piece(prefab, laying.Seed, laidMetres - laidBehind, laying.Floor));
         }
-
-        LayLap(piece, exit);
-
-        active.Add(piece);
-        Announce(piece);
-
-        laidMetres += Vector3.Distance(nextEnd, piece.GetEndPosition());
-        nextEnd = piece.GetEndPosition();
-        nextForward = piece.GetEndForward();
     }
 
     // Never in a breath or on top of another hazard, since the wall is one.
