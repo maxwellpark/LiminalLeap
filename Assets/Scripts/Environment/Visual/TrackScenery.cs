@@ -36,24 +36,7 @@ public class TrackScenery : MonoBehaviour
 
         for (var i = 0; i < pillars.Length; i++)
         {
-            var pillar = pillars[i];
-            if (pillar == null)
-            {
-                continue;
-            }
-
-            var on = Hash01(seed, i * 7 + 1) < pillarChance;
-            pillar.gameObject.SetActive(on);
-
-            if (!on)
-            {
-                continue;
-            }
-
-            // Varying height makes it read as a different building.
-            var rest = pillarRest[i];
-            var tall = rest.y + (Hash01(seed, i * 7 + 2) - 0.5f) * heightVariation;
-            pillar.localScale = new Vector3(rest.x, Mathf.Max(2f, tall), rest.z);
+            VaryPillar(i, seed);
         }
 
         for (var i = 0; i < lights.Length; i++)
@@ -63,6 +46,42 @@ public class TrackScenery : MonoBehaviour
                 lights[i].gameObject.SetActive(Hash01(seed, i * 11 + 3) < lightChance);
             }
         }
+    }
+
+    // The pillars on one side (-1 left, 1 right) as `seed` stood them, the rest left alone.
+    public void Echo(int seed, int side)
+    {
+        Capture();
+
+        for (var i = 0; i < pillars.Length; i++)
+        {
+            if (System.Math.Sign(pillarRestPosition[i].x) == side)
+            {
+                VaryPillar(i, seed);
+            }
+        }
+    }
+
+    private void VaryPillar(int i, int seed)
+    {
+        var pillar = pillars[i];
+        if (pillar == null)
+        {
+            return;
+        }
+
+        var on = Hash01(seed, i * 7 + 1) < pillarChance;
+        pillar.gameObject.SetActive(on);
+
+        if (!on)
+        {
+            return;
+        }
+
+        // Varying height makes it read as a different building.
+        var rest = pillarRest[i];
+        var tall = rest.y + (Hash01(seed, i * 7 + 2) - 0.5f) * heightVariation;
+        pillar.localScale = new Vector3(rest.x, Mathf.Max(2f, tall), rest.z);
     }
 
     // Against a baseline Vary never produces, or it isn't wrong, just varied.

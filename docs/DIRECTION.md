@@ -122,6 +122,10 @@ None open. The ones taken are below.
 ## Decisions and defaults
 
 - Decided 2026-11-25: the looping door gets a faint tell in the world, so a fork can be read.
+- Default 2026-11-25 [needs-review]: the tell is the pillars on the looping side of the fork
+  piece, which stand (which ones, and how tall) as they did on the first piece of the stretch
+  that door lays again. Lights hang down the middle, so they stay as they were. To change:
+  `ProceduralTrackGenerator.EchoReplay` and `TrackScenery.Echo`.
 - Decided 2026-11-25: Map the space (#61) maps each story place, which gets a fixed layout with
   forks for the map to uncover over many runs. Its design comes before any build.
 - Decided 2026-11-25: the dev scene (`MovementTestScene`) stays in builds. Players can't reach

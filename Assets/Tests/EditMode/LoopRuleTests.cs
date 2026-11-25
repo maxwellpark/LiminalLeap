@@ -105,4 +105,31 @@ public class LoopRuleTests
         memory.Clear();
         Assert.AreEqual(0, memory.CopyLast(5, into));
     }
+
+    // Where a replay of the last `count` begins, which the looping door's tell copies.
+    [Test]
+    public void TheOldestOfTheLastFewIsWhereAReplayBegins()
+    {
+        var memory = new TrackMemory(4);
+        for (var i = 0; i < 6; i++)
+        {
+            memory.Add(new TrackMemory.Piece(i, 100 + i));
+        }
+
+        Assert.IsTrue(memory.TryOldestOfLast(3, out var first));
+        Assert.AreEqual(103, first.Seed);
+
+        Assert.IsTrue(memory.TryOldestOfLast(10, out var all), "asking for more than it holds starts at the oldest");
+        Assert.AreEqual(102, all.Seed);
+    }
+
+    [Test]
+    public void AnEmptyMemoryHasNoOldest()
+    {
+        var memory = new TrackMemory(4);
+
+        Assert.IsFalse(memory.TryOldestOfLast(3, out _));
+        memory.Add(new TrackMemory.Piece(1, 1));
+        Assert.IsFalse(memory.TryOldestOfLast(0, out _), "none of the last zero");
+    }
 }
