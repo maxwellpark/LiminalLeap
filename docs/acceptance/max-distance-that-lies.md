@@ -1,0 +1,83 @@
+# Acceptance: max/distance-that-lies
+
+The distance that lies (#54). It only lies in arcade runs: after a looping door, the HUD's
+distance drops back to what it read at the start of the stretch being run again, and stays
+that far behind for the rest of the run. Everything that counts keeps the true distance.
+
+Reproduce every number here with `LIZARD=<path to lizard> scripts/acceptance.sh` (needs .NET 8;
+lizard is optional and only prints complexity). No Unity suite has run: there's still no
+licence on this machine, so anything marked "not run" is written but unproven.
+
+## Claims
+
+| # | Behaviour | Evidence | Result | Status |
+|---|---|---|---|---|
+| 1 | Without a loop the HUD tells the truth | `DistanceReadoutTests.WithoutALoopItTellsTheTruth`, transcript | pass | verified (rule) |
+| 2 | Through a looping door the HUD rewinds to the reading at the start of the replayed stretch, then counts on in step | `ThroughALoopTheNumbersRepeat`, transcript | pass | verified (rule) |
+| 3 | The rewind waits until the replay starts, so the door's own piece still counts on | `ItCountsOnUntilTheReplayStarts`, transcript (209 m then 100 m) | pass | verified (rule) |
+| 4 | Loops add up | `LoopsAddUp` | pass | verified (rule) |
+| 5 | It never reads below 0 or ahead of the truth | `ItNeverReadsBelowZeroOrRunsAhead` | pass | verified (rule) |
+| 6 | Each new run starts truthful, and a rewind still waiting doesn't carry over | `ResetStartsTruthfulAgain`; `Readout.Reset()` next to both `Strip.Reset()` calls | pass | verified (rule); wiring by reading |
+| 7 | In the generator, the looping door puts the HUD 110 m behind (10 remembered pieces of 10 m plus the fork) | `LoopTests.TheLoopingDoorRewindsTheReadout` (PlayMode) | not run | unverified |
+| 8 | The other door leaves it true | `LoopTests.TheOtherDoorLeavesTheReadoutTrue` (PlayMode) | not run | unverified |
+| 9 | Score, summary, ghost, share line and best keep the true distance | only `UIManager`'s HUD line reads the readout (`grep -rn Readout Assets/Scripts`) | by reading | verified by reading |
+| 10 | Story runs never lie: they have no forks | `LoopTests.NoForksInTheStory` (from #94, not run) | not run | unverified |
+| 11 | Every assembly compiles in Unity 6000.2.15f1 | batch compile, no errors | pass | verified |
+| 12 | `scripts/acceptance.sh` runs from a fresh clone | run in a clean worktree of the first commit: 46 passed, 100% | pass | verified |
+
+## Paths
+
+| Situation | What the HUD shows | Evidence |
+|---|---|---|
+| no fork yet, or the other door | true distance | claims 1 and 8 |
+| looping door taken, still on the fork's piece | true distance, still counting | claim 3 |
+| reaches the replayed track | the reading at that stretch's start | claims 2 and 7 |
+| a second loop | further behind, by that loop's stretch | claim 4 |
+| die, restart, lap or new run | true again | claim 6 |
+
+## Numbers
+
+- Tests outside Unity: 52 passed, 0 failed (6 new).
+- Coverage of the pure rules: line 100%, branch 100%. `DistanceReadout` alone: 100% / 100%.
+- Complexity: `DistanceReadout` methods are 1 or 2. `TryCommit` goes from 3 to 4. `SpawnNext`
+  stays at 28 and is still in Ideas to split.
+
+## Transcript
+
+From `scripts/acceptance.sh`, the real `TrackMemory` and `DistanceReadout`:
+
+```
+== The HUD distance through a looping door: 10 m pieces, the fork is piece 20
+   the door is taken; the replay starts at 210 m and repeats the track from 100 m
+   true  150 m   HUD  150 m
+   true  205 m   HUD  205 m
+   true  209 m   HUD  209 m
+   true  210 m   HUD  100 m
+   true  260 m   HUD  150 m
+   true  310 m   HUD  200 m
+   true  500 m   HUD  390 m
+```
+
+## By hand
+
+In a free run with the Loops flag on (the default), run to the first fork (about 200 m):
+
+1. Note the HUD distance about 100 m before the fork.
+2. Take the looping door (the one that lays familiar track). On the door's own piece the HUD
+   keeps counting; as the familiar stretch starts, it drops back to roughly the reading from
+   step 1.
+3. Run on: the numbers count up again in step, past what you read the first time.
+4. Die and look at the summary: it gives the true distance, higher than the HUD's last reading.
+5. Restart: the HUD reads from 0 and tells the truth until the next looping door.
+6. Take the other door at a fork: the HUD doesn't jump.
+
+## Unverified
+
+- Both new PlayMode tests and every older Unity suite: no licence here.
+- How the jump feels: it's an instant drop with no effect. A flicker or a glitch on the
+  numbers may sell it better; that's a look decision, not made here.
+- Piece lengths: a replayed piece swapped for a clean one is assumed to be the same length.
+  Every piece prefab's end anchor is 10 m out today; if one ever isn't, the HUD drifts by the
+  difference.
+- The player and the track both start at the origin (`TestSceneGenerator`); if a scene moved
+  one, the rewind would land early or late by the gap.

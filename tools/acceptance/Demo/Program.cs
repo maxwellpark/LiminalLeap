@@ -61,6 +61,27 @@ public static class Program
         }
 
         Console.WriteLine();
+        Console.WriteLine("== The HUD distance through a looping door: 10 m pieces, the fork is piece 20");
+        var memory = new TrackMemory(32);
+        var laid = 0f;
+        for (var piece = 0; piece < 20; piece++)
+        {
+            memory.Add(new TrackMemory.Piece(0, piece, laid));
+            laid += 10f;
+        }
+        laid += 10f; // the fork's own piece, which isn't remembered
+        var replay = new TrackMemory.Piece[10];
+        memory.CopyLast(10, replay);
+        var readout = new DistanceReadout();
+        readout.Loop(laid, replay[0].Start);
+        Console.WriteLine($"   the door is taken; the replay starts at {laid:0} m and repeats the track from {replay[0].Start:0} m");
+        foreach (var at in new[] { 150f, 205f, 209f, 210f, 260f, 310f, 500f })
+        {
+            readout.Advance(at);
+            Console.WriteLine($"   true {at,4:0} m   HUD {readout.Shown(at),4:0} m");
+        }
+
+        Console.WriteLine();
         Console.WriteLine("== Daily share lines from the real ShareLine");
         var marks = new[] { StretchMark.Quiet, StretchMark.NearMiss, StretchMark.LookedBack, StretchMark.Dodged, StretchMark.Quiet, StretchMark.Dodged };
         Console.WriteLine("   Got out at 287 m with 3,120, through an exit:");
