@@ -59,7 +59,7 @@ public class UIManager : Singleton<UIManager>
         }
 
         // SetText with args avoids allocating every frame.
-        distanceText.SetText("{0:1} m", PlayerTrackMovement.DistanceCovered);
+        distanceText.SetText("{0:1} m", PlayerTrackMovement.Readout.Shown(PlayerTrackMovement.DistanceCovered));
         speedText.SetText("{0:1} m/s", PlayerTrackMovement.CurrentSpeed);
 
         if (scoreText != null)

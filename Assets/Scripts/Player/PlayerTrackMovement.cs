@@ -72,6 +72,9 @@ public class PlayerTrackMovement : MonoBehaviour
 
     // Read by the summary after the run ends, so it's only cleared when the next one starts.
     public static RunStrip Strip { get; } = new();
+
+    // What the HUD shows of the distance; the true one still scores.
+    public static DistanceReadout Readout { get; } = new();
     public static float Multiplier { get; private set; } = 1f;
 
     // Where you sit across the track, so the pursuer can aim at a lane without a reference.
@@ -138,6 +141,7 @@ public class PlayerTrackMovement : MonoBehaviour
         runTime = 0f;
         ghostRecorder.Reset();
         Strip.Reset();
+        Readout.Reset();
         TrackCentre = basePos;
         live = true;
 
@@ -376,6 +380,7 @@ public class PlayerTrackMovement : MonoBehaviour
         }
 
         DistanceCovered += travelledThisFrame;
+        Readout.Advance(DistanceCovered);
 
         // Pushing pace and skimming hazards both pay, so risk is worth taking.
         nearMissBonus = Mathf.Max(0f, nearMissBonus - nearMissDecayPerSecond * dt);
@@ -616,6 +621,7 @@ public class PlayerTrackMovement : MonoBehaviour
         restartArmed = false; // R also dismisses the summary, so it must come up before it counts
         ghostRecorder.Reset();
         Strip.Reset();
+        Readout.Reset();
         CurrentSpeed = startingSpeed;
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
     }

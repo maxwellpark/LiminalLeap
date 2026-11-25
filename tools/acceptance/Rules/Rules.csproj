@@ -12,6 +12,7 @@
     <Compile Include="../../../Assets/Scripts/Environment/Track/TrackMemory.cs" Link="TrackMemory.cs" />
     <Compile Include="../../../Assets/Scripts/RunStrip.cs" Link="RunStrip.cs" />
     <Compile Include="../../../Assets/Scripts/ShareLine.cs" Link="ShareLine.cs" />
+    <Compile Include="../../../Assets/Scripts/DistanceReadout.cs" Link="DistanceReadout.cs" />
     <Compile Include="../../../Assets/Scripts/Environment/Track/Floors.cs" Link="Floors.cs" />
     <Compile Include="../../../Assets/Scripts/Environment/Visual/ProceduralTextures.cs" Link="ProceduralTextures.cs" />
   </ItemGroup>

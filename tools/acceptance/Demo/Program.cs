@@ -61,6 +61,39 @@ public static class Program
         }
 
         Console.WriteLine();
+        Console.WriteLine("== The HUD distance through a looping door: 10 m pieces, an exit at piece 15, the fork is piece 20");
+        Console.WriteLine("   Exits aren't laid again, so the replay is 10 pieces over 110 m of the first run.");
+        var memory = new TrackMemory(32);
+        var laid = 0f;
+        for (var piece = 0; piece < 20; piece++)
+        {
+            if (piece != 15)
+            {
+                memory.Add(new TrackMemory.Piece(0, piece, laid));
+            }
+            laid += 10f;
+        }
+        laid += 10f; // the fork's own piece, which isn't remembered either
+        var replay = new TrackMemory.Piece[10];
+        var replayed = memory.CopyLast(10, replay);
+        var readout = new DistanceReadout();
+        var behind = 0f;
+        for (var i = 0; i < replayed; i++, laid += 10f)
+        {
+            // As the generator does for each piece it lays again.
+            if (laid - replay[i].Start != behind)
+            {
+                behind = laid - replay[i].Start;
+                readout.From(laid, behind);
+            }
+        }
+        foreach (var at in new[] { 150f, 159f, 160f, 205f, 209f, 210f, 260f, 269f, 270f, 310f, 400f })
+        {
+            readout.Advance(at);
+            Console.WriteLine($"   true {at,4:0} m   HUD {readout.Shown(at),4:0} m");
+        }
+
+        Console.WriteLine();
         Console.WriteLine("== Floors in a free run: stretches of 8 to 14 pieces, seed 1234");
         var floors = new FloorRule(1234, 8, 14);
         var from = 0;

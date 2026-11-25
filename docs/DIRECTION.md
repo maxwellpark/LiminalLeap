@@ -121,6 +121,12 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-25 [needs-review]: the HUD's distance lies only through a looping door. It
+  rewinds to the reading at the start of the replayed stretch once the player reaches it, and
+  each replayed piece reads what it read the first time, so the same numbers come round again.
+  It stays behind from then on. The score, the run summary, the ghost and the share line all
+  keep the true distance, so a run still compares fairly. To change: `DistanceReadout`, and
+  `UIManager`, the only place that reads it.
 - Decided 2026-11-25: four floors for Surfaces (#56): linoleum, carpet, wet tile, floorboards.
   Arcade runs (free and daily) change floor in stretches of 8 to 14 pieces from the run's
   seed, opening on linoleum; each story place keeps one floor (office carpet, school linoleum,
