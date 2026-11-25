@@ -85,11 +85,12 @@ def blocks(surface, seed=7):
                 if part[1] > part[0]:
                     box = (part[0], row * high, part[1], (row + 1) * high)
                     out.paste(ImageEnhance.Brightness(out.crop(box)).enhance(shade), box[:2])
-        for x in (shift - 1, shift, shift + wide - 1, shift + wide, shift + 2 * wide - 1, shift + 2 * wide,
-                  shift + 3 * wide - 1, shift + 3 * wide):
-            draw.line([(x % SIZE, row * high), (x % SIZE, (row + 1) * high - 1)], fill=(150, 146, 136))
-        for y in (row * high - 1, row * high):
-            draw.line([(0, y % SIZE), (SIZE, y % SIZE)], fill=(150, 146, 136))
+        # Bold enough to read across the corridor at speed: 4 px is 16 mm at 2 m a texture.
+        for joint in range(4):
+            for x in range(shift + joint * wide - 2, shift + joint * wide + 2):
+                draw.line([(x % SIZE, row * high), (x % SIZE, (row + 1) * high - 1)], fill=(112, 108, 100))
+        for y in range(row * high - 2, row * high + 2):
+            draw.line([(0, y % SIZE), (SIZE, y % SIZE)], fill=(112, 108, 100))
     return out
 
 
