@@ -98,6 +98,8 @@ public class PlayerTrackMovement : MonoBehaviour
     private float strafeOffset;
     private float strafeVel;
     private float tilt;
+    // Linoleum until the first piece is read, so a run starts on the feel the game was tuned on.
+    private FloorFeel footing = FloorFeel.For(Floor.Linoleum);
     private float bobPhase;
     private float bobOffset;
     private float bobRoll;
@@ -314,7 +316,7 @@ public class PlayerTrackMovement : MonoBehaviour
                 jumpVy = 0f;
                 airborne = false;
                 dip = landingDip;
-                AudioManager.GetInstance().Play(Sound.Land);
+                AudioManager.GetInstance().PlayLand(footing.LandPitch, footing.LandVolume);
             }
         }
     }
@@ -337,6 +339,7 @@ public class PlayerTrackMovement : MonoBehaviour
         }
 
         hadPiece = true;
+        footing = FloorFeel.For(piece.Floor);
 
         InCalm = Features.On(Feature.CalmSections) && piece.Calm;
 
@@ -388,7 +391,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private void HandleStrafe(float dt)
     {
         var input = InputRouter.Source.Horizontal; // A/D + arrows, decoupled from look
-        strafeVel = Mathf.MoveTowards(strafeVel, input * strafeSpeed, strafeAccel * dt);
+        strafeVel = Mathf.MoveTowards(strafeVel, input * strafeSpeed, strafeAccel * footing.Grip * dt);
         strafeOffset = Mathf.Clamp(strafeOffset + strafeVel * dt, -strafeLimit, strafeLimit);
 
         // stop the velocity winding up while pinned against a rail
@@ -413,8 +416,8 @@ public class PlayerTrackMovement : MonoBehaviour
         else
         {
             bobPhase += travelledThisFrame * bobStridesPerSecond;
-            bobOffset = -Mathf.Abs(Mathf.Sin(bobPhase)) * bobHeight * SpeedT;
-            bobRoll = Mathf.Cos(bobPhase * 0.5f) * bobRollDegrees * SpeedT;
+            bobOffset = -Mathf.Abs(Mathf.Sin(bobPhase)) * bobHeight * footing.Bob * SpeedT;
+            bobRoll = Mathf.Cos(bobPhase * 0.5f) * bobRollDegrees * footing.Bob * SpeedT;
         }
 
         dip = Mathf.Lerp(dip, 0f, 8f * dt);
@@ -605,6 +608,7 @@ public class PlayerTrackMovement : MonoBehaviour
         jumpVy = 0f;
         airborne = false;
         hadPiece = false;
+        footing = FloorFeel.For(Floor.Linoleum);
         DistanceCovered = 0f;
         Score = 0f;
         nearMissBonus = 0f;

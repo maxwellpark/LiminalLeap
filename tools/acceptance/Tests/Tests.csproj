@@ -18,5 +18,7 @@
     <Compile Include="../../../Assets/Tests/EditMode/RunStripTests.cs" Link="RunStripTests.cs" />
     <Compile Include="../../../Assets/Tests/EditMode/ShareLineTests.cs" Link="ShareLineTests.cs" />
     <Compile Include="../../../Assets/Tests/EditMode/DistanceReadoutTests.cs" Link="DistanceReadoutTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/FloorsTests.cs" Link="FloorsTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/ProceduralTexturesTests.cs" Link="ProceduralTexturesTests.cs" />
   </ItemGroup>
 </Project>

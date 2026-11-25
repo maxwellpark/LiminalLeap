@@ -9,6 +9,9 @@ public enum Surface
     Pickup,
     Exit,
     Light,
+    Carpet,
+    Tile,
+    Boards,
 }
 
 // Generated materials cached per surface. Built-in pipeline, so Standard shader.
@@ -28,6 +31,23 @@ public static class MaterialLibrary
         var material = Build(surface);
         Cache[surface] = material;
         return material;
+    }
+
+    // Linoleum is the baked track material, so only the others are built here.
+    public static Material ForFloor(Floor floor)
+    {
+        return floor switch
+        {
+            Floor.Carpet => Get(Surface.Carpet),
+            Floor.Tile => Get(Surface.Tile),
+            Floor.Boards => Get(Surface.Boards),
+            _ => Get(Surface.Track),
+        };
+    }
+
+    public static bool IsFloor(Surface surface)
+    {
+        return surface is Surface.Carpet or Surface.Tile or Surface.Boards;
     }
 
     // Editor domain reloads leave stale destroyed materials behind.
@@ -62,6 +82,33 @@ public static class MaterialLibrary
                 var stripes = ProceduralTextures.Grid(Size, 6, 0.4f);
                 var mixed = ProceduralTextures.Remap(ProceduralTextures.Multiply(grime, stripes, 0.6f), 0.35f, 1f);
                 return Make("JumpBarSurface", mixed, new Color(0.95f, 0.75f, 0.2f), 0.25f);
+            }
+
+            case Surface.Carpet:
+            {
+                // Fine and flat, an office's tired blue-grey.
+                var pile = ProceduralTextures.Remap(ProceduralTextures.Noise(Size, 151, 48, 3), 0.5f, 0.8f);
+                var wear = ProceduralTextures.Noise(Size, 157, 3);
+                var mixed = ProceduralTextures.Multiply(pile, wear, 0.35f);
+                return Make("CarpetSurface", mixed, new Color(0.42f, 0.47f, 0.55f), 0.02f);
+            }
+
+            case Surface.Tile:
+            {
+                // Small pale tiles, glossy enough to look wet.
+                var grout = ProceduralTextures.Grid(Size, 16, 0.1f);
+                var stain = ProceduralTextures.Noise(Size, 163, 5);
+                var mixed = ProceduralTextures.Remap(ProceduralTextures.Multiply(grout, stain, 0.3f), 0.35f, 0.95f);
+                return Make("TileSurface", mixed, new Color(0.72f, 0.88f, 0.9f), 0.85f);
+            }
+
+            case Surface.Boards:
+            {
+                // Planks down the length of the run, with grain.
+                var seams = ProceduralTextures.Stripes(Size, 6, 0.05f);
+                var grain = ProceduralTextures.Noise(Size, 173, 12);
+                var mixed = ProceduralTextures.Remap(ProceduralTextures.Multiply(seams, grain, 0.5f), 0.25f, 0.8f);
+                return Make("BoardsSurface", mixed, new Color(0.62f, 0.44f, 0.3f), 0.3f);
             }
 
             case Surface.Light:

@@ -94,6 +94,20 @@ public static class Program
         }
 
         Console.WriteLine();
+        Console.WriteLine("== Floors in a free run: stretches of 8 to 14 pieces, seed 1234");
+        var floors = new FloorRule(1234, 8, 14);
+        var from = 0;
+        for (var piece = 1; piece <= 120; piece++)
+        {
+            if (piece == 120 || floors.At(piece) != floors.At(from))
+            {
+                var feel = FloorFeel.For(floors.At(from));
+                Console.WriteLine($"   pieces {from,3}-{piece - 1,3}: {floors.At(from),-8} grip x{feel.Grip:0.00}  bob x{feel.Bob:0.00}  landing pitch x{feel.LandPitch:0.00}, volume x{feel.LandVolume:0.00}");
+                from = piece;
+            }
+        }
+
+        Console.WriteLine();
         Console.WriteLine("== Daily share lines from the real ShareLine");
         var marks = new[] { StretchMark.Quiet, StretchMark.NearMiss, StretchMark.LookedBack, StretchMark.Dodged, StretchMark.Quiet, StretchMark.Dodged };
         Console.WriteLine("   Got out at 287 m with 3,120, through an exit:");

@@ -6,12 +6,14 @@ public sealed class TrackMemory
         public readonly int Prefab;
         public readonly int Seed;   // what the scenery was varied with
         public readonly float Start; // what the HUD read where it began
+        public readonly Floor Floor;
 
-        public Piece(int prefab, int seed, float start = 0f)
+        public Piece(int prefab, int seed, float start = 0f, Floor floor = Floor.Linoleum)
         {
             Prefab = prefab;
             Seed = seed;
             Start = start;
+            Floor = floor;
         }
     }
 

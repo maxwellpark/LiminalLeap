@@ -127,6 +127,19 @@ None open. The ones taken are below.
   It stays behind from then on. The score, the run summary, the ghost and the share line all
   keep the true distance, so a run still compares fairly. To change: `DistanceReadout`, and
   `UIManager`, the only place that reads it.
+- Decided 2026-11-25: four floors for Surfaces (#56): linoleum, carpet, wet tile, floorboards.
+  Arcade runs (free and daily) change floor in stretches of 8 to 14 pieces from the run's
+  seed, opening on linoleum; each story place keeps one floor (office carpet, school linoleum,
+  house boards), so a floor change never reads as a wrong lap. The seam is the only warning:
+  no HUD text.
+- Default 2026-11-25 [needs-review]: how each floor moves you, against linoleum's 1. Carpet:
+  grip 1.25, bob 0.6, a low, quiet landing. Wet tile: grip 0.35, so strafing slides in and out
+  of a lane. Boards: bob 1.35, a low knock on landing. Wet tile turns up only in arcade runs.
+  To change: `FloorFeel.For`, and the `Surfaces` flag turns the whole thing off.
+- Decided 2026-11-25: the mood lighting keeps following the true distance through a loop, so a
+  replayed stretch is lit a little differently the second time.
+- Decided 2026-11-25: the pursuer's attacks (#67 to #70), forks in the story and a place's
+  best on its last lap stay in Ideas.
 - Default 2026-11-24 [needs-review]: loops are on in the arcade runs (daily and free) and off
   in the story: a fork every 24 pieces after the first 20, the looping door picked from the
   run's seed, replaying the last 10 pieces. Why: the story's exits are already calls. To change:

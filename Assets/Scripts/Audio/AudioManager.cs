@@ -26,6 +26,7 @@ public class AudioManager : Singleton<AudioManager>
     private IAudioLibrary library;
     private AudioSource sfx;
     private AudioSource pickup;   // its own source: PlayOneShot uses the source pitch
+    private AudioSource landing;  // likewise, pitched by the floor
     private AudioSource wind;
     private AudioSource dread;
     private Pursuer pursuer;
@@ -45,6 +46,9 @@ public class AudioManager : Singleton<AudioManager>
         pickup = gameObject.AddComponent<AudioSource>();
         pickup.playOnAwake = false;
 
+        landing = gameObject.AddComponent<AudioSource>();
+        landing.playOnAwake = false;
+
         dread = gameObject.AddComponent<AudioSource>();
         dread.clip = library.Get(Sound.Dread);
         dread.loop = true;
@@ -63,6 +67,15 @@ public class AudioManager : Singleton<AudioManager>
         if (sfx != null)
         {
             sfx.PlayOneShot(library.Get(sound), sfxVolume);
+        }
+    }
+
+    public void PlayLand(float pitch, float volume)
+    {
+        if (landing != null)
+        {
+            landing.pitch = pitch;
+            landing.PlayOneShot(library.Get(Sound.Land), sfxVolume * volume);
         }
     }
 

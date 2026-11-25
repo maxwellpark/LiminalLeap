@@ -84,6 +84,29 @@ public class ProceduralTexturesTests
         }
     }
 
+    // Floorboards: seams down the length only, so every row is the same.
+    [Test]
+    public void StripesRunOneWay()
+    {
+        var pixels = ProceduralTextures.Stripes(Size, 4, 0.2f);
+        var lines = 0;
+        for (var x = 0; x < Size; x++)
+        {
+            for (var y = 1; y < Size; y++)
+            {
+                Assert.AreEqual(pixels[x], pixels[y * Size + x], "column " + x + " changes down its length");
+            }
+
+            if (pixels[x] < 0.5f)
+            {
+                lines++;
+            }
+        }
+
+        Assert.Greater(lines, 0, "no seams drawn");
+        Assert.Greater(Size - lines, lines, "mostly seam, lineWidth is wrong");
+    }
+
     [Test]
     public void MultiplyDarkensAndStaysInRange()
     {
