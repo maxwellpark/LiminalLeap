@@ -31,10 +31,11 @@ Nothing buildable is left for an unmet goal line: the rest wait on the owner, be
   (#69), attacks per place (#70).
 - Statics out of the run state (#22), the new Input System (#7).
 - The dev scene out of shipped builds (#76).
-- `build-mac.sh` sourcing `scripts/unity-path.sh`.
 
 ## Done
 
+- 2026-11-25: `build-mac.sh` takes Unity's path from `scripts/unity-path.sh` and refuses only
+  while this project is open, as the web build does. Not run: it needs a Mac.
 - 2026-11-25: `SpawnNext` split into choosing, taking, readying, placing and remembering a
   piece (complexity 31 down to 8 at most), as a pure refactor checked by review rather than the
   Unity suites, which still can't run here.
