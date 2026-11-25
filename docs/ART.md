@@ -40,23 +40,41 @@ runs keep the open void.
   Unity's defaults on import are close; set the max size.
 - Mid-grey to light values: the scenes are dim and fogged, and dark textures vanish.
 
-The floor texture covers one 8 x 10 m slab once, so a 512 texture with about 8 tiles across
-reads as carpet tiles or floor tiles at the right size. Walls are 10 m long and 9.5 m high,
-the ceiling 17 x 10 m.
+Every texture covers 2 x 2 m and repeats: four times across the 8 m floor slab, about five
+times along a 10 m wall, and so on (`PlaceArt`). So a 512 texture is 256 px a metre, and a
+pattern in it should be drawn at real size: four 0.5 m carpet tiles across, for instance.
+
+### Making one
+
+Models draw textures well but straight lines badly: a grid comes out wavy. So generate the
+surface material alone, as a close-up, and let `tools/art/tiles.py` draw the straight parts:
+
+```
+python3 tools/art/tiles.py carpet  surface.png Assets/Resources/Art/Floors/Carpet.png
+python3 tools/art/tiles.py ceiling surface.png Assets/Resources/Art/Places/office/Ceiling.png
+python3 tools/art/tiles.py plain   surface.png Assets/Resources/Art/Places/office/Wall.png
+```
+
+`carpet` lays the surface as 0.5 m tiles a quarter-turn apart with seams; `ceiling` draws a
+0.5 m T-bar grid; `plain` keeps it as it is. Each saves a fresh PNG, so no metadata survives.
+
+Turn circular padding on in the model's convolutions (in diffusers, `padding_mode =
+"circular"` on every `Conv2d` in the UNet and VAE) and the output tiles by itself.
 
 ### Prompts for the office
 
-Start from these and keep what works in `Sources.md`:
+What worked, with Stable Diffusion 1.5 at 512 px, 25 steps, guidance 7:
 
-- Carpet: "seamless tileable texture, worn grey-blue office carpet tiles, top-down, flat even
-  lighting, no shadows, no perspective"
-- Wall: "seamless tileable texture, off-white painted plasterboard office wall with a faint
-  scuffed skirting line, flat lighting, straight on"
-- Ceiling: "seamless tileable texture, office suspended ceiling tiles, white mineral fibre with
-  pinholes, thin grey grid, flat lighting, straight up"
+- Carpet surface: "seamless tileable texture, close-up of short pile commercial office carpet,
+  grey-blue, fine uniform fibres, top-down, flat even lighting, no pattern"
+- Wall: "seamless tileable texture, off-white painted plasterboard office wall, faint scuffs,
+  flat lighting, straight on"
+- Ceiling surface: "seamless tileable texture, close-up of a white mineral fibre ceiling tile
+  surface, small fissures and pinholes, uniform, flat even lighting, straight on"
+- Negative, for all: "perspective, shadows, vignette, text, watermark, logo, people, objects,
+  furniture, blurry, frame, border"
 
-Generate several, pick one, then make it tileable if the model didn't (an img2img pass with
-tiling on, or a seamless-texture node).
+Generate several seeds and pick by eye; record the seed in `Sources.md`.
 
 ## Props
 
