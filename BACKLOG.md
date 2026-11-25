@@ -22,13 +22,11 @@ safer once the Unity licence is set up.
 
 Art pass, the office first (decided 2026-11-25), each its own PR:
 
-1. Per-place art: a place can name its own floor, wall and ceiling materials and its
-   landmark props, falling back to the procedural ones. Cloud.
-2. A size budget: fail when the WebGL build passes 25 MB, and report what grew. Cloud.
-3. `docs/ART.md`: the pipeline, with prompts, texture sizes and tiling, poly and size limits
-   per prop, the metadata strip, the licence check and where files go. Cloud.
-4. The office's textures and 3 to 5 props, generated and committed. On the owner's machine.
-5. The props as map landmarks, once the map is marked during runs.
+1. The office's textures and 3 to 5 props, generated and committed by following
+   `docs/ART.md`. On the owner's machine.
+2. Walls that follow a turn: a wall is one straight 10 m section per piece, so a turning
+   piece leaves a dark gap along its outside edge. Worth doing once real art shows it.
+3. The props as map landmarks, once the map is marked during runs.
 
 ## Blocked on owner
 
@@ -55,6 +53,9 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-25: the art pass's groundwork (`max/art-pass`): `docs/ART.md`; generated floors,
+  walls, a ceiling and props load by path and fall back to the procedural look; the web build
+  fails past 25 MB. Checked in a browser with placeholder art in the office, then removed.
 - 2026-11-25: the GitHub workflows are gone, since Actions is off and they never ran; #92's
   deploy workflow closed unmerged, as `scripts/deploy-itch.sh` deploys from a machine. The web
   build now generates its scenes first, which it needed: `scripts/build-web.sh` built a 10 MB

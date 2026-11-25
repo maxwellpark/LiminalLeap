@@ -1,0 +1,72 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+// Generated art from Resources, per docs/ART.md; null where there's no file.
+public static class PlaceArt
+{
+    private static readonly Dictionary<string, Material> Materials = new();
+    private static readonly Dictionary<string, GameObject[]> PropSets = new();
+
+    // Asked for every piece laid, so by index rather than a path string that would be garbage.
+    private static readonly Material[] Floors = new Material[4];
+    private static readonly bool[] FloorsLooked = new bool[4];
+
+    public static Material ForFloor(Floor floor)
+    {
+        var i = (int)floor;
+        if (i < 0 || i >= Floors.Length)
+        {
+            return null;
+        }
+
+        if (!FloorsLooked[i] || (!ReferenceEquals(Floors[i], null) && Floors[i] == null))
+        {
+            FloorsLooked[i] = true;
+            Floors[i] = Load("Art/Floors/" + floor);
+        }
+
+        return Floors[i];
+    }
+
+    public static Material Wall(Place place)
+    {
+        return place != null ? Load("Art/Places/" + place.Id + "/Wall") : null;
+    }
+
+    public static Material Ceiling(Place place)
+    {
+        return place != null ? Load("Art/Places/" + place.Id + "/Ceiling") : null;
+    }
+
+    public static GameObject[] Props(Place place)
+    {
+        if (place == null)
+        {
+            return System.Array.Empty<GameObject>();
+        }
+
+        var path = "Art/Places/" + place.Id + "/Props";
+        if (!PropSets.TryGetValue(path, out var set))
+        {
+            set = Resources.LoadAll<GameObject>(path);
+            PropSets[path] = set;
+        }
+
+        return set;
+    }
+
+    // A missing file is remembered too, so it costs one lookup a run rather than one a piece.
+    private static Material Load(string path)
+    {
+        // ReferenceEquals for "no file"; Unity's == null would also be true for a destroyed one.
+        if (Materials.TryGetValue(path, out var cached) && (ReferenceEquals(cached, null) || cached != null))
+        {
+            return cached;
+        }
+
+        var texture = Resources.Load<Texture2D>(path);
+        var material = texture != null ? MaterialLibrary.FromTexture(path.Replace('/', '_'), texture) : null;
+        Materials[path] = material;
+        return material;
+    }
+}

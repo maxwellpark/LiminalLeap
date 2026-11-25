@@ -39,8 +39,7 @@ echo "Building WebGL to $OUT (log: $LOG)"
 
 grep -E "BUILD (OK|FAILED|START)" "$LOG" || true
 
-# The shipped folder, not Unity's uncompressed estimate. Dev builds carry debug data, so only
-# a release build is held to it.
+# Measures the shipped folder; dev builds carry debug data, so only release is held to it.
 BUDGET_MB="${WEB_BUDGET_MB:-25}"
 SIZE_KB=$(du -sk "$OUT" | cut -f1)
 if [ -z "$DEV" ] && [ "$SIZE_KB" -gt $((BUDGET_MB * 1024)) ]; then

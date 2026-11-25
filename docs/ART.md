@@ -10,8 +10,8 @@ in a Claude session there or by hand. Everything after the files exist runs anyw
   same every time unless something is deliberately wrong.
 - No art is required. A floor kind or a place with no files keeps the procedural look, so every
   slot can be filled one file at a time.
-- The WebGL build stays at 25 MB or under. `scripts/build-web.sh` fails past it and lists what
-  grew.
+- The WebGL build stays at 25 MB or under. `scripts/build-web.sh` fails past it and lists the
+  largest assets.
 - Liminal places of our own. Prompt for the office, school and house as they are described in
   `Places.cs`; never for the Backrooms or another game's look.
 
@@ -66,8 +66,8 @@ tiling on, or a seamless-texture node).
 - Under 3,000 triangles, one material, one 512 texture. Real-world scale in metres, the pivot
   at the base, facing +Z.
 - Import the model (OBJ or FBX import with no package; GLB needs one, so convert it in Blender
-  first), make a prefab of it in `Props/`, and give it no collider: props are scenery, and a
-  collider would kill or snag the player.
+  first), make a prefab of it in `Props/`, and give it no collider or Rigidbody: props are scenery,
+  a collider would kill or snag the player, and a Rigidbody would drop it through the floor.
 - A place gets 3 to 5 props to start. Each piece may stand one beside the track, chosen from
   the piece's seed, so a loop replays them where they were.
 
