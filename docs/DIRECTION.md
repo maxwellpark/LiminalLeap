@@ -40,7 +40,7 @@ None are runners. The runner shelf has no liminal horror. That gap is the positi
 | | Story (PR #91) | Daily |
 |---|---|---|
 | Is | Office, school, house; an exit at the end of each | One place by date, same corridor for everyone |
-| Shows | No HUD, no score, no toasts | Score, speed, multiplier, summary |
+| Shows | No HUD, no score; toasts only for prompts (E at an exit, hold R, the mirror hint) | Score, speed, multiplier, summary |
 | Job | First impression, what streamers play | Reason to come back |
 
 Decided 2026-11-24: the story is the front door and the daily is retention. That narrows
@@ -76,7 +76,7 @@ Missing, best value for cost first:
 2. **A place you can't leave (#51 loops, #54 distance that lies).** The corridor only goes
    forward, so the liminality is visual. Loops make going in circles a mechanic.
 3. **A shareable daily result.** In progress: a daily's summary arms a few lines to paste
-   (day, a strip of blocks, where you got to, the itch link) and C copies them.
+   (day, a strip of blocks, where you got to, the itch link) and its Copy button copies them.
 4. **A look you can put on a thumbnail.** Grain or VHS, dolly zoom on the lunge, a camera
    that drifts so you can't always see ahead. All in the 2024 notes.
 5. **A through-line for the story.** "Starts weird and gets less weird, becoming human" is

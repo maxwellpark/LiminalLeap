@@ -254,7 +254,7 @@ public class PlayerTrackMovement : MonoBehaviour
         ScreenFade.GetInstance().To(1f, lapFade);
         yield return new WaitForSecondsRealtime(lapFade);
 
-        ResetRun();
+        ResetRun(lap: true);
         ScreenFade.GetInstance().To(0f, lapFade);
         dying = false;
         live = true;
@@ -613,10 +613,18 @@ public class PlayerTrackMovement : MonoBehaviour
         ToastManager.GetInstance().ShowArcade($"Dodged   +{reward * Multiplier:F0}");
     }
 
-    private void ResetRun()
+    private void ResetRun(bool lap = false)
     {
         Places.Apply(Places.RulesForRun());
-        MarkRun();
+        if (lap)
+        {
+            PageReady.Lap();
+        }
+        else
+        {
+            MarkRun();
+        }
+
         trackManager.ResetRun();
         basePos = startingPosition;
         TrackCentre = basePos;

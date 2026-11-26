@@ -145,6 +145,9 @@ async function scenario(browser, url, name, { key, day, expect, click }) {
     await page.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
     await page.waitForTimeout(1500);
     await page.screenshot({ path: path.join(out, name + "-title.png") });
+    if (await page.evaluate(() => document.documentElement.getAttribute("data-run")) !== "title") {
+      failures.push("the title didn't mark the page");
+    }
 
     // The click a player makes to focus the game in a page must not start a run.
     if (click) {
