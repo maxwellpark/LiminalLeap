@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio", "daily-copy"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio", "daily-copy", "frame-copy"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -436,6 +436,76 @@ async function dailyCopy(browser, url) {
   return failures.length === 0;
 }
 
+// The same copy inside itch's kind of frame, which grants no clipboard permission, so the async
+// clipboard is refused and the textarea fallback has to do it.
+async function frameCopy(browser, parentUrl) {
+  const context = await browser.newContext({ viewport: { width: size[0] + 100, height: size[1] + 200 }, permissions: ["clipboard-read", "clipboard-write"] });
+  const page = await context.newPage();
+  const failures = [];
+  const day = dayFor("office");
+  await context.addInitScript((target) => {
+    const Real = Date;
+    const offset = target - Real.now();
+    class Shifted extends Real {
+      constructor(...a) { if (a.length === 0) { super(Real.now() + offset); } else { super(...a); } }
+      static now() { return Real.now() + offset; }
+    }
+    globalThis.Date = Shifted;
+
+    // Which way the copy went: the async clipboard, or the textarea fallback.
+    const mark = (how) => document.documentElement && document.documentElement.setAttribute("data-copy-path", how);
+    const exec = Document.prototype.execCommand;
+    Document.prototype.execCommand = function (name, ...rest) {
+      const done = exec.call(this, name, ...rest);
+      if (name === "copy" && done) { mark("fallback"); }
+      return done;
+    };
+    if (navigator.clipboard) {
+      const write = navigator.clipboard.writeText.bind(navigator.clipboard);
+      navigator.clipboard.writeText = (t) => write(t).then((v) => { mark("async"); return v; });
+    }
+  }, day.getTime());
+  try {
+    await page.goto(parentUrl);
+    await page.click("#launch");
+    const element = await page.waitForSelector("iframe");
+    const frame = await element.contentFrame();
+    await frame.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
+    await page.waitForTimeout(1500);
+    await page.keyboard.press("Enter");
+    await frame.waitForFunction(() => document.documentElement.getAttribute("data-copy-target") !== null, null, { timeout: 60000 });
+    await page.waitForTimeout(800);
+    const [x, y, w, h] = (await frame.evaluate(() => document.documentElement.getAttribute("data-copy-target"))).split(",").map(Number);
+    const inFrame = await frame.evaluate(([cx, cy]) => {
+      const c = document.querySelector("#unity-canvas");
+      const r = c.getBoundingClientRect();
+      return { x: r.left + cx * r.width / c.width, y: r.bottom - cy * r.height / c.height };
+    }, [x + w / 2, y + h / 2]);
+    const box = await element.boundingBox();
+    await page.mouse.click(box.x + inFrame.x, box.y + inFrame.y);
+    const copied = await frame
+      .waitForFunction(() => document.documentElement.getAttribute("data-copied") === "1", null, { timeout: 5000 })
+      .then(() => true, () => false);
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: path.join(out, "frame-copy.png") });
+    const text = await page.evaluate(() => navigator.clipboard.readText()).catch((e) => "(unreadable: " + e.message + ")");
+    const how = await frame.evaluate(() => document.documentElement.getAttribute("data-copy-path"));
+    if (!copied) {
+      failures.push("the Copy button didn't copy inside the frame");
+    } else if (how !== "fallback") {
+      failures.push(`the copy went by ${how}, so the fallback wasn't what did it`);
+    }
+    if (!text.startsWith("Liminal Leap daily")) {
+      failures.push("the clipboard holds " + JSON.stringify(text.slice(0, 80)));
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  await context.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} frame-copy${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -461,11 +531,14 @@ async function dailyCopy(browser, url) {
     }
   }
 
+  // localhost and 127.0.0.1 are different origins, as itch's page and its game host are.
+  const port = server.address().port;
+  const parent = `http://localhost:${port}/__parent.html?frame=` + encodeURIComponent(`http://127.0.0.1:${port}/index.html`);
   if (!only || only === "itch-frame") {
-    // localhost and 127.0.0.1 are different origins, as itch's page and its game host are.
-    const port = server.address().port;
-    const parent = `http://localhost:${port}/__parent.html?frame=` + encodeURIComponent(`http://127.0.0.1:${port}/index.html`);
     ok = (await itchFrame(browser, parent)) && ok;
+  }
+  if (!only || only === "frame-copy") {
+    ok = (await frameCopy(browser, parent)) && ok;
   }
   if (!only || only === "daily-copy") {
     ok = (await dailyCopy(browser, url)) && ok;
