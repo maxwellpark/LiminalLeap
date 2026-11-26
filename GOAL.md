@@ -18,6 +18,7 @@ players of short horror, and the streamers who play it.
 - [ ] A WebGL build is on itch: `scripts/deploy-itch.sh` pushed, and a run starts in the browser.
   The browser half holds: `scripts/check-web.sh --build` starts every run (2026-11-26).
 - [ ] At least 5 people outside the project have finished a story place.
+  How to run the sessions and what counts: docs/PLAYTEST.md.
 
 ## Numbers
 
