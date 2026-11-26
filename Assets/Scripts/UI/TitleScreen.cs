@@ -66,11 +66,17 @@ public class TitleScreen : MonoBehaviour
             RunMode.ChooseDaily();
             StartGame();
         }
-        else if (Input.anyKeyDown)
+        // anyKeyDown counts mouse buttons, and a click is how a player focuses the game in a page.
+        else if (Input.anyKeyDown && !Clicked())
         {
             RunMode.ChooseStory();
             StartGame();
         }
+    }
+
+    private static bool Clicked()
+    {
+        return Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2);
     }
 
     private void StartGame()

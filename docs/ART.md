@@ -104,8 +104,7 @@ Generate several seeds and pick by eye; record the seed in `Sources.md`.
 5. Load the build in a browser, start a run in the place, and look: the art reads at running
    speed, the anomalies still read against it, and the console is clean. The story starts in
    the office, so reach another place through the daily, which wears a place picked from the
-   date: shift the page's clock to a day whose daily is that place, and press Enter without
-   clicking first, since the title takes a click as any key and starts the story.
+   date: shift the page's clock to a day whose daily is that place, and press Enter.
 
 ## On the owner's machine
 

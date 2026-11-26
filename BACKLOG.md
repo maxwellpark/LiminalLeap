@@ -6,13 +6,10 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. A click on the title only focuses the game: on itch the click a player makes to focus the
-   frame starts the story and skips the title. A browser check clicks, sees no run start, then
-   presses Enter for the daily.
-2. The page marks runs and laps apart: `data-runs` counts laps and deaths today, and the title
+1. The page marks runs and laps apart: `data-runs` counts laps and deaths today, and the title
    never marks itself. With the stale lines in DIRECTION.md (the C key, "no toasts") and
    PageReady's comment.
-3. An exit call says what it did: right, wrong and running past all fade the same, and the
+2. An exit call says what it did: right, wrong and running past all fade the same, and the
    target (2 in the office) is never shown, so a player who never takes an exit loops with
    nothing changing. Show the target with the count, and let a wrong call read as a reset.
    A pure line with tests under .NET, then a browser capture.
@@ -71,6 +68,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: a click on the title only focuses the game; `web-run.js` checks it with a
+  `title-click` run (`max/title-click`).
 - 2026-11-26: the title names every run key (hold R, SHIFT or Q) and warns the lights flicker,
   with P then F to turn it down; right Shift looks back too (`max/title-controls`).
 - 2026-11-26: footstep pace rises from a jog at the start speed to a sprint at full speed
