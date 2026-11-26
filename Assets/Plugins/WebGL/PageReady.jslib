@@ -14,10 +14,11 @@ mergeInto(LibraryManager.library, {
   },
 
   // Not counted as a run: data-runs stays as it was.
-  PageTitleMark: function () {
+  PageTitleMark: function (dailyRuns) {
     var root = document.documentElement;
     root.setAttribute("data-run", "title");
     root.setAttribute("data-place", "none");
+    root.setAttribute("data-daily-runs", String(dailyRuns));
   },
 
   // Unity's web audio waits for a gesture in this frame; a sound queued before that starts as

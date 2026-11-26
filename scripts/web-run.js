@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio", "daily-copy", "frame-copy"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio", "daily-copy", "frame-copy", "save-reload"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -506,6 +506,51 @@ async function frameCopy(browser, parentUrl) {
   return failures.length === 0;
 }
 
+// The save lives in the browser's storage: a daily played to its end is still counted on the
+// title after the page reloads.
+async function saveReload(browser, url) {
+  const context = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
+  const page = await context.newPage();
+  const failures = [];
+  const day = dayFor("office");
+  await context.addInitScript((target) => {
+    const Real = Date;
+    const offset = target - Real.now();
+    class Shifted extends Real {
+      constructor(...a) { if (a.length === 0) { super(Real.now() + offset); } else { super(...a); } }
+      static now() { return Real.now() + offset; }
+    }
+    globalThis.Date = Shifted;
+  }, day.getTime());
+  const ready = () => page.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
+  const runs = () => page.evaluate(() => document.documentElement.getAttribute("data-daily-runs"));
+  try {
+    await page.goto(url);
+    await ready();
+    await page.waitForTimeout(1500);
+    const before = await runs();
+    if (before !== "0") {
+      failures.push(`a fresh browser's title counts ${before} daily runs`);
+    }
+    await page.focus("canvas");
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => document.documentElement.getAttribute("data-copy-target") !== null, null, { timeout: 60000 });
+    await page.waitForTimeout(2000); // the storage write is asynchronous
+    await page.reload();
+    await ready();
+    await page.waitForTimeout(1500);
+    const after = await runs();
+    if (!(Number(after) >= 1)) {
+      failures.push(`after a daily and a reload the title counts ${after} daily runs`);
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  await context.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} save-reload${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -539,6 +584,9 @@ async function frameCopy(browser, parentUrl) {
   }
   if (!only || only === "frame-copy") {
     ok = (await frameCopy(browser, parent)) && ok;
+  }
+  if (!only || only === "save-reload") {
+    ok = (await saveReload(browser, url)) && ok;
   }
   if (!only || only === "daily-copy") {
     ok = (await dailyCopy(browser, url)) && ok;
