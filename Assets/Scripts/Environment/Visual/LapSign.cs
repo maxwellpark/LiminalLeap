@@ -16,6 +16,7 @@ public class LapSign : MonoBehaviour
     private TextMeshPro number;
     private TextMeshPro wrongRule;
     private TextMeshPro rightRule;
+    private TextMeshPro goalRule;
     private int lap;
     private int shown = int.MinValue;
 
@@ -31,11 +32,19 @@ public class LapSign : MonoBehaviour
             number = WorldSign.Floor(transform, "0", new Vector3(0f, 0.02f, numberAt), numberSize, colour);
             wrongRule = WorldSign.Floor(transform, WrongLine, new Vector3(0f, 0.02f, rulesAt), ruleSize, colour);
             rightRule = WorldSign.Floor(transform, RightLine, new Vector3(0f, 0.02f, rulesAt + 1.4f), ruleSize, colour);
+            goalRule = WorldSign.Floor(transform, "", new Vector3(0f, 0.02f, rulesAt + 2.8f), ruleSize, colour);
+        }
+
+        var rule = StoryLaps.Rule;
+        if (rule != null)
+        {
+            goalRule.SetText(LapRule.GoalLine(rule.Required));
         }
 
         number.gameObject.SetActive(true);
         wrongRule.gameObject.SetActive(withRules);
         rightRule.gameObject.SetActive(withRules);
+        goalRule.gameObject.SetActive(withRules && rule != null);
 
         shown = int.MinValue;
         Refresh();
@@ -51,6 +60,7 @@ public class LapSign : MonoBehaviour
         number.gameObject.SetActive(false);
         wrongRule.gameObject.SetActive(false);
         rightRule.gameObject.SetActive(false);
+        goalRule.gameObject.SetActive(false);
     }
 
     private void Update()

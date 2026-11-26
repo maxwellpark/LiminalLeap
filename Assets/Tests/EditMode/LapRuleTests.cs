@@ -298,4 +298,34 @@ public class LapRuleTests
             Assert.IsFalse(rule.InStretch(0, piece, 50));
         }
     }
+
+    [Test]
+    public void TheGoalLineNamesTheTarget()
+    {
+        StringAssert.StartsWith("2 RIGHT IN A ROW", LapRule.GoalLine(2));
+        StringAssert.StartsWith("4 RIGHT IN A ROW", LapRule.GoalLine(4));
+        StringAssert.StartsWith("RIGHT ONCE", LapRule.GoalLine(1));
+        StringAssert.StartsWith("RIGHT ONCE", LapRule.GoalLine(0));
+    }
+
+    [Test]
+    public void TheGoalLineMatchesWhenARightExitLetsYouOut()
+    {
+        // The line says how many; Call agrees: that many right exits in a row gets you out.
+        foreach (var required in new[] { 1, 2, 3, 4 })
+        {
+            var rule = Rule(required, 0f);
+            var calls = 0;
+            LapCall call;
+            do
+            {
+                call = rule.Call(true);
+                calls++;
+            }
+            while (call == LapCall.Through && calls < 10);
+
+            Assert.AreEqual(LapCall.Leave, call, "required " + required);
+            Assert.AreEqual(required, calls, "required " + required);
+        }
+    }
 }
