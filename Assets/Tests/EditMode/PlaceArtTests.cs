@@ -73,6 +73,32 @@ public class PlaceArtTests
         Assert.AreSame(ceiling, piece.transform.Find("Ceiling").GetComponent<Renderer>().sharedMaterial);
     }
 
+    // A turn opens a wedge at the walls, so a turning piece reaches past its end and a straight
+    // one doesn't, or straight sections would overlap in one plane and flicker.
+    [Test]
+    public void OnlyATurningPieceReachesPastItsEnd()
+    {
+        var straight = Piece();
+        var turning = Piece();
+        var end = new GameObject("End").transform;
+        end.SetParent(turning.transform, false);
+        end.localPosition = new Vector3(0f, 0f, 10f);
+        end.localRotation = Quaternion.Euler(0f, 7f, 0f);
+        typeof(TrackPiece).GetField("endAnchor", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            .SetValue(turning, end);
+
+        straight.Dress(Material(), Material(), null, 7);
+        turning.Dress(Material(), Material(), null, 7);
+
+        Assert.AreEqual(10f, straight.transform.Find("WallLeft").localScale.z, 0.001f);
+        Assert.AreEqual(11.1f, turning.transform.Find("WallLeft").localScale.z, 0.001f);
+        Assert.AreEqual(11.1f, turning.transform.Find("Ceiling").localScale.z, 0.001f);
+        Assert.AreEqual(5.55f, turning.transform.Find("WallRight").localPosition.z, 0.001f, "it reaches forward only");
+
+        // The reach covers the wedge the next piece's full turn opens at the ceiling's corner.
+        Assert.GreaterOrEqual(turning.transform.Find("Ceiling").localScale.z - 10f, 8.6f * Mathf.Tan(7f * Mathf.Deg2Rad));
+    }
+
     // A pooled piece laid next in a place without art mustn't keep the last one's walls.
     [Test]
     public void ArtGoesWhenTheNextLayingHasNone()

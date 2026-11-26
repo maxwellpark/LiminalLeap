@@ -42,6 +42,7 @@ public class TrackPiece : MonoBehaviour
     private static MaterialPropertyBlock sideTiling;
     private readonly Dictionary<GameObject, GameObject> propsStood = new();
     private const uint PropChance = 35;   // percent of pieces that stand a prop
+    private const float JointReach = 1.1f;    // the next piece starts the full 7 degrees round: 8.6 m x tan 7 = 1.06 m
 
     // The slab under the player, and the linoleum the prefab was baked with.
     private Renderer floorRenderer;
@@ -104,14 +105,19 @@ public class TrackPiece : MonoBehaviour
     // A place's walls, ceiling and props, where it has art for them. Null hides that part.
     public void Dress(Material wall, Material ceiling, GameObject[] props, int seed)
     {
-        SetPart(ref leftWall, "WallLeft", new Vector3(-8.5f, 4.75f, 5f), new Vector3(0.2f, 9.5f, 10f), wall);
-        SetPart(ref rightWall, "WallRight", new Vector3(8.5f, 4.75f, 5f), new Vector3(0.2f, 9.5f, 10f), wall);
-        SetPart(ref ceilingPart, "Ceiling", new Vector3(0f, 9.5f, 5f), new Vector3(17.2f, 0.2f, 10f), ceiling);
+        // Only turns reach past the end; overlapping straight walls would lie in one plane and flicker.
+        var reach = TurnDegrees > 0.5f ? JointReach : 0f;
+        var length = 10f + reach;
+        var middle = 5f + reach * 0.5f;
+
+        SetPart(ref leftWall, "WallLeft", new Vector3(-8.5f, 4.75f, middle), new Vector3(0.2f, 9.5f, length), wall);
+        SetPart(ref rightWall, "WallRight", new Vector3(8.5f, 4.75f, middle), new Vector3(0.2f, 9.5f, length), wall);
+        SetPart(ref ceilingPart, "Ceiling", new Vector3(0f, 9.5f, middle), new Vector3(17.2f, 0.2f, length), ceiling);
 
         // Floor out to the walls, under the pillars, or a dark trench runs along each side.
         var under = wall != null && floorRenderer != null ? floorRenderer.sharedMaterial : null;
-        SetPart(ref leftFloor, "FloorLeft", new Vector3(-6.25f, -0.25f, 5f), new Vector3(4.5f, 0.5f, 10f), under);
-        SetPart(ref rightFloor, "FloorRight", new Vector3(6.25f, -0.25f, 5f), new Vector3(4.5f, 0.5f, 10f), under);
+        SetPart(ref leftFloor, "FloorLeft", new Vector3(-6.25f, -0.25f, middle), new Vector3(4.5f, 0.5f, length), under);
+        SetPart(ref rightFloor, "FloorRight", new Vector3(6.25f, -0.25f, middle), new Vector3(4.5f, 0.5f, length), under);
         if (under != null)
         {
             // The slab's tiling is for 8 m; these are 4.5 m wide, so keep a tile its size.
