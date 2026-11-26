@@ -72,6 +72,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the daily's Copy button is checked in a browser: the page marks its target and the
+  copy, and `web-run.js`'s `daily-copy` run reads the clipboard back (`max/daily-copy`).
 - 2026-11-26: the pursuer's lane scan grows its overlap buffer when a query fills it, so a crowded
   stretch can't drop a hazard and leave a blocked lane looking open (`max/pursuer-overlaps`).
 - 2026-11-26: the title sting plays once the browser's audio runs (the first click), and the
