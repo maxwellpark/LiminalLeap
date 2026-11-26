@@ -1,5 +1,5 @@
 // Starts the story and each place's daily in a WebGL build, headless. scripts/check-web.sh runs it.
-// Usage: node scripts/web-run.js <build folder> <captures folder>; exits 0 passed, 1 failed, 2 setup.
+// Usage: node scripts/web-run.js <build> <captures> [--size=WxH]; exits 0 passed, 1 failed, 2 setup.
 const { execSync } = require("child_process");
 const fs = require("fs");
 const http = require("http");
@@ -23,9 +23,11 @@ try {
   process.exit(2);
 }
 
-const [root, out] = process.argv.slice(2);
-if (!root || !out || !fs.existsSync(path.join(root, "index.html"))) {
-  console.error("web-run: usage: node scripts/web-run.js <build folder> <captures folder>");
+const args = process.argv.slice(2);
+const [root, out] = args.filter((a) => !a.startsWith("--"));
+const size = (args.find((a) => a.startsWith("--size=")) || "--size=960x600").slice(7).split("x").map(Number);
+if (!root || !out || !fs.existsSync(path.join(root, "index.html")) || !(size[0] > 0 && size[1] > 0)) {
+  console.error("web-run: usage: node scripts/web-run.js <build folder> <captures folder> [--size=WxH]");
   process.exit(2);
 }
 fs.mkdirSync(out, { recursive: true });
@@ -89,7 +91,7 @@ function serve(dir) {
 }
 
 async function scenario(browser, url, name, { key, day, expect }) {
-  const context = await browser.newContext({ viewport: { width: 960, height: 600 } });
+  const context = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
   const page = await context.newPage();
   const errors = [];
   page.on("console", (m) => {

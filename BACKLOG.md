@@ -6,16 +6,12 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. The itch page kit: the page's text, tags and controls, notes for the owner's answer to
-   itch's AI disclosure question, and a cover and screenshots from the captures, so the
-   owner's page takes minutes. Readies the
-   itch line.
-2. A playtest kit: what testers are asked to do, what to watch for, and how they report back.
+1. A playtest kit: what testers are asked to do, what to watch for, and how they report back.
    Readies the "5 people" line.
-3. Stand-in props for each place, built from primitives with generated textures, until the
+2. Stand-in props for each place, built from primitives with generated textures, until the
    GPU models exist. They also give the map its landmarks later.
-4. Footsteps that sound like each floor, timed to the running bob.
-5. A lighting check per place: the art and the anomalies both read in each place's light. The
+3. Footsteps that sound like each floor, timed to the running bob.
+4. A lighting check per place: the art and the anomalies both read in each place's light. The
    story's office run reads much darker than the office's daily.
 
 Map the space (#61), in slices, each its own PR:
@@ -66,6 +62,9 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the itch page kit, `docs/ITCH.md`: settings, tags, description, controls checked
+  against the code, and what the owner answers; `scripts/store-images.sh` makes the cover and
+  screenshots from a build (`max/itch-kit`).
 - 2026-11-26: browser checks: `scripts/check-web.sh` boots the build with shipwright's
   `web-check`, then starts the story and each place's daily and checks the page reports the run
   it asked for (`data-run`, `data-place`) with no console error (`max/web-checks`).
