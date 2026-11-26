@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio", "daily-copy"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -384,6 +384,57 @@ async function audioWaits(browser, url) {
   return failures.length === 0;
 }
 
+// The daily's summary copies its share line from the Copy button, in the click itself. Left
+// alone the run ends within seconds, so this waits for the summary, clicks, and reads the
+// clipboard back.
+async function dailyCopy(browser, url) {
+  const context = await browser.newContext({ viewport: { width: size[0], height: size[1] }, permissions: ["clipboard-read", "clipboard-write"] });
+  const page = await context.newPage();
+  const failures = [];
+  const day = dayFor("office");
+  await page.addInitScript((target) => {
+    const Real = Date;
+    const offset = target - Real.now();
+    class Shifted extends Real {
+      constructor(...a) { if (a.length === 0) { super(Real.now() + offset); } else { super(...a); } }
+      static now() { return Real.now() + offset; }
+    }
+    globalThis.Date = Shifted;
+  }, day.getTime());
+  try {
+    await page.goto(url);
+    await page.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
+    await page.waitForTimeout(1500);
+    await page.focus("canvas");
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => document.documentElement.getAttribute("data-copy-target") !== null, null, { timeout: 60000 });
+    await page.waitForTimeout(800);
+    const [x, y, w, h] = (await page.evaluate(() => document.documentElement.getAttribute("data-copy-target"))).split(",").map(Number);
+    const at = await page.evaluate(([cx, cy]) => {
+      const c = document.querySelector("#unity-canvas");
+      const r = c.getBoundingClientRect();
+      return { x: r.left + cx * r.width / c.width, y: r.bottom - cy * r.height / c.height };
+    }, [x + w / 2, y + h / 2]);
+    await page.mouse.click(at.x, at.y);
+    const copied = await page
+      .waitForFunction(() => document.documentElement.getAttribute("data-copied") === "1", null, { timeout: 5000 })
+      .then(() => true, () => false);
+    await page.screenshot({ path: path.join(out, "daily-copy.png") });
+    const text = await page.evaluate(() => navigator.clipboard.readText()).catch(() => "");
+    if (!copied) {
+      failures.push("the Copy button didn't copy");
+    }
+    if (!text.startsWith("Liminal Leap daily") || !text.includes("maxwellpark.itch.io/liminal-leap")) {
+      failures.push("the clipboard holds " + JSON.stringify(text.slice(0, 80)));
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  await context.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} daily-copy${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -414,6 +465,9 @@ async function audioWaits(browser, url) {
     const port = server.address().port;
     const parent = `http://localhost:${port}/__parent.html?frame=` + encodeURIComponent(`http://127.0.0.1:${port}/index.html`);
     ok = (await itchFrame(browser, parent)) && ok;
+  }
+  if (!only || only === "daily-copy") {
+    ok = (await dailyCopy(browser, url)) && ok;
   }
   if (!only || only === "audio") {
     ok = (await audioWaits(browser, url)) && ok;

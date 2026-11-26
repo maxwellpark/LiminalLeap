@@ -33,13 +33,16 @@ mergeInto(LibraryManager.library, {
         var y = (r.bottom - e.clientY) * canvas.height / r.height;
         if (x < state.x || y < state.y || x > state.x + state.w || y > state.y + state.h) { return; }
 
+        // Marked on the page too, so a browser check can tell the copy happened.
+        var done = function () {
+          state.copied = 1;
+          document.documentElement.setAttribute("data-copied", "1");
+        };
         var value = state.text;
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(value).then(
-            function () { state.copied = 1; },
-            function () { if (fallback(value)) { state.copied = 1; } });
+          navigator.clipboard.writeText(value).then(done, function () { if (fallback(value)) { done(); } });
         } else if (fallback(value)) {
-          state.copied = 1;
+          done();
         }
       };
 
@@ -51,6 +54,7 @@ mergeInto(LibraryManager.library, {
     state.text = UTF8ToString(text);
     state.copied = 0;
     state.w = 0;
+    document.documentElement.removeAttribute("data-copied");
   },
 
   ShareClipboardTarget: function (x, y, w, h) {
@@ -60,10 +64,13 @@ mergeInto(LibraryManager.library, {
       state.y = y;
       state.w = w;
       state.h = h;
+      // In Unity's screen pixels, from the bottom left, for a check to aim at.
+      document.documentElement.setAttribute("data-copy-target", [x, y, w, h].join(","));
     }
   },
 
   ShareClipboardDisarm: function () {
+    document.documentElement.removeAttribute("data-copy-target");
     if (Module.shareClipboard) {
       Module.shareClipboard.text = null;
       Module.shareClipboard.copied = 0;
