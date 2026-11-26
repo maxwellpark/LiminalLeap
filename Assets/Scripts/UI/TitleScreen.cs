@@ -24,6 +24,7 @@ public class TitleScreen : MonoBehaviour
     private float elapsed;
     private bool starting;
     private bool stingPlayed;
+    private TextMeshProUGUI options;
     [SerializeField] private float audioWait = 0.6f; // the most a start waits for the browser's audio
 
     private void Start()
@@ -70,6 +71,22 @@ public class TitleScreen : MonoBehaviour
             return;
         }
 
+        // The pause screen's options, here too: a key that only starts a flickering run is no way
+        // to turn the flashing down.
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            PlayerOptions.ReducedFlashing = !PlayerOptions.ReducedFlashing;
+            RefreshOptions();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            PlayerOptions.Muted = !PlayerOptions.Muted;
+            RefreshOptions();
+            return;
+        }
+
         // Before anyKeyDown. Not D, which is also steer right.
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
@@ -82,6 +99,16 @@ public class TitleScreen : MonoBehaviour
             RunMode.ChooseStory();
             StartGame();
         }
+    }
+
+    private void RefreshOptions()
+    {
+        if (options != null)
+        {
+            options.text = Controls.Flashing(PlayerOptions.ReducedFlashing, PlayerOptions.Muted);
+        }
+
+        PageReady.Options(PlayerOptions.ReducedFlashing, PlayerOptions.Muted);
     }
 
     private static bool Clicked()
@@ -205,7 +232,8 @@ public class TitleScreen : MonoBehaviour
         column.Space(90f);
 
         column.Add("Controls", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = Controls.Summary;
-        column.Add("Flashing", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = Controls.Flashing;
+        options = column.Add("Flashing", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f);
+        RefreshOptions();
         column.Space(40f);
 
         prompt = column.Add("Prompt", RuntimeUi.Caption, RuntimeUi.Accent, 0.15f, 10f);

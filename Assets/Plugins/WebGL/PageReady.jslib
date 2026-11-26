@@ -38,6 +38,12 @@ mergeInto(LibraryManager.library, {
     document.documentElement.setAttribute("data-sting", "1");
   },
 
+  PageOptionsMark: function (reduced, muted) {
+    var root = document.documentElement;
+    root.setAttribute("data-reduced-flashing", String(reduced));
+    root.setAttribute("data-muted", String(muted));
+  },
+
   PageLapMark: function () {
     var root = document.documentElement;
     root.setAttribute("data-laps", String((parseInt(root.getAttribute("data-laps") || "0", 10)) + 1));

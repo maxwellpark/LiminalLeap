@@ -6,7 +6,16 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-(Empty: what remains needs the Unity licence or the owner.)
+1. An unreadable save is kept, not overwritten: today a parse failure starts a fresh save and the
+   next run writes over the old one for good. Keep the raw text under a backup key; a pure
+   helper tested under .NET.
+2. The daily's key and seed come from one instant: `ChooseDaily` reads the clock twice, so a
+   start across UTC midnight can play one day's place under the next day's key. A pure
+   `DailySeed.Pick(DateTime)` tested at 23:59:59.999 and 00:00.
+3. Reading a day's record doesn't create one: the title adds an empty daily record every day it's
+   opened, and the list grows without end. A read-only lookup, and a cap on old days.
+4. A save from a newer version isn't downgraded: `Migrate` stamps it down to this version and
+   Load writes it back at once, dropping the newer fields. Leave it unwritten until a run saves.
 
 Map the space (#61), in slices, each its own PR:
 
@@ -56,6 +65,9 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 - How itch serves `.gz` files: with a gzip header the wasm compiles while it downloads; the
   build's decompression fallback unzips it in script instead. Worth one measured push.
 
+- The daily turns over at UTC midnight, which is a US player's afternoon, and their share line
+  then shows tomorrow's date. UTC for everyone (one daily worldwide), or local midnight?
+
 ## Ideas
 
 - A browser run that plays a story lap: left alone the player dies in seconds, so it needs a
@@ -72,6 +84,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: F and M work on the title, so the flashing can be turned down before any run, as the
+  title says; they no longer start the story (`max/title-options`).
 - 2026-11-26: the save is checked to survive a reload in a browser: the title marks today's daily
   runs, and `web-run.js`'s `save-reload` run plays a daily and reloads (`max/save-reload`).
 - 2026-11-26: the share copy is checked inside a frame that grants no clipboard permission, where

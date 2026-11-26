@@ -17,9 +17,11 @@ public static class Controls
         $"{Steer}  steer     {Jump}  jump     {LookBack} or {LookBackAlso}  look back     "
         + $"{Leave}  leave     hold {Restart}  restart     {Pause}  pause";
 
-    // Before any run, since the lights flicker and drop out from the start.
-    public static string Flashing =>
-        $"The lights flicker. {Pause} then {ReducedFlashing} turns the flashing down.";
+    // Before any run, since the lights flicker and drop out from the start; the title takes the
+    // same keys as the pause screen, so the flashing can be turned down before it starts.
+    public static string Flashing(bool reduced, bool muted) =>
+        $"The lights flicker.     {ReducedFlashing}  reduced flashing  {(reduced ? "on" : "off")}     "
+        + $"{Mute}  sound  {(muted ? "off" : "on")}";
 
     // Floor signage takes them one per stripe, in the order you meet them.
     public static readonly string[] FloorLines =

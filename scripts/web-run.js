@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio", "daily-copy", "frame-copy", "save-reload"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio", "daily-copy", "frame-copy", "save-reload", "title-options"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -551,6 +551,45 @@ async function saveReload(browser, url) {
   return failures.length === 0;
 }
 
+// F on the title turns the flashing down without starting a run, and it's kept for the next
+// visit: the title tells a player to do exactly this before anything flickers.
+async function titleOptions(browser, url) {
+  const context = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
+  const page = await context.newPage();
+  const failures = [];
+  const attr = (name) => page.evaluate((n) => document.documentElement.getAttribute(n), name);
+  const ready = () => page.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
+  try {
+    await page.goto(url);
+    await ready();
+    await page.waitForTimeout(1500);
+    if (await attr("data-reduced-flashing") !== "0") {
+      failures.push(`a fresh browser's title shows reduced flashing ${await attr("data-reduced-flashing")}`);
+    }
+    await page.focus("canvas");
+    await page.keyboard.press("f");
+    await page.waitForTimeout(1500);
+    if (await attr("data-run") !== "title" || await attr("data-runs") !== null) {
+      failures.push(`F on the title started ${await attr("data-run")}`);
+    }
+    if (await attr("data-reduced-flashing") !== "1") {
+      failures.push(`F on the title left reduced flashing ${await attr("data-reduced-flashing")}`);
+    }
+    await page.screenshot({ path: path.join(out, "title-options.png") });
+    await page.reload();
+    await ready();
+    await page.waitForTimeout(1500);
+    if (await attr("data-reduced-flashing") !== "1") {
+      failures.push(`after a reload reduced flashing is ${await attr("data-reduced-flashing")}`);
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  await context.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} title-options${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -584,6 +623,9 @@ async function saveReload(browser, url) {
   }
   if (!only || only === "frame-copy") {
     ok = (await frameCopy(browser, parent)) && ok;
+  }
+  if (!only || only === "title-options") {
+    ok = (await titleOptions(browser, url)) && ok;
   }
   if (!only || only === "save-reload") {
     ok = (await saveReload(browser, url)) && ok;
