@@ -27,7 +27,7 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
     private const int AttackSalt = 0x5A17;
 
-    private readonly Collider[] overlaps = new Collider[32];
+    private Collider[] overlaps = new Collider[64]; // grows when a query fills it
     private readonly List<HazardLanes.Span> blocked = new();
 
     private PursuitModel.Settings settings;
@@ -302,6 +302,14 @@ public class Pursuer : Singleton<Pursuer>, IRunResettable
 
         var count = Physics.OverlapBoxNonAlloc(
             centre, extents, overlaps, rotation, ~0, QueryTriggerInteraction.Collide);
+
+        // A full buffer may have dropped a hazard, and a dropped hazard is a lane fired into blind.
+        while (count == overlaps.Length)
+        {
+            overlaps = new Collider[overlaps.Length * 2];
+            count = Physics.OverlapBoxNonAlloc(
+                centre, extents, overlaps, rotation, ~0, QueryTriggerInteraction.Collide);
+        }
 
         for (var i = 0; i < count; i++)
         {

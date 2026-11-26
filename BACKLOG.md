@@ -6,8 +6,7 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
-   hazards; work it out from live hazards with a pure helper tested under .NET.
+(Empty: what remains needs the Unity licence or the owner.)
 
 Map the space (#61), in slices, each its own PR:
 
@@ -59,6 +58,9 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Ideas
 
+- The pursuer's lane scan from live hazards instead of physics queries each frame: cheaper, but
+  it changes a safety path only the PlayMode suites can check, so it waits for the licence.
+
 - A place's best counts only the last lap's score, since each lap resets it. Hidden in the
   story today; matters if place bests are ever shown.
 - Forks in the story places, which need a design that fits the exit rule.
@@ -68,6 +70,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the pursuer's lane scan grows its overlap buffer when a query fills it, so a crowded
+  stretch can't drop a hazard and leave a blocked lane looking open (`max/pursuer-overlaps`).
 - 2026-11-26: the title sting plays once the browser's audio runs (the first click), and the
   start sound waits up to 0.6 s for the audio the starting key wakes (`max/title-audio`).
 - 2026-11-26: the web build generates one scene, the one the title loads; the attack prompt takes
