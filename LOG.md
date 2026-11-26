@@ -86,3 +86,20 @@ Ready list above.
   wrong branch (fixed locally before any push; reviewers are now told not to); renumbering a
   list by first match also renumbered the map list (fixed; renumber within Ready only); the
   scene generator rewrites the tracked Build Settings (build-web.sh now puts them back).
+
+Later the same day:
+
+- Merged #127 to #131: the daily's Copy button checked in a browser, and inside an itch-like
+  frame where only the textarea fallback copies; the save checked to survive a reload; F and M
+  on the title, after an audit found its "P then F" advice started the flickering story instead;
+  and the save kept safe (an unreadable or newer save isn't written over, the daily list is
+  capped at 60 days, the daily's key and seed come from one instant).
+- The browser check has thirteen runs; the .NET suite 141 tests.
+- A third audit's leftover is a question for the owner: does the daily turn over at UTC
+  midnight for everyone, or at local midnight (Blocked on owner).
+
+End of session. Ready is empty: what's left needs the Unity licence (the Map slices, the
+pursuer's lane scan from live hazards, every Unity suite) or the owner (the itch page, players,
+the splash screen, the daily's midnight, the office's generated props). Defaults taken this
+session are in docs/DIRECTION.md, each marked needs-review.
+
