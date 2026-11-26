@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -86,6 +86,35 @@ function serve(dir) {
   return new Promise((resolve) => {
     const base = path.resolve(dir);
     const server = http.createServer((req, res) => {
+      // Stands in for itch's page: the game in an iframe from another origin, behind a button.
+      const asked = new URL(req.url, "http://x");
+      if (asked.pathname === "/__parent.html") {
+        // Only ever the game on this server, and written so no value can close the script tag.
+        const frame = asked.searchParams.get("frame") || "";
+        if (!frame.startsWith(`http://127.0.0.1:${req.socket.localPort}/`)) {
+          res.writeHead(400);
+          res.end();
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(`<!DOCTYPE html><html><body style="margin:0;height:4000px;background:#222">
+<button id="launch" style="margin:40px;font-size:20px">Run game</button>
+<div id="slot"></div>
+<script>
+document.querySelector("#launch").addEventListener("click", function () {
+  var f = document.createElement("iframe");
+  f.src = ${JSON.stringify(frame).replace(/</g, "\\u003c")};
+  f.width = 960; f.height = 600;
+  f.setAttribute("allow", "autoplay; fullscreen *; gamepad");
+  f.setAttribute("allowfullscreen", "");
+  f.style.border = "0";
+  document.querySelector("#slot").appendChild(f);
+  this.remove();
+});
+</script></body></html>`);
+        return;
+      }
+
       // No favicon is fine; a 404 for it would show as a console error and fail every run.
       if (req.url === "/favicon.ico") {
         res.writeHead(204);
@@ -225,6 +254,52 @@ async function noWebGL2(browser, url) {
   return failures.length === 0;
 }
 
+// As itch embeds it: the player clicks the page's launch button, never the game, then presses
+// Space. The game must have the keys, and the page mustn't scroll from under it.
+async function itchFrame(browser, parentUrl) {
+  const context = await browser.newContext({ viewport: { width: size[0] + 100, height: size[1] + 200 } });
+  const page = await context.newPage();
+  const failures = [];
+  const errors = [];
+  page.on("console", (m) => {
+    if (m.type() === "error") {
+      errors.push(m.text().slice(0, 200));
+    }
+  });
+  page.on("pageerror", (e) => errors.push(String(e).slice(0, 200)));
+  try {
+    await page.goto(parentUrl);
+    await page.click("#launch");
+    const frame = await (await page.waitForSelector("iframe")).contentFrame();
+    await frame.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
+    await page.waitForTimeout(1500);
+    await page.keyboard.press("Space");
+    const started = await frame
+      .waitForFunction(() => document.documentElement.getAttribute("data-runs") !== null, null, { timeout: 15000 })
+      .then(() => true, () => false);
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: path.join(out, "itch-frame.png") });
+    if (!started) {
+      failures.push("Space after the launch button didn't reach the game");
+    } else {
+      const run = await frame.evaluate(() => document.documentElement.getAttribute("data-run"));
+      if (run !== "story") {
+        failures.push(`Space started ${run}, expected the story`);
+      }
+    }
+    const scrolled = await page.evaluate(() => window.scrollY);
+    if (scrolled !== 0) {
+      failures.push(`the page scrolled ${scrolled}px under the game`);
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  failures.push(...errors.map((e) => "console: " + e));
+  await context.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} itch-frame${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -250,6 +325,12 @@ async function noWebGL2(browser, url) {
     }
   }
 
+  if (!only || only === "itch-frame") {
+    // localhost and 127.0.0.1 are different origins, as itch's page and its game host are.
+    const port = server.address().port;
+    const parent = `http://localhost:${port}/__parent.html?frame=` + encodeURIComponent(`http://127.0.0.1:${port}/index.html`);
+    ok = (await itchFrame(browser, parent)) && ok;
+  }
   if (!only || only === "no-webgl2") {
     ok = (await noWebGL2(browser, url)) && ok;
   }
