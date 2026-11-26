@@ -35,14 +35,23 @@ public readonly struct FloorFeel
     }
 }
 
-// Footfalls land at the running bob's low point, once each half turn of its phase.
-public static class Stride
+// Footfalls land on the running bob's low points, but no closer than a runner's cadence: the
+// bob turns about once a metre, which at speed is far quicker than feet.
+public sealed class Stride
 {
+    public const float LowPoint = (float)(System.Math.PI * 0.5);
     private const float HalfTurn = (float)System.Math.PI;
-    private const float LowPoint = HalfTurn * 0.5f;
 
-    // How many footfalls the phase passed going from before to after.
-    public static int Footfalls(float before, float after)
+    private readonly float minGap;
+    private float last = float.NegativeInfinity;
+
+    public Stride(float stepsPerSecond)
+    {
+        minGap = 1f / System.Math.Max(0.1f, stepsPerSecond);
+    }
+
+    // How many low points the phase passed going from before to after.
+    public static int LowPoints(float before, float after)
     {
         if (after <= before)
         {
@@ -50,6 +59,25 @@ public static class Stride
         }
 
         return (int)System.Math.Floor((after - LowPoint) / HalfTurn) - (int)System.Math.Floor((before - LowPoint) / HalfTurn);
+    }
+
+    // True when this frame passed a low point and the last footfall is far enough back. One a
+    // frame at most, so a hitch doesn't play a burst that sounds like a stumble.
+    public bool Step(float before, float after, float now)
+    {
+        if (LowPoints(before, after) == 0 || now - last < minGap)
+        {
+            return false;
+        }
+
+        last = now;
+        return true;
+    }
+
+    // A landing is a footfall too, so a step doesn't stack on its thud.
+    public void Landed(float now)
+    {
+        last = now;
     }
 }
 

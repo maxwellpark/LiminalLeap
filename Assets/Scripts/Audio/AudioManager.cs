@@ -12,7 +12,7 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField, Range(0f, 1f)] private float windVolume = 0.14f;
     [SerializeField, Range(0f, 1f)] private float windFloor = 0.25f; // audible when stood still
     [SerializeField] private float windPitchAtSpeed = 0.35f;
-    [SerializeField, Range(0f, 1f)] private float stepVolume = 0.3f;    // against a landing
+    [SerializeField, Range(0f, 1f)] private float stepVolume = 0.3f;    // relative to the landing thud
     [SerializeField, Range(0f, 0.2f)] private float stepPitchSpread = 0.04f; // left foot lower
 
     [Header("Dread")]
