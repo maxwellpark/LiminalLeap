@@ -10,5 +10,18 @@ mergeInto(LibraryManager.library, {
     root.setAttribute("data-run", UTF8ToString(mode));
     root.setAttribute("data-place", UTF8ToString(place));
     root.setAttribute("data-runs", String((parseInt(root.getAttribute("data-runs") || "0", 10)) + 1));
+    root.setAttribute("data-laps", "0");
+  },
+
+  // Not counted as a run: data-runs stays as it was.
+  PageTitleMark: function () {
+    var root = document.documentElement;
+    root.setAttribute("data-run", "title");
+    root.setAttribute("data-place", "none");
+  },
+
+  PageLapMark: function () {
+    var root = document.documentElement;
+    root.setAttribute("data-laps", String((parseInt(root.getAttribute("data-laps") || "0", 10)) + 1));
   },
 });

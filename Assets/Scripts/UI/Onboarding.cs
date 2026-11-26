@@ -58,7 +58,7 @@ public class Onboarding : Singleton<Onboarding>
             return; // already looking, so there is nothing to explain
         }
 
-        ToastManager.GetInstance().Show("hold SHIFT to see which lane");
+        ToastManager.GetInstance().Show($"hold {Controls.LookBack} to see which lane");
     }
 
     private void HintOnProximity()
@@ -76,7 +76,7 @@ public class Onboarding : Singleton<Onboarding>
         }
 
         mirrorHintShown = onlyOncePerSession;
-        ToastManager.GetInstance().Show("hold SHIFT to look back");
+        ToastManager.GetInstance().Show($"hold {Controls.LookBack} to look back");
     }
 
     private static bool Raised()
