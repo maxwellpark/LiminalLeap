@@ -127,12 +127,13 @@ None open. The ones taken are below.
   unchanged: over 16 seconds the story's office and the office's daily track each other, and
   the earlier "much darker" was one frame of each. To change: `belowSquash` on SpeedVignette
   (1 is the old round vignette).
-- Default 2026-11-26 [needs-review]: footsteps land on the running bob's low points, at most
-  3.2 a second at the start speed rising to 4.5 at full speed (a jog to a sprint; the bob turns
-  about once a metre, so most low points pass silent), at 0.3 of the landing thud's volume, with the floor's landing pitch and
-  the left foot 4% lower. A landing counts as a step. Why: on every low point they rattled at
-  24 a second. To change: `stepsAtStart` and `stepsPerSecond` on the Player prefab, `stepVolume` and
-  `stepPitchSpread` on AudioManager.
+- Default 2026-11-26 [needs-review]: footsteps land on the running bob's low points, capped at
+  3.2 a second at the start speed rising to 4.5 at full speed, which sounds as about 2.9 and 4.0
+  (a jog to a sprint; the bob turns about once a metre, so most low points pass silent), at 0.3
+  of the landing thud's volume, with the floor's landing pitch and the left foot 4% lower. A
+  landing counts as a step. Why: on every low point they rattled at 24 a second. To change:
+  `stepsAtStart` and `stepsPerSecond` on the Player prefab, `stepVolume` and `stepPitchSpread`
+  on AudioManager.
 - Default 2026-11-26 [needs-review]: stand-in props from primitives until generated models
   replace them: the office has a water cooler, filing cabinet, plant and photocopier; the
   school lockers, a fire extinguisher, a notice board and a bin; the house a side table with a
