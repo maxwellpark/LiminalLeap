@@ -305,6 +305,13 @@ async function hiDpi(browser, url) {
   const context = await browser.newContext({ viewport: { width: size[0], height: size[1] }, deviceScaleFactor: 2 });
   const page = await context.newPage();
   const failures = [];
+  const errors = [];
+  page.on("console", (m) => {
+    if (m.type() === "error") {
+      errors.push(m.text().slice(0, 200));
+    }
+  });
+  page.on("pageerror", (e) => errors.push(String(e).slice(0, 200)));
   try {
     await page.goto(url);
     await page.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
@@ -313,12 +320,15 @@ async function hiDpi(browser, url) {
       const c = document.querySelector("#unity-canvas");
       return c.width / c.clientWidth;
     });
-    if (!(ratio > 0.99 && ratio <= 1.51)) {
-      failures.push(`the canvas renders at ${ratio.toFixed(2)}x its size on a 2x screen`);
+    // Exactly the cap: 2 means the cap was ignored, 1 that something else clamps it.
+    if (!(ratio > 1.45 && ratio <= 1.51)) {
+      failures.push(`the canvas renders at ${ratio.toFixed(2)}x its size on a 2x screen, not 1.5x`);
     }
+    await page.screenshot({ path: path.join(out, "hidpi.png") });
   } catch (e) {
     failures.push(String(e.message || e).split("\n")[0]);
   }
+  failures.push(...errors.map((e) => "console: " + e));
   await context.close();
   console.log(`${failures.length ? "FAIL" : "ok  "} hidpi${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
   return failures.length === 0;
