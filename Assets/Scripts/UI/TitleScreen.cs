@@ -30,7 +30,7 @@ public class TitleScreen : MonoBehaviour
     private void Start()
     {
         PageReady.Mark();
-        PageReady.Title(SaveStore.Data.Daily(DailySeed.TodayKey()).Runs);
+        PageReady.Title(SaveStore.Data.PeekDaily(DailySeed.TodayKey())?.Runs ?? 0);
         MoodLighting.GetInstance();
         AudioManager.GetInstance();
         ScreenFade.GetInstance();
@@ -66,13 +66,13 @@ public class TitleScreen : MonoBehaviour
             prompt.color = new Color(c.r, c.g, c.b, pulse);
         }
 
-        if (starting || elapsed <= startDelay)
+        if (starting)
         {
             return;
         }
 
         // The pause screen's options, here too: a key that only starts a flickering run is no way
-        // to turn the flashing down.
+        // to turn the flashing down. Ahead of the start delay, since they start nothing.
         if (Input.GetKeyDown(KeyCode.F))
         {
             PlayerOptions.ReducedFlashing = !PlayerOptions.ReducedFlashing;
@@ -84,6 +84,11 @@ public class TitleScreen : MonoBehaviour
         {
             PlayerOptions.Muted = !PlayerOptions.Muted;
             RefreshOptions();
+            return;
+        }
+
+        if (elapsed <= startDelay)
+        {
             return;
         }
 
@@ -205,10 +210,10 @@ public class TitleScreen : MonoBehaviour
     private static string DailyLine()
     {
         var day = DailySeed.TodayKey();
-        var record = SaveStore.Data.Daily(day);
+        var record = SaveStore.Data.PeekDaily(day);
         var place = Places.ForDaily(DailySeed.Today()).Name;
 
-        return record.Runs > 0
+        return record != null && record.Runs > 0
             ? $"{Controls.Daily}   today's run  {place}      your best  {record.BestScore:N0}"
             : $"{Controls.Daily}   today's run  {place}";
     }

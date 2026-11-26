@@ -6,16 +6,7 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. An unreadable save is kept, not overwritten: today a parse failure starts a fresh save and the
-   next run writes over the old one for good. Keep the raw text under a backup key; a pure
-   helper tested under .NET.
-2. The daily's key and seed come from one instant: `ChooseDaily` reads the clock twice, so a
-   start across UTC midnight can play one day's place under the next day's key. A pure
-   `DailySeed.Pick(DateTime)` tested at 23:59:59.999 and 00:00.
-3. Reading a day's record doesn't create one: the title adds an empty daily record every day it's
-   opened, and the list grows without end. A read-only lookup, and a cap on old days.
-4. A save from a newer version isn't downgraded: `Migrate` stamps it down to this version and
-   Load writes it back at once, dropping the newer fields. Leave it unwritten until a run saves.
+(Empty: what remains needs the Unity licence or the owner.)
 
 Map the space (#61), in slices, each its own PR:
 
@@ -84,6 +75,10 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the save and the daily: an unreadable save is kept aside, not written over; a save
+  from a newer version isn't downgraded or written; reading a day's record no longer creates one,
+  and only the latest 60 days are kept; the daily's key and seed come from one reading of the
+  clock (`max/save-robust`).
 - 2026-11-26: F and M work on the title, so the flashing can be turned down before any run, as the
   title says; they no longer start the story (`max/title-options`).
 - 2026-11-26: the save is checked to survive a reload in a browser: the title marks today's daily

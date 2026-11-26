@@ -117,4 +117,54 @@ public class SaveDataTests
         Assert.AreEqual(2, s.PlaceBest("office").Runs);
         Assert.AreEqual(0, s.PlaceBest("school").Runs);
     }
+
+    [Test]
+    public void PeekingAtADayAddsNothing()
+    {
+        var save = SaveData.Fresh();
+        Assert.IsNull(save.PeekDaily("2026-11-26"));
+        Assert.AreEqual(0, save.Dailies.Count);
+        Assert.AreSame(save.Daily("2026-11-26"), save.PeekDaily("2026-11-26"));
+    }
+
+    [Test]
+    public void OnlyTheLatestDaysAreKept()
+    {
+        var save = SaveData.Fresh();
+        var start = new System.DateTime(2026, 1, 1);
+        for (var i = 0; i < 400; i++)
+        {
+            save.Daily(start.AddDays(i).ToString("yyyy-MM-dd")).Record(i, i);
+        }
+
+        Assert.AreEqual(SaveData.DailiesKept, save.Dailies.Count);
+        Assert.IsNotNull(save.PeekDaily(start.AddDays(399).ToString("yyyy-MM-dd")));
+        Assert.IsNull(save.PeekDaily(start.AddDays(0).ToString("yyyy-MM-dd")));
+    }
+
+    [Test]
+    public void AnOldDayAskedForIsKeptEvenPastTheCap()
+    {
+        var save = SaveData.Fresh();
+        var start = new System.DateTime(2026, 1, 1);
+        for (var i = 0; i < SaveData.DailiesKept; i++)
+        {
+            save.Daily(start.AddDays(100 + i).ToString("yyyy-MM-dd"));
+        }
+
+        // A clock set back: the day asked for is older than every kept one.
+        var old = save.Daily("2025-06-01");
+        Assert.AreSame(old, save.PeekDaily("2025-06-01"));
+        Assert.AreEqual(SaveData.DailiesKept, save.Dailies.Count);
+    }
+
+    [Test]
+    public void ASaveFromANewerVersionIsNotDowngraded()
+    {
+        var save = SaveData.Fresh();
+        save.Version = SaveData.CurrentVersion + 1;
+        Assert.IsTrue(save.FromNewerVersion);
+        Assert.IsFalse(save.Migrate());
+        Assert.AreEqual(SaveData.CurrentVersion + 1, save.Version);
+    }
 }
