@@ -121,6 +121,12 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-26 [needs-review]: footsteps land on the running bob's low points, at most
+  4.5 a second (a sprint's cadence; the bob turns about once a metre, so at full speed most low
+  points pass silent), at 0.3 of the landing thud's volume, with the floor's landing pitch and
+  the left foot 4% lower. A landing counts as a step. Why: on every low point they rattled at
+  24 a second. To change: `stepsPerSecond` on the Player prefab, `stepVolume` and
+  `stepPitchSpread` on AudioManager.
 - Default 2026-11-26 [needs-review]: stand-in props from primitives until generated models
   replace them: the office has a water cooler, filing cabinet, plant and photocopier; the
   school lockers, a fire extinguisher, a notice board and a bin; the house a side table with a
