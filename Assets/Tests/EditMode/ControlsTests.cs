@@ -18,8 +18,11 @@ public class ControlsTests
     [Test]
     public void TheTitleWarnsOfFlashingAndSaysHowToTurnItDown()
     {
-        StringAssert.Contains("flicker", Controls.Flashing);
-        StringAssert.Contains(Controls.Pause + " then " + Controls.ReducedFlashing, Controls.Flashing);
+        StringAssert.Contains("flicker", Controls.Flashing(false, false));
+        StringAssert.Contains(Controls.ReducedFlashing + "  reduced flashing  off", Controls.Flashing(false, false));
+        StringAssert.Contains(Controls.ReducedFlashing + "  reduced flashing  on", Controls.Flashing(true, false));
+        StringAssert.Contains(Controls.Mute + "  sound  on", Controls.Flashing(false, false));
+        StringAssert.Contains(Controls.Mute + "  sound  off", Controls.Flashing(false, true));
     }
 
     [Test]

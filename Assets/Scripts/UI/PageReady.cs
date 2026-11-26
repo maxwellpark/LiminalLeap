@@ -10,6 +10,7 @@ public static class PageReady
     [DllImport("__Internal")] private static extern void PageRunMark(string mode, string place);
     [DllImport("__Internal")] private static extern void PageTitleMark(int dailyRuns);
     [DllImport("__Internal")] private static extern void PageLapMark();
+    [DllImport("__Internal")] private static extern void PageOptionsMark(int reduced, int muted);
     [DllImport("__Internal")] private static extern int PageAudioRunning();
     [DllImport("__Internal")] private static extern void PageMarkSting();
 #endif
@@ -64,6 +65,14 @@ public static class PageReady
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
         PageMarkSting();
+#endif
+    }
+
+    // The player's options as the title shows them, so a check can see them set and kept.
+    public static void Options(bool reducedFlashing, bool muted)
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        PageOptionsMark(reducedFlashing ? 1 : 0, muted ? 1 : 0);
 #endif
     }
 
