@@ -22,6 +22,7 @@
     <Compile Include="../../../Assets/Tests/EditMode/ProceduralTexturesTests.cs" Link="ProceduralTexturesTests.cs" />
     <Compile Include="../../../Assets/Tests/EditMode/SaveDataTests.cs" Link="SaveDataTests.cs" />
     <Compile Include="../../../Assets/Tests/EditMode/PlaceMapTests.cs" Link="PlaceMapTests.cs" />
+    <Compile Include="../../../Assets/Tests/EditMode/VignetteTextureTests.cs" Link="VignetteTextureTests.cs" />
     <Compile Include="../../../Assets/Tests/EditMode/GhostTraceTests.cs" Link="GhostTraceTests.cs" />
     <Compile Include="../../../Assets/Tests/EditMode/VariantStatsTests.cs" Link="VariantStatsTests.cs" />
   </ItemGroup>

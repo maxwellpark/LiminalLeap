@@ -84,4 +84,17 @@ public class VignetteTextureTests
         Assert.DoesNotThrow(() => VignetteTexture.Build(0, 0.35f, 1f));
         Assert.DoesNotThrow(() => VignetteTexture.Build(1, 0.35f, 1f));
     }
+
+    [Test]
+    public void Build_BelowClearsTheFloorAheadOnly()
+    {
+        var round = VignetteTexture.Build(Size, 0.35f, 1f);
+        var squashed = VignetteTexture.Build(Size, 0.35f, 1f, 0.6f);
+
+        // Bottom centre, where the floor ahead is, is clearer; the top and the sides are as before.
+        Assert.Less(At(squashed, Size, Size / 2, 4), At(round, Size, Size / 2, 4) * 0.5f);
+        Assert.AreEqual(At(round, Size, Size / 2, Size - 1), At(squashed, Size, Size / 2, Size - 1), 1e-5f);
+        Assert.AreEqual(At(round, Size, 0, Size / 2), At(squashed, Size, 0, Size / 2), 1e-5f);
+        Assert.AreEqual(1f, At(squashed, Size, 0, 0), 1e-4f);
+    }
 }
