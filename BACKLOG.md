@@ -58,6 +58,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Ideas
 
+- A browser run that plays a story lap: left alone the player dies in seconds, so it needs a
+  pilot, and a pilot in the shipped game is a cheat path; a dev build only, if ever.
 - The pursuer's lane scan from live hazards instead of physics queries each frame: cheaper, but
   it changes a safety path only the PlayMode suites can check, so it waits for the licence.
 
