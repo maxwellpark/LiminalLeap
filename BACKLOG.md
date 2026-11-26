@@ -28,7 +28,7 @@ Map the space (#61), in slices, each its own PR:
    floors and landmarks along the lap. The record itself is built (`PlaceMap`, save v5); what
    remains is marking it during a run, which needs slices 1 and 2 to fix where things are.
 4. The map drawn between runs, on the run summary and the place's title card.
-4. The hidden door and second way out, once its content is designed (owner).
+5. The hidden door and second way out, once its content is designed (owner).
 
 Slices 1 and 2 change the generator in ways only the PlayMode suites can check, so they're
 safer once the Unity licence is set up.

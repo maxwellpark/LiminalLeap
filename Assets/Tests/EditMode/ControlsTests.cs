@@ -5,9 +5,13 @@ public class ControlsTests
     [Test]
     public void TheTitleNamesEveryKeyARunUses()
     {
-        foreach (var key in new[] { "A D", "SPACE", "SHIFT", "Q", "E", "hold R", "P" })
+        // Each key beside its action, so a key moved to the wrong action fails too.
+        foreach (var pair in new[]
         {
-            StringAssert.Contains(key, Controls.Summary, key);
+            "A D  steer", "SPACE  jump", "SHIFT or Q  look back", "E  leave", "hold R  restart", "P  pause",
+        })
+        {
+            StringAssert.Contains(pair, Controls.Summary, pair);
         }
     }
 
