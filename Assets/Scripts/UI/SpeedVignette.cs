@@ -15,6 +15,7 @@ public class SpeedVignette : Singleton<SpeedVignette>
     [SerializeField] private int resolution = 256;
     [SerializeField, Range(0f, 1f)] private float clearRadius = 0.35f;
     [SerializeField, Range(0f, 2f)] private float edgeRadius = 1f;
+    [SerializeField, Range(0.2f, 1f)] private float belowSquash = 0.6f; // keeps the floor ahead readable at speed
 
     private float intensity;
 
@@ -62,7 +63,7 @@ public class SpeedVignette : Singleton<SpeedVignette>
     private Sprite BuildSprite()
     {
         var size = Mathf.Max(2, resolution);
-        var alphas = VignetteTexture.Build(size, clearRadius, edgeRadius);
+        var alphas = VignetteTexture.Build(size, clearRadius, edgeRadius, belowSquash);
 
         var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
         {

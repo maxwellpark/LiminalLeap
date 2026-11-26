@@ -3,8 +3,9 @@ using System;
 // Pure alpha ramp, no Unity texture types, so it's testable. No post-processing here.
 public static class VignetteTexture
 {
-    // Row-major alphas, 0 in the clear centre rising to 1 at the corners.
-    public static float[] Build(int size, float inner, float outer)
+    // Row-major alphas, 0 in the clear centre rising to 1 at the corners. Row 0 is the bottom, as
+    // in a Unity texture; below 1 stretches the clear part down, over the floor ahead.
+    public static float[] Build(int size, float inner, float outer, float below = 1f)
     {
         if (size < 2)
         {
@@ -25,6 +26,11 @@ public static class VignetteTexture
             {
                 var dx = (x - centre) / centre;
                 var dy = (y - centre) / centre;
+                if (dy < 0f)
+                {
+                    dy *= below;
+                }
+
                 var d = (float)Math.Sqrt(dx * dx + dy * dy);
 
                 var t = Clamp01((d - inner) / (outer - inner));
