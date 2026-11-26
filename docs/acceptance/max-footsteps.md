@@ -5,7 +5,8 @@ Footsteps that sound like each floor, timed to the running bob.
 | # | Claim | Evidence | Result | Status |
 |---|---|---|---|---|
 | 1 | A step lands where the bob is deepest | `FloorsTests.LowPointsAreWhereTheBobIsDeepest`: -\|sin\| is -1 at each low point, and crossings are counted there | pass | verified (.NET) |
-| 2 | At running speed steps keep a runner's cadence, each on a low point | `FloorsTests.AtSpeedStepsKeepARunnersCadence`: 8, 15 and 22 m/s at 60 fps give 4.0 to 4.1 steps a second | pass | verified (.NET) |
+| 2 | At running speed steps keep a runner's cadence, each on a low point | `FloorsTests.AtSpeedStepsKeepARunnersCadence` | pass | verified (.NET) |
+| 2a | The pace rises with speed (`max/footstep-pace`) | `FloorsTests.ThePaceQuickensWithSpeed`: 2.9 steps a second at the 8 m/s start, 4.0 at 22 m/s | pass | verified (.NET) |
 | 3 | Slow enough, every low point is a step | `FloorsTests.SlowEnoughEveryLowPointIsAStep` | pass | verified (.NET) |
 | 4 | No step standing still, or on the landing's thud | `FloorsTests.StandingStillTakesNoSteps`, `ALandingHoldsOffTheNextStep` | pass | verified (.NET) |
 | 5 | The step sound is short and sane | `SynthTests.EverySound_ProducesASaneBuffer` and the one-shot length test now include `Sound.Step` | not run | Unity EditMode, needs a licence |

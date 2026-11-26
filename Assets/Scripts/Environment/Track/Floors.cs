@@ -35,19 +35,29 @@ public readonly struct FloorFeel
     }
 }
 
-// Footfalls land on the running bob's low points, but no closer than a runner's cadence: the
-// bob turns about once a metre, which at speed is far quicker than feet.
+// Footfalls land on the running bob's low points, but no closer than a runner's cadence, which
+// rises from a jog to a sprint with speed: the bob turns about once a metre, far quicker than feet.
 public sealed class Stride
 {
     public const float LowPoint = (float)(System.Math.PI * 0.5);
     private const float HalfTurn = (float)System.Math.PI;
 
-    private readonly float minGap;
+    private readonly float jog;
+    private readonly float sprint;
     private float last = float.NegativeInfinity;
 
-    public Stride(float stepsPerSecond)
+    // Steps a second at the start speed and at full speed.
+    public Stride(float jog, float sprint)
     {
-        minGap = 1f / System.Math.Max(0.1f, stepsPerSecond);
+        this.jog = System.Math.Max(0.1f, jog);
+        this.sprint = System.Math.Max(this.jog, sprint);
+    }
+
+    // speedT is 0 at the start speed and 1 at full speed.
+    public float Cadence(float speedT)
+    {
+        var t = speedT < 0f ? 0f : speedT > 1f ? 1f : speedT;
+        return jog + (sprint - jog) * t;
     }
 
     // How many low points the phase passed going from before to after.
@@ -63,9 +73,9 @@ public sealed class Stride
 
     // True when this frame passed a low point and the last footfall is far enough back. One a
     // frame at most, so a hitch doesn't play a burst that sounds like a stumble.
-    public bool Step(float before, float after, float now)
+    public bool Step(float before, float after, float now, float speedT)
     {
-        if (LowPoints(before, after) == 0 || now - last < minGap)
+        if (LowPoints(before, after) == 0 || now - last < 1f / Cadence(speedT))
         {
             return false;
         }

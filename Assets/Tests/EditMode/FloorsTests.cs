@@ -142,6 +142,11 @@ public class FloorsTests
     // As PlayerTrackMovement drives it: 3.4 radians of bob a metre, at 60 frames a second.
     private static (int Steps, bool AllOnLowPoints) Run(Stride stride, float speed, float seconds)
     {
+        return Run(stride, speed, seconds, 1f);
+    }
+
+    private static (int Steps, bool AllOnLowPoints) Run(Stride stride, float speed, float seconds, float speedT)
+    {
         const float dt = 1f / 60f;
         var steps = 0;
         var onLow = true;
@@ -150,7 +155,7 @@ public class FloorsTests
         {
             var before = phase;
             phase += speed * dt * 3.4f;
-            if (stride.Step(before, phase, t))
+            if (stride.Step(before, phase, t, speedT))
             {
                 steps++;
                 onLow &= Stride.LowPoints(before, phase) > 0;
@@ -177,9 +182,9 @@ public class FloorsTests
     [Test]
     public void StandingStillTakesNoSteps()
     {
-        var stride = new Stride(4.5f);
-        Assert.IsFalse(stride.Step(3f, 3f, 10f));
-        Assert.IsFalse(stride.Step(3f, 2f, 10f));
+        var stride = new Stride(3.2f, 4.5f);
+        Assert.IsFalse(stride.Step(3f, 3f, 10f, 1f));
+        Assert.IsFalse(stride.Step(3f, 2f, 10f, 1f));
     }
 
     [Test]
@@ -187,7 +192,7 @@ public class FloorsTests
     {
         foreach (var speed in new[] { 8f, 15f, 22f })
         {
-            var (steps, onLow) = Run(new Stride(4.5f), speed, 10f);
+            var (steps, onLow) = Run(new Stride(3.2f, 4.5f), speed, 10f);
             Assert.That(steps / 10f, Is.InRange(3.4f, 4.5f), "speed " + speed);
             Assert.IsTrue(onLow, "a step off a low point at speed " + speed);
         }
@@ -196,16 +201,35 @@ public class FloorsTests
     [Test]
     public void SlowEnoughEveryLowPointIsAStep()
     {
-        var (steps, _) = Run(new Stride(4.5f), 1f, 10f);
+        var (steps, _) = Run(new Stride(3.2f, 4.5f), 1f, 10f);
         Assert.AreEqual(Stride.LowPoints(0f, 34f), steps, 1);
     }
 
     [Test]
     public void ALandingHoldsOffTheNextStep()
     {
-        var stride = new Stride(4f);
+        var stride = new Stride(4f, 4f);
         stride.Landed(5f);
-        Assert.IsFalse(stride.Step(Stride.LowPoint - 0.1f, Stride.LowPoint + 0.1f, 5.1f));
-        Assert.IsTrue(stride.Step(Stride.LowPoint + (float)Math.PI - 0.1f, Stride.LowPoint + (float)Math.PI + 0.1f, 5.3f));
+        Assert.IsFalse(stride.Step(Stride.LowPoint - 0.1f, Stride.LowPoint + 0.1f, 5.1f, 1f));
+        Assert.IsTrue(stride.Step(Stride.LowPoint + (float)Math.PI - 0.1f, Stride.LowPoint + (float)Math.PI + 0.1f, 5.3f, 1f));
+    }
+
+    [Test]
+    public void ThePaceQuickensWithSpeed()
+    {
+        // 8 m/s is the start speed and 22 full speed, as on the Player prefab.
+        var (atStart, _) = Run(new Stride(3.2f, 4.5f), 8f, 10f, 0f);
+        var (atFull, _) = Run(new Stride(3.2f, 4.5f), 22f, 10f, 1f);
+        Assert.That(atStart / 10f, Is.InRange(2.5f, 3.2f));
+        Assert.That(atFull / 10f, Is.InRange(3.4f, 4.5f));
+    }
+
+    [Test]
+    public void CadenceRunsFromJogToSprint()
+    {
+        var stride = new Stride(3.2f, 4.5f);
+        Assert.AreEqual(3.2f, stride.Cadence(-1f), 1e-5f);
+        Assert.AreEqual(3.85f, stride.Cadence(0.5f), 1e-5f);
+        Assert.AreEqual(4.5f, stride.Cadence(2f), 1e-5f);
     }
 }
