@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEngine;
 
 public class FloorsTests
 {
@@ -136,5 +137,43 @@ public class FloorsTests
         Assert.Less(FloorFeel.For(Floor.Carpet).LandVolume, 1f, "carpet should muffle a landing");
         Assert.Greater(FloorFeel.For(Floor.Boards).Bob, 1f, "boards should bob deeper");
         Assert.Less(FloorFeel.For(Floor.Boards).LandPitch, 1f, "boards should knock lower");
+    }
+
+    [Test]
+    public void AFootfallLandsAtTheBobsLowPoint()
+    {
+        var low = Mathf.PI * 0.5f;
+        Assert.AreEqual(0, Stride.Footfalls(0.1f, low - 0.05f));
+        Assert.AreEqual(1, Stride.Footfalls(low - 0.05f, low + 0.05f));
+        Assert.AreEqual(0, Stride.Footfalls(low + 0.05f, low + Mathf.PI - 0.05f));
+
+        // The bob is -|sin(phase)|, deepest there.
+        Assert.AreEqual(-1f, -Mathf.Abs(Mathf.Sin(low)), 1e-6f);
+    }
+
+    [Test]
+    public void StandingStillTakesNoSteps()
+    {
+        Assert.AreEqual(0, Stride.Footfalls(3f, 3f));
+        Assert.AreEqual(0, Stride.Footfalls(3f, 2f));
+    }
+
+    [Test]
+    public void FramesCountTheSameStepsAsOneLongStride()
+    {
+        foreach (var frame in new[] { 0.013f, 0.05f, 0.31f, 1.7f })
+        {
+            var total = 0;
+            var phase = 0f;
+            while (phase + frame <= 40f)
+            {
+                total += Stride.Footfalls(phase, phase + frame);
+                phase += frame;
+            }
+
+            Assert.AreEqual(Stride.Footfalls(0f, phase), total, "frame " + frame);
+        }
+
+        Assert.AreEqual(12, Stride.Footfalls(0f, 12f * Mathf.PI));
     }
 }

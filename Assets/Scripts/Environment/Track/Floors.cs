@@ -35,6 +35,24 @@ public readonly struct FloorFeel
     }
 }
 
+// Footfalls land at the running bob's low point, once each half turn of its phase.
+public static class Stride
+{
+    private const float HalfTurn = (float)System.Math.PI;
+    private const float LowPoint = HalfTurn * 0.5f;
+
+    // How many footfalls the phase passed going from before to after.
+    public static int Footfalls(float before, float after)
+    {
+        if (after <= before)
+        {
+            return 0;
+        }
+
+        return (int)System.Math.Floor((after - LowPoint) / HalfTurn) - (int)System.Math.Floor((before - LowPoint) / HalfTurn);
+    }
+}
+
 // Which floor each piece gets: stretches from the run's seed, never the same floor twice running.
 public sealed class FloorRule
 {

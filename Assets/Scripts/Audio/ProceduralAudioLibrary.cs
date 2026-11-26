@@ -227,6 +227,15 @@ public class ProceduralAudioLibrary : IAudioLibrary
                 return Shaped(Synth.Mix(bell, 0.4f, under, 0.3f), 0.35f);
             }
 
+            case Sound.Step:
+            {
+                // A heel's thud and the sole's scuff; the floor pitches it.
+                var heel = Synth.Sweep(110f, 55f, 0.09f, 9f);
+                var scuff = Synth.Noise(0.07f, 61, 0.35f);
+                Synth.Decay(scuff, 12f);
+                return Shaped(Synth.Mix(heel, 0.8f, scuff, 0.5f), 0.5f);
+            }
+
             case Sound.Bank:
             {
                 // A door shutting behind you. Warmer than Success and much shorter.

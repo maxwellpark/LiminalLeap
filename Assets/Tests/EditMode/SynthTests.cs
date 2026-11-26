@@ -148,5 +148,6 @@ public class SynthTests
         Assert.Less(ProceduralAudioLibrary.Recipe(Sound.Jump).Length, Synth.Samples(0.5f));
         Assert.Less(ProceduralAudioLibrary.Recipe(Sound.Pickup).Length, Synth.Samples(0.5f));
         Assert.Less(ProceduralAudioLibrary.Recipe(Sound.Land).Length, Synth.Samples(0.5f));
+        Assert.Less(ProceduralAudioLibrary.Recipe(Sound.Step).Length, Synth.Samples(0.2f));
     }
 }

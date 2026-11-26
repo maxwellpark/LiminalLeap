@@ -101,6 +101,7 @@ public class PlayerTrackMovement : MonoBehaviour
     // Linoleum until the first piece is read, so a run starts on the feel the game was tuned on.
     private FloorFeel footing = FloorFeel.For(Floor.Linoleum);
     private float bobPhase;
+    private int footfalls;
     private float bobOffset;
     private float bobRoll;
     private float dip;
@@ -416,7 +417,14 @@ public class PlayerTrackMovement : MonoBehaviour
         }
         else
         {
+            var before = bobPhase;
             bobPhase += travelledThisFrame * bobStridesPerSecond;
+            // One sound however many a hitch skipped: a burst of them would sound like a stumble.
+            if (Stride.Footfalls(before, bobPhase) > 0)
+            {
+                footfalls++;
+                AudioManager.GetInstance().PlayStep(footing.LandPitch, footing.LandVolume, (footfalls & 1) == 0);
+            }
             bobOffset = -Mathf.Abs(Mathf.Sin(bobPhase)) * bobHeight * footing.Bob * SpeedT;
             bobRoll = Mathf.Cos(bobPhase * 0.5f) * bobRollDegrees * footing.Bob * SpeedT;
         }

@@ -20,6 +20,7 @@ public enum Sound
     AttackDodge,
     ExitNear,
     Bank,
+    Step,
 }
 
 public interface IAudioLibrary
