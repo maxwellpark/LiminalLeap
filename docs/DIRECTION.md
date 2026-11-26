@@ -121,6 +121,10 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-26 [needs-review]: the canvas renders at no more than 1.5 device pixels per CSS
+  pixel. Why: a high-DPI laptop at 2 renders four times the pixels of 1, with a full-screen
+  vignette and the mirror camera on top, and the fog and dim light hide the difference. To
+  change: `devicePixelRatio` in the WebGL template's config.
 - Default 2026-11-26 [needs-review]: a clean lap paints the place's target as a third line under
   the rules: "2 RIGHT IN A ROW    GET OUT" (3 and 4 in the school and the house). Why: the
   count had nothing to count towards, so a player who never took an exit saw no reason to.

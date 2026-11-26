@@ -6,17 +6,14 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. Cap the canvas's pixel ratio (1.5): on a high-DPI laptop the game renders at full device
-   resolution, with a full-screen vignette and the mirror camera on top. A browser run at a
-   device scale of 2 checks `canvas.width` against its CSS width.
-2. The title sting and the start key's sound are lost in a browser, which starts audio only
+1. The title sting and the start key's sound are lost in a browser, which starts audio only
    after a gesture and plays what was queued from where it would be by then. Play the sting
    once audio is running; a page mark (`data-audio`) lets the browser check see it.
-3. Dead and stale hints: Onboarding's proximity hint never runs while pursuer attacks are on
+2. Dead and stale hints: Onboarding's proximity hint never runs while pursuer attacks are on
    (the default everywhere), and AttackPrompt hardcodes SHIFT.
-4. Generate one scene for the web build: the title always loads the first generated scene, so
+3. Generate one scene for the web build: the title always loads the first generated scene, so
    the other two ship unused. The build log's scene list shows it.
-5. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
+4. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
    hazards; work it out from live hazards with a pure helper tested under .NET.
 
 Map the space (#61), in slices, each its own PR:
@@ -78,6 +75,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the canvas renders at no more than 1.5 times its CSS size on a high-DPI screen
+  (`max/pixel-ratio`).
 - 2026-11-26: `web-run.js` plays the game as itch embeds it: a cross-origin iframe behind a
   launch button, Space with no focus call of its own, and the page mustn't scroll (`max/itch-frame`).
 - 2026-11-26: the tab and loading screen say "Liminal Leap"; a failed load, or a browser
