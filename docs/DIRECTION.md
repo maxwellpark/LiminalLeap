@@ -121,6 +121,13 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-26 [needs-review]: stand-in props from primitives until generated models
+  replace them: the office has a water cooler, filing cabinet, plant and photocopier; the
+  school lockers, a fire extinguisher, a notice board and a bin; the house a side table with a
+  lamp, a coat stand with a coat left on it, an armchair and a radiator. Real-world size, which
+  reads small against the corridor (8 m of track, a 9.5 m ceiling); scaling them up is the open
+  question. To change: `Assets/Scripts/Editor/PropPrefabs.cs`, then Liminal Leap > Generate
+  Stand-in Props.
 - Default 2026-11-25 [needs-review]: the school and the house follow the office. The school
   has speckled grey-green vinyl, painted blockwork and suspended ceiling tiles; the house has
   oak floorboards, faded floral wallpaper and a textured plaster ceiling. Floor art is per floor

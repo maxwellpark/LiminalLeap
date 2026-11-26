@@ -86,6 +86,10 @@ Generate several seeds and pick by eye; record the seed in `Sources.md`.
 - Import the model (OBJ or FBX import with no package; GLB needs one, so convert it in Blender
   first), make a prefab of it in `Props/`, and give it no collider or Rigidbody: props are scenery,
   a collider would kill or snag the player, and a Rigidbody would drop it through the floor.
+- Until then each place has stand-ins built from primitives by
+  `Assets/Scripts/Editor/PropPrefabs.cs` (Liminal Leap > Generate Stand-in Props). A generated
+  prefab with the same name replaces one; delete its line from the script so a rerun doesn't
+  bring it back.
 - A place gets 3 to 5 props to start. Each piece may stand one beside the track, chosen from
   the piece's seed, so a loop replays them where they were.
 
