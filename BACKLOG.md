@@ -6,6 +6,22 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
+1. The browser check plays the game as itch embeds it: a page on another origin with the game in
+   an iframe behind a launch button, Space pressed with no focus call of the check's own, and
+   the parent page mustn't scroll. Every check today focuses the canvas itself.
+2. Cap the canvas's pixel ratio (1.5): on a high-DPI laptop the game renders at full device
+   resolution, with a full-screen vignette and the mirror camera on top. A browser run at a
+   device scale of 2 checks `canvas.width` against its CSS width.
+3. The title sting and the start key's sound are lost in a browser, which starts audio only
+   after a gesture and plays what was queued from where it would be by then. Play the sting
+   once audio is running; a page mark (`data-audio`) lets the browser check see it.
+4. Dead and stale hints: Onboarding's proximity hint never runs while pursuer attacks are on
+   (the default everywhere), and AttackPrompt hardcodes SHIFT.
+5. Generate one scene for the web build: the title always loads the first generated scene, so
+   the other two ship unused. The build log's scene list shows it.
+6. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
+   hazards; work it out from live hazards with a pure helper tested under .NET.
+
 Map the space (#61), in slices, each its own PR:
 
 1. A place's laps are one fixed corridor: the same pieces, scenery, calm stretches and floor
@@ -49,6 +65,11 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 - A story death says nothing about why (the summary is silent, the hint toast shows once a
   session), but DIRECTION.md keeps the story quiet. Say what killed you, or keep it quiet?
 
+- Unity's splash screen: its logo is 2.7 MB, about a quarter of the uncompressed build, and
+  delays every boot; Unity 6 lets a Personal licence turn it off. Off, or keep it?
+- How itch serves `.gz` files: with a gzip header the wasm compiles while it downloads; the
+  build's decompression fallback unzips it in script instead. Worth one measured push.
+
 ## Ideas
 
 - A place's best counts only the last lap's score, since each lap resets it. Hidden in the
@@ -60,6 +81,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the tab and loading screen say "Liminal Leap"; a failed load, or a browser
+  without WebGL 2, shows a plain sentence in place of the loading screen (`max/load-screen`).
 - 2026-11-26: a clean lap paints the target under the rules ("2 RIGHT IN A ROW    GET OUT")
   (`max/goal-line`).
 - 2026-11-26: the page marks the title, each run and each lap apart (`data-run="title"`,
