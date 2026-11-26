@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -182,6 +182,49 @@ async function scenario(browser, url, name, { key, day, expect, click }) {
   return failures.length === 0;
 }
 
+// A browser without WebGL 2 gets a sentence in place of the loading screen, not Unity's message.
+async function noWebGL2(browser, url) {
+  const context = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
+  const page = await context.newPage();
+  const failures = [];
+  const loaded = [];
+  page.on("request", (r) => {
+    if (r.url().includes("/Build/")) {
+      loaded.push(r.url());
+    }
+  });
+  await page.addInitScript(() => {
+    const real = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (kind, ...rest) {
+      return kind === "webgl2" ? null : real.call(this, kind, ...rest);
+    };
+  });
+  try {
+    await page.goto(url);
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: path.join(out, "no-webgl2.png") });
+    const shown = await page.evaluate(() => ({
+      error: getComputedStyle(document.querySelector("#error")).display !== "none",
+      loading: getComputedStyle(document.querySelector("#loading")).display !== "none",
+      text: document.querySelector("#error").textContent,
+    }));
+    if (!shown.error || !shown.text.startsWith("This browser can't run the game")) {
+      failures.push("no sentence about WebGL 2: " + JSON.stringify(shown.text).slice(0, 120));
+    }
+    if (shown.loading) {
+      failures.push("the loading screen is still up under the error");
+    }
+    if (loaded.length) {
+      failures.push("Unity loaded anyway: " + loaded[0]);
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  await context.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} no-webgl2${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -207,6 +250,9 @@ async function scenario(browser, url, name, { key, day, expect, click }) {
     }
   }
 
+  if (!only || only === "no-webgl2") {
+    ok = (await noWebGL2(browser, url)) && ok;
+  }
   if (!only || only === "title-click") {
     const day = dayFor("office");
     ok = (await scenario(browser, url, "title-click", { key: "Enter", day, click: true, expect: { mode: "daily", place: "office" } })) && ok;
