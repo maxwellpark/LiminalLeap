@@ -13,6 +13,7 @@ public static class SaveStore
 
     public static SaveData Load()
     {
+        fromNewerVersion = false;
         var json = PlayerPrefs.GetString(Key, string.Empty);
         if (string.IsNullOrEmpty(json))
         {
@@ -33,8 +34,7 @@ public static class SaveStore
         // the next run's save would otherwise write over it for good.
         if (data == null)
         {
-            PlayerPrefs.SetString(UnreadableKey, json);
-            PlayerPrefs.Save();
+            KeepUnreadable(json);
             return SaveData.Fresh();
         }
 
@@ -49,6 +49,24 @@ public static class SaveStore
         }
 
         return data;
+    }
+
+    // The first one only: it's the one most likely to hold real progress. Never in the way of
+    // playing, since a bad save is often a full storage quota, which this write could hit too.
+    private static void KeepUnreadable(string json)
+    {
+        try
+        {
+            if (!PlayerPrefs.HasKey(UnreadableKey))
+            {
+                PlayerPrefs.SetString(UnreadableKey, json);
+                PlayerPrefs.Save();
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning("Couldn't keep the unreadable save: " + e.Message);
+        }
     }
 
     public static void Save(SaveData data)
