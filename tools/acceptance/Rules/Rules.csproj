@@ -19,5 +19,6 @@
     <Compile Include="../../../Assets/Scripts/GhostTrace.cs" Link="GhostTrace.cs" />
     <Compile Include="../../../Assets/Scripts/PlaceMap.cs" Link="PlaceMap.cs" />
     <Compile Include="../../../Assets/Scripts/UI/VignetteTexture.cs" Link="VignetteTexture.cs" />
+    <Compile Include="../../../Assets/Scripts/Controls.cs" Link="Controls.cs" />
   </ItemGroup>
 </Project>

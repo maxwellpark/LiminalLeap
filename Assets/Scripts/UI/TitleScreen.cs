@@ -175,6 +175,7 @@ public class TitleScreen : MonoBehaviour
         column.Space(90f);
 
         column.Add("Controls", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = Controls.Summary;
+        column.Add("Flashing", RuntimeUi.Caption, RuntimeUi.Muted, 0.15f, 8f).text = Controls.Flashing;
         column.Space(40f);
 
         prompt = column.Add("Prompt", RuntimeUi.Caption, RuntimeUi.Accent, 0.15f, 10f);

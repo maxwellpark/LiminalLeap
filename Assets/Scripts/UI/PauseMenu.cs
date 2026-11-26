@@ -121,9 +121,9 @@ public class PauseMenu : Singleton<PauseMenu>
             return;
         }
 
-        keys.text = $"{Controls.Pause}  resume     T  title";
-        options.text = $"F  reduced flashing  {(PlayerOptions.ReducedFlashing ? "on" : "off")}     "
-            + $"M  sound  {(PlayerOptions.Muted ? "off" : "on")}";
+        keys.text = $"{Controls.Pause}  resume     {Controls.ToTitle}  title";
+        options.text = $"{Controls.ReducedFlashing}  reduced flashing  {(PlayerOptions.ReducedFlashing ? "on" : "off")}     "
+            + $"{Controls.Mute}  sound  {(PlayerOptions.Muted ? "off" : "on")}";
     }
 
     private void Show(bool visible)

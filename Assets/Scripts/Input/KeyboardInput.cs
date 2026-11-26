@@ -7,7 +7,7 @@ public class KeyboardInput : IInputSource
     public bool JumpReleased => Input.GetKeyUp(KeyCode.Space);
     public bool RestartPressed => Input.GetKeyDown(KeyCode.R);
     public bool RestartHeld => Input.GetKey(KeyCode.R);
-    public bool LookingBack => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.Q);
+    public bool LookingBack => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.Q);
     public bool BankPressed => Input.GetKeyDown(KeyCode.E);
     public Vector2 Pointer => Input.mousePosition;
     public bool PointerPressed => Input.GetMouseButtonDown(0);
