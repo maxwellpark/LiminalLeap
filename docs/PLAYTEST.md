@@ -46,9 +46,18 @@ Whether by watching, a recording or their notes:
 
 ## What counts
 
-A player counts for GOAL.md's line once they paste back a place's line: "Liminal Leap · the
-office", a square per lap's call, then "out after N laps". A line that says caught, or no line,
-is still a useful session but doesn't count.
+A player counts for GOAL.md's line once they paste back a place's line, which only getting out
+of a story place offers:
+
+```
+Liminal Leap · <place>
+<a square per lap's call, ending on a door>
+out after N laps · R right, W wrong
+maxwellpark.itch.io/liminal-leap
+```
+
+The daily's line starts "Liminal Leap daily" and doesn't count, even when it says "out at".
+No line is still a useful session.
 
 ## Sessions
 
@@ -56,4 +65,4 @@ is still a useful session but doesn't count.
 |---|---|---|---|---|
 | | P1 | | | |
 
-Players are P1, P2 and so on; who they are stays outside the repo.
+Players are P1, P2 and so on; who they are, and how to reach them, stays outside the repo.
