@@ -101,7 +101,8 @@ public class PlayerTrackMovement : MonoBehaviour
     // Linoleum until the first piece is read, so a run starts on the feel the game was tuned on.
     private FloorFeel footing = FloorFeel.For(Floor.Linoleum);
     private float bobPhase;
-    [SerializeField] private float stepsPerSecond = 4.5f; // a sprint's cadence, the most steps heard
+    [SerializeField] private float stepsAtStart = 3.2f;  // a jog's cadence at the start speed
+    [SerializeField] private float stepsPerSecond = 4.5f; // a sprint's, at full speed
     private Stride stride;
     private int footfalls;
     private float bobOffset;
@@ -412,7 +413,7 @@ public class PlayerTrackMovement : MonoBehaviour
 
     private Stride Stride()
     {
-        return stride ??= new Stride(stepsPerSecond);
+        return stride ??= new Stride(stepsAtStart, stepsPerSecond);
     }
 
     // Driven off distance travelled, not time, so it stays in step with the speed.
@@ -427,7 +428,7 @@ public class PlayerTrackMovement : MonoBehaviour
         {
             var before = bobPhase;
             bobPhase += travelledThisFrame * bobStridesPerSecond;
-            if (Stride().Step(before, bobPhase, Time.time))
+            if (Stride().Step(before, bobPhase, Time.time, SpeedT))
             {
                 footfalls++;
                 AudioManager.GetInstance().PlayStep(footing.LandPitch, footing.LandVolume, (footfalls & 1) == 0);
