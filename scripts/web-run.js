@@ -451,6 +451,19 @@ async function frameCopy(browser, parentUrl) {
       static now() { return Real.now() + offset; }
     }
     globalThis.Date = Shifted;
+
+    // Which way the copy went: the async clipboard, or the textarea fallback.
+    const mark = (how) => document.documentElement && document.documentElement.setAttribute("data-copy-path", how);
+    const exec = Document.prototype.execCommand;
+    Document.prototype.execCommand = function (name, ...rest) {
+      const done = exec.call(this, name, ...rest);
+      if (name === "copy" && done) { mark("fallback"); }
+      return done;
+    };
+    if (navigator.clipboard) {
+      const write = navigator.clipboard.writeText.bind(navigator.clipboard);
+      navigator.clipboard.writeText = (t) => write(t).then((v) => { mark("async"); return v; });
+    }
   }, day.getTime());
   try {
     await page.goto(parentUrl);
@@ -476,8 +489,11 @@ async function frameCopy(browser, parentUrl) {
     await page.waitForTimeout(300);
     await page.screenshot({ path: path.join(out, "frame-copy.png") });
     const text = await page.evaluate(() => navigator.clipboard.readText()).catch((e) => "(unreadable: " + e.message + ")");
+    const how = await frame.evaluate(() => document.documentElement.getAttribute("data-copy-path"));
     if (!copied) {
       failures.push("the Copy button didn't copy inside the frame");
+    } else if (how !== "fallback") {
+      failures.push(`the copy went by ${how}, so the fallback wasn't what did it`);
     }
     if (!text.startsWith("Liminal Leap daily")) {
       failures.push("the clipboard holds " + JSON.stringify(text.slice(0, 80)));
