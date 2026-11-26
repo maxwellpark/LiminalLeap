@@ -26,6 +26,7 @@ players of short horror, and the streamers who play it.
   used so far.
 - Run loop allocations over baseline, from `AllocationTests`: 577 B/frame.
 - WebGL build size, from `scripts/build-web.sh`: 11 MB of a 25 MB budget.
+- Pure tests under .NET, from `scripts/acceptance.sh`: 136 passing.
 
 ## Out of scope
 
@@ -36,4 +37,4 @@ players of short horror, and the streamers who play it.
 
 ## Last checked
 
-2026-11-26, at 6b12265, with the WebGL build checked in a browser.
+2026-11-26, at 17b5a41, with the WebGL build checked in a browser (nine runs, all passing).

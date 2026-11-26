@@ -63,3 +63,26 @@ End of session. Defaults taken: the floors' feel, the distance readout, the door
 the map record's shape, every place's look (all in docs/DIRECTION.md). Blocked on the owner:
 the Unity licence and 1Password, the itch page, players, the office's props (GPU). Next: the
 Ready list above.
+
+## 2026-11-26, the long session
+
+- Merged #112 to #125, each built, checked in a browser, reviewed by a fresh agent and merged
+  when green: stand-in props; footsteps per floor, at a pace that
+  rises with speed; the lighting check per place (the speed vignette no longer blacks out the
+  floor ahead); the title naming every key and warning of flashing; a click on the title only
+  focusing the game; the page marking the title, runs and laps apart; the place's target on the
+  floor; a plain load screen and failed-load message; the browser check playing the game in a
+  cross-origin iframe as itch does; a 1.5 cap on the canvas pixel ratio; one generated scene for
+  the web build; the title sting waiting for the browser's audio; the pursuer's lane scan no longer dropping
+  hazards past 32 colliders.
+- The browser check now has nine runs: the story, each place's daily, `itch-frame`, `hidpi`,
+  `no-webgl2`, `title-click` and `audio`. Each new one was shown failing on the build before its
+  fix. The .NET suite grew to 136 tests; Controls, VignetteTexture and the footstep cadence run
+  there now.
+- Two audit passes refilled Ready. Their leftovers: the pursuer's lane scan (Ready), a story
+  death that says nothing (Blocked: quiet story or not), the splash screen and how itch serves
+  `.gz` (Blocked).
+- Traps found: a reviewer agent switched branches while a build ran, which put a commit on the
+  wrong branch (fixed locally before any push; reviewers are now told not to); renumbering a
+  list by first match also renumbered the map list (fixed; renumber within Ready only); the
+  scene generator rewrites the tracked Build Settings (build-web.sh now puts them back).
