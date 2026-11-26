@@ -6,20 +6,17 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. The browser check plays the game as itch embeds it: a page on another origin with the game in
-   an iframe behind a launch button, Space pressed with no focus call of the check's own, and
-   the parent page mustn't scroll. Every check today focuses the canvas itself.
-2. Cap the canvas's pixel ratio (1.5): on a high-DPI laptop the game renders at full device
+1. Cap the canvas's pixel ratio (1.5): on a high-DPI laptop the game renders at full device
    resolution, with a full-screen vignette and the mirror camera on top. A browser run at a
    device scale of 2 checks `canvas.width` against its CSS width.
-3. The title sting and the start key's sound are lost in a browser, which starts audio only
+2. The title sting and the start key's sound are lost in a browser, which starts audio only
    after a gesture and plays what was queued from where it would be by then. Play the sting
    once audio is running; a page mark (`data-audio`) lets the browser check see it.
-4. Dead and stale hints: Onboarding's proximity hint never runs while pursuer attacks are on
+3. Dead and stale hints: Onboarding's proximity hint never runs while pursuer attacks are on
    (the default everywhere), and AttackPrompt hardcodes SHIFT.
-5. Generate one scene for the web build: the title always loads the first generated scene, so
+4. Generate one scene for the web build: the title always loads the first generated scene, so
    the other two ship unused. The build log's scene list shows it.
-6. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
+5. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
    hazards; work it out from live hazards with a pure helper tested under .NET.
 
 Map the space (#61), in slices, each its own PR:
@@ -81,6 +78,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: `web-run.js` plays the game as itch embeds it: a cross-origin iframe behind a
+  launch button, Space with no focus call of its own, and the page mustn't scroll (`max/itch-frame`).
 - 2026-11-26: the tab and loading screen say "Liminal Leap"; a failed load, or a browser
   without WebGL 2, shows a plain sentence in place of the loading screen (`max/load-screen`).
 - 2026-11-26: a clean lap paints the target under the rules ("2 RIGHT IN A ROW    GET OUT")
