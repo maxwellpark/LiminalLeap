@@ -3,8 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-// Stand-in props from primitives, until generated models replace them (docs/ART.md). Each is
-// built facing +Z with its pivot at the base, in metres, with no collider, as PlaceArt expects.
+// Stand-ins until generated models replace them: +Z front, pivot at the base, metres, no collider.
 public static class PropPrefabs
 {
     private const string Root = "Assets/Resources/Art/Places";
@@ -195,7 +194,7 @@ public static class PropPrefabs
         part.GetComponent<Renderer>().sharedMaterial = MaterialFor(material, colour);
     }
 
-    // One flat-coloured material per name, kept when it already exists so its GUID doesn't move.
+    // Kept when it already exists, so its GUID doesn't move. Paths use "/", which AssetDatabase expects.
     private static Material MaterialFor(string name, Color colour)
     {
         if (Materials.TryGetValue(name, out var cached))
@@ -203,7 +202,7 @@ public static class PropPrefabs
             return cached;
         }
 
-        var path = Path.Combine(MaterialFolder, name + ".mat");
+        var path = MaterialFolder + "/" + name + ".mat";
         var material = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (material == null)
         {
@@ -220,9 +219,9 @@ public static class PropPrefabs
 
     private static void Save(string place, string name, GameObject root)
     {
-        var folder = Path.Combine(Root, place, "Props");
+        var folder = Root + "/" + place + "/Props";
         Directory.CreateDirectory(folder);
-        PrefabUtility.SaveAsPrefabAsset(root, Path.Combine(folder, name + ".prefab"));
+        PrefabUtility.SaveAsPrefabAsset(root, folder + "/" + name + ".prefab");
         Object.DestroyImmediate(root);
     }
 }
