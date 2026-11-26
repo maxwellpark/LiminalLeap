@@ -335,16 +335,28 @@ async function hiDpi(browser, url) {
 }
 
 // With audio held for a gesture, as browsers do: the title waits, and a click wakes the audio
-// and plays the sting without starting a run.
-async function audioWaits(url) {
-  let own;
-  try {
-    own = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--autoplay-policy=user-gesture-required"] });
-  } catch (e) {
-    console.error("web-run: Chromium won't start for the audio run\n  " + String(e.message || e).split("\n")[0]);
-    return false;
-  }
-  const page = await (await own.newContext({ viewport: { width: size[0], height: size[1] } })).newPage();
+// and plays the sting without starting a run. Headless Chromium runs audio regardless of its
+// autoplay flags, so the page's AudioContext is made to hold out until a click or a key.
+async function audioWaits(browser, url) {
+  const context = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    const Real = window.AudioContext;
+    let woken = false;
+    for (const kind of ["pointerdown", "keydown"]) {
+      window.addEventListener(kind, () => { woken = true; }, true);
+    }
+    window.AudioContext = class extends Real {
+      constructor(...a) {
+        super(...a);
+        super.suspend();
+      }
+
+      resume() {
+        return woken ? super.resume() : Promise.reject(new DOMException("no gesture yet", "NotAllowedError"));
+      }
+    };
+  });
   const failures = [];
   const attr = (name) => page.evaluate((n) => document.documentElement.getAttribute(n), name);
   try {
@@ -367,7 +379,7 @@ async function audioWaits(url) {
   } catch (e) {
     failures.push(String(e.message || e).split("\n")[0]);
   }
-  await own.close();
+  await context.close();
   console.log(`${failures.length ? "FAIL" : "ok  "} audio${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
   return failures.length === 0;
 }
@@ -404,7 +416,7 @@ async function audioWaits(url) {
     ok = (await itchFrame(browser, parent)) && ok;
   }
   if (!only || only === "audio") {
-    ok = (await audioWaits(url)) && ok;
+    ok = (await audioWaits(browser, url)) && ok;
   }
   if (!only || only === "hidpi") {
     ok = (await hiDpi(browser, url)) && ok;
