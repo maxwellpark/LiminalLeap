@@ -91,9 +91,12 @@ public class PlaceArtTests
         turning.Dress(Material(), Material(), null, 7);
 
         Assert.AreEqual(10f, straight.transform.Find("WallLeft").localScale.z, 0.001f);
-        Assert.AreEqual(10.6f, turning.transform.Find("WallLeft").localScale.z, 0.001f);
-        Assert.AreEqual(10.6f, turning.transform.Find("Ceiling").localScale.z, 0.001f);
-        Assert.AreEqual(5.3f, turning.transform.Find("WallRight").localPosition.z, 0.001f, "it reaches forward only");
+        Assert.AreEqual(11.1f, turning.transform.Find("WallLeft").localScale.z, 0.001f);
+        Assert.AreEqual(11.1f, turning.transform.Find("Ceiling").localScale.z, 0.001f);
+        Assert.AreEqual(5.55f, turning.transform.Find("WallRight").localPosition.z, 0.001f, "it reaches forward only");
+
+        // The reach covers the wedge the next piece's full turn opens at the ceiling's corner.
+        Assert.GreaterOrEqual(turning.transform.Find("Ceiling").localScale.z - 10f, 8.6f * Mathf.Tan(7f * Mathf.Deg2Rad));
     }
 
     // A pooled piece laid next in a place without art mustn't keep the last one's walls.
