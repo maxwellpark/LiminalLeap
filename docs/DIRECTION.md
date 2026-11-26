@@ -40,7 +40,7 @@ None are runners. The runner shelf has no liminal horror. That gap is the positi
 | | Story (PR #91) | Daily |
 |---|---|---|
 | Is | Office, school, house; an exit at the end of each | One place by date, same corridor for everyone |
-| Shows | No HUD, no score; toasts only for prompts (E at an exit, hold R, the mirror hint) | Score, speed, multiplier, summary |
+| Shows | No HUD, no score; toasts only for prompts (an exit, hold R, the mirror) and a fork's way | Score, speed, multiplier, summary |
 | Job | First impression, what streamers play | Reason to come back |
 
 Decided 2026-11-24: the story is the front door and the daily is retention. That narrows
