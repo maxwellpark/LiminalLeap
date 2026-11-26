@@ -187,6 +187,12 @@ async function noWebGL2(browser, url) {
   const context = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
   const page = await context.newPage();
   const failures = [];
+  const loaded = [];
+  page.on("request", (r) => {
+    if (r.url().includes("/Build/")) {
+      loaded.push(r.url());
+    }
+  });
   await page.addInitScript(() => {
     const real = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (kind, ...rest) {
@@ -202,11 +208,14 @@ async function noWebGL2(browser, url) {
       loading: getComputedStyle(document.querySelector("#loading")).display !== "none",
       text: document.querySelector("#error").textContent,
     }));
-    if (!shown.error || !shown.text.includes("WebGL 2")) {
+    if (!shown.error || !shown.text.startsWith("This browser can't run the game")) {
       failures.push("no sentence about WebGL 2: " + JSON.stringify(shown.text).slice(0, 120));
     }
     if (shown.loading) {
       failures.push("the loading screen is still up under the error");
+    }
+    if (loaded.length) {
+      failures.push("Unity loaded anyway: " + loaded[0]);
     }
   } catch (e) {
     failures.push(String(e.message || e).split("\n")[0]);

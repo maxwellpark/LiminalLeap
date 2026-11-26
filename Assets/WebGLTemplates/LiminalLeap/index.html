@@ -69,6 +69,8 @@
       font-size: 13px;
       line-height: 1.6;
       color: #d98b84;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
     }
   </style>
 </head>
@@ -92,11 +94,21 @@
     function fail(sentence, detail) {
       loading.style.display = "none";
       error.textContent = detail ? sentence + "\n\n" + detail : sentence;
-      error.style.whiteSpace = "pre-line";
       error.style.display = "flex";
     }
 
-    var noWebGL2 = !document.createElement("canvas").getContext("webgl2");
+    // A probe that throws proves nothing, so Unity loads and says what it finds.
+    var noWebGL2 = false;
+    try {
+      var probe = document.createElement("canvas").getContext("webgl2");
+      noWebGL2 = !probe;
+      var lose = probe && probe.getExtension("WEBGL_lose_context");
+      if (lose) {
+        lose.loseContext();
+      }
+    } catch (e) {
+      noWebGL2 = false;
+    }
 
     var config = {
       dataUrl: "Build/{{{ DATA_FILENAME }}}",
