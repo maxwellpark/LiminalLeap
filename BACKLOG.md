@@ -4,6 +4,22 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 ## Ready
 
+Buildable now and checked in a browser build, top down (2026-11-26):
+
+1. Browser checks in the repo: shipwright's `web-check` for the boot, then a script that starts
+   the story and each place's daily, fails on a console error and saves captures. Moves "a run
+   starts in the browser" in the itch line.
+2. The itch page kit: the page's text, tags and controls, notes for the owner's answer to
+   itch's AI disclosure question, and a cover and screenshots from the captures, so the
+   owner's page takes minutes. Readies the
+   itch line.
+3. A playtest kit: what testers are asked to do, what to watch for, and how they report back.
+   Readies the "5 people" line.
+4. Stand-in props for each place, built from primitives with generated textures, until the
+   GPU models exist. They also give the map its landmarks later.
+5. Footsteps that sound like each floor, timed to the running bob.
+6. A lighting check per place: the art and the anomalies both read in each place's light.
+
 Map the space (#61), in slices, each its own PR:
 
 1. A place's laps are one fixed corridor: the same pieces, scenery, calm stretches and floor
@@ -23,7 +39,8 @@ safer once the Unity licence is set up.
 Art pass, the office first (decided 2026-11-25), each its own PR:
 
 1. The office's 3 to 5 props, generated and committed by following `docs/ART.md`. On the
-   owner's machine, since image-to-3D needs a GPU. Its textures are done.
+   owner's machine, since image-to-3D needs a GPU. Its textures are done, as are the school's
+   and the house's.
 2. The props as map landmarks, once the map is marked during runs.
 
 ## Blocked on owner
