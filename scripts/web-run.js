@@ -1,5 +1,5 @@
-// Starts the story and each place's daily in a WebGL build, headless. scripts/check-web.sh runs it.
-// Usage: node scripts/web-run.js <build> <captures> [--size=WxH]; exits 0 passed, 1 failed, 2 setup.
+// Starts the story and each place's daily headless; check-web.sh and store-images.sh run it.
+// Usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]; exits 0, 1 or 2.
 const { execSync } = require("child_process");
 const fs = require("fs");
 const http = require("http");
@@ -23,12 +23,37 @@ try {
   process.exit(2);
 }
 
-const args = process.argv.slice(2);
-const [root, out] = args.filter((a) => !a.startsWith("--"));
-const size = (args.find((a) => a.startsWith("--size=")) || "--size=960x600").slice(7).split("x").map(Number);
-if (!root || !out || !fs.existsSync(path.join(root, "index.html")) || !(size[0] > 0 && size[1] > 0)) {
-  console.error("web-run: usage: node scripts/web-run.js <build folder> <captures folder> [--size=WxH]");
+const RUNS = ["story", "daily-office", "daily-school", "daily-house"];
+
+function usage(problem) {
+  console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
   process.exit(2);
+}
+
+const positional = [];
+let size = [960, 600];
+let only = null;
+for (const arg of process.argv.slice(2)) {
+  if (arg.startsWith("--size=")) {
+    const m = /^(\d+)x(\d+)$/.exec(arg.slice(7));
+    if (!m || +m[1] === 0 || +m[2] === 0) {
+      usage(`bad size ${arg}`);
+    }
+    size = [+m[1], +m[2]];
+  } else if (arg.startsWith("--only=")) {
+    only = arg.slice(7);
+    if (!RUNS.includes(only)) {
+      usage(`no run called ${only}; there are ${RUNS.join(", ")}`);
+    }
+  } else if (arg.startsWith("--")) {
+    usage(`unknown option ${arg}`);
+  } else {
+    positional.push(arg);
+  }
+}
+const [root, out] = positional;
+if (positional.length !== 2 || !fs.existsSync(path.join(root, "index.html"))) {
+  usage("needs a build folder with index.html and a captures folder");
 }
 fs.mkdirSync(out, { recursive: true });
 
@@ -158,10 +183,15 @@ async function scenario(browser, url, name, { key, day, expect }) {
     process.exit(2);
   }
 
-  let ok = await scenario(browser, url, "story", { key: "Space", expect: { mode: "story", place: "office" } });
+  let ok = true;
+  if (!only || only === "story") {
+    ok = await scenario(browser, url, "story", { key: "Space", expect: { mode: "story", place: "office" } });
+  }
   for (const place of PLACES) {
-    const day = dayFor(place);
-    ok = (await scenario(browser, url, "daily-" + place, { key: "Enter", day, expect: { mode: "daily", place } })) && ok;
+    if (!only || only === "daily-" + place) {
+      const day = dayFor(place);
+      ok = (await scenario(browser, url, "daily-" + place, { key: "Enter", day, expect: { mode: "daily", place } })) && ok;
+    }
   }
 
   await browser.close();

@@ -6,11 +6,13 @@ come from a build: `scripts/build-web.sh`, then `scripts/store-images.sh`.
 
 ## Settings
 
+Defaults for the owner to confirm; nothing here is settled until the page exists.
+
 | Field | Value |
 |---|---|
 | Title | Liminal Leap |
 | Project URL | maxwellpark.itch.io/liminal-leap (the share line already links here) |
-| Short description | Exit 8 at a sprint: the only warning is in your mirror. |
+| Short description | Exit 8 at a sprint: the only warning is in your mirror. (The decided pitch; whether a public page names another game is the owner's call.) |
 | Classification | Games |
 | Kind of project | HTML, played in the browser |
 | Release status | In development |
@@ -18,15 +20,22 @@ come from a build: `scripts/build-web.sh`, then `scripts/store-images.sh`.
 | Viewport | 960 x 600, with the fullscreen button on; mobile friendly off |
 | Visibility | Restricted or draft until the first push has been checked |
 
-The viewport matches the size every capture and check uses. Pushes go through
-`scripts/deploy-itch.sh`, which refuses a public page unless asked; see shipwright's rules.
+The viewport matches the player's default web size and the size `scripts/check-web.sh` plays at.
+The repo's push scripts don't check the page's visibility: `deploy-itch.sh` runs `butler push`
+straight to whatever the page is. shipwright's `itch-push` refuses a public page unless asked,
+and switching to it waits on the owner (BACKLOG.md, Blocked on owner). Until then, keep the page
+restricted or draft before every push.
 
 ## Tags
+
+A suggestion; itch allows ten.
 
 horror, psychological-horror, liminal-space, runner, endless-runner, first-person, atmospheric,
 short, singleplayer, unity
 
 ## Description
+
+A draft for the owner to edit.
 
 > You run through an empty place that should be familiar. Something follows. The only way to
 > read what it is about to do is the mirror, and looking back costs you the view ahead.
@@ -70,6 +79,6 @@ view would sell it better, and is worth picking by hand once the art settles.
   Diffusion 1.5 and finished by a script (`Assets/Art/Sources.md` has each one). Answer itch's
   question in its current wording; what else to declare is the owner's call.
 - **Price.** Free, or pay what you want; nothing here assumes either.
-- **Content notes.** A pursuer, sudden attacks and dark spaces; no gore or blood. The pause menu
-  has a reduced flashing option (F); whether the page should warn about flashing as well is the
-  owner's call.
+- **Content notes.** A suggestion: a pursuer, sudden attacks and dark spaces, with no gore or
+  blood as far as the code shows. The pause menu has a reduced flashing option (F); whether the
+  page should warn about flashing as well is the owner's call.

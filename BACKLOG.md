@@ -48,6 +48,9 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
   `check.sh`'s test runner. `publish-itch.sh` likely misses butler's login on macOS meanwhile.
 - The itch page (#74), its account steps and the first push. Blocks "A WebGL build is on itch".
 - Outside players for a story place. Blocks "At least 5 people outside the project".
+- `scripts/deploy-itch.sh` pushes to whatever the itch page is, public or not; shipwright's
+  `itch-push` refuses a public page unless asked. Part of the shared tools choice above, and the
+  page must stay restricted until it's made.
 - A blocked-terms file for this repo: max-kit's shared hooks refuse pushes without one, so each
   push from here so far has been made with the hooks taken off, on an explicit ask.
 
