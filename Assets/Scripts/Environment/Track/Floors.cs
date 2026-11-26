@@ -56,7 +56,8 @@ public sealed class Stride
     // speedT is 0 at the start speed and 1 at full speed.
     public float Cadence(float speedT)
     {
-        var t = speedT < 0f ? 0f : speedT > 1f ? 1f : speedT;
+        // Written so a NaN reads as the start speed rather than lifting the cap.
+        var t = !(speedT > 0f) ? 0f : speedT > 1f ? 1f : speedT;
         return jog + (sprint - jog) * t;
     }
 

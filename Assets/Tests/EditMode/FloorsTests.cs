@@ -231,5 +231,6 @@ public class FloorsTests
         Assert.AreEqual(3.2f, stride.Cadence(-1f), 1e-5f);
         Assert.AreEqual(3.85f, stride.Cadence(0.5f), 1e-5f);
         Assert.AreEqual(4.5f, stride.Cadence(2f), 1e-5f);
+        Assert.AreEqual(3.2f, stride.Cadence(float.NaN), 1e-5f);
     }
 }
