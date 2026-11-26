@@ -2,8 +2,7 @@
 using System.Runtime.InteropServices;
 #endif
 
-// Tells the web page the game is up, for shipwright's web-check --ready-marker, and which run
-// started, so a browser check can tell the school's daily from a story run that started instead.
+// Tells the page the game is up and which run started, for web-check and scripts/web-run.js.
 public static class PageReady
 {
 #if UNITY_WEBGL && !UNITY_EDITOR

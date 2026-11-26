@@ -1,16 +1,25 @@
-// Drives a WebGL build in headless Chromium: starts the story and each place's daily, checks the
-// page says the right run started, fails on any console error, and saves captures.
-// Usage: node scripts/web-run.js <build folder> <captures folder>
-// Exit codes: 0 passed, 1 failed, 2 setup (no Playwright, no build).
+// Starts the story and each place's daily in a WebGL build, headless. scripts/check-web.sh runs it.
+// Usage: node scripts/web-run.js <build folder> <captures folder>; exits 0 passed, 1 failed, 2 setup.
+const { execSync } = require("child_process");
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
 
+// A global install isn't on Node's module path, so look there too.
+function loadPlaywright() {
+  try {
+    return require("playwright");
+  } catch (e) {
+    const globalRoot = execSync("npm root -g", { encoding: "utf8" }).trim();
+    return require(path.join(globalRoot, "playwright"));
+  }
+}
+
 let chromium;
 try {
-  ({ chromium } = require("playwright"));
+  ({ chromium } = loadPlaywright());
 } catch (e) {
-  console.error("web-run: Playwright isn't installed: npm i -g playwright && npx playwright install chromium");
+  console.error("web-run: no Playwright: npm i -g playwright@1.63.0 && npx playwright@1.63.0 install chromium");
   process.exit(2);
 }
 
@@ -48,9 +57,26 @@ const TYPES = { ".html": "text/html", ".js": "text/javascript", ".wasm": "applic
 
 function serve(dir) {
   return new Promise((resolve) => {
+    const base = path.resolve(dir);
     const server = http.createServer((req, res) => {
-      const file = path.join(dir, decodeURIComponent(req.url.split("?")[0]).replace(/^\/+/, "") || "index.html");
-      if (!file.startsWith(path.resolve(dir)) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
+      // No favicon is fine; a 404 for it would show as a console error and fail every run.
+      if (req.url === "/favicon.ico") {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
+      let name;
+      try {
+        name = decodeURIComponent(req.url.split("?")[0]).replace(/^\/+/, "");
+      } catch (e) {
+        res.writeHead(400);
+        res.end();
+        return;
+      }
+
+      const file = path.resolve(base, name || "index.html");
+      if (!file.startsWith(base + path.sep) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
         res.writeHead(404);
         res.end();
         return;
@@ -66,7 +92,11 @@ async function scenario(browser, url, name, { key, day, expect }) {
   const context = await browser.newContext({ viewport: { width: 960, height: 600 } });
   const page = await context.newPage();
   const errors = [];
-  page.on("console", (m) => { if (m.type() === "error") errors.push(m.text().slice(0, 200)); });
+  page.on("console", (m) => {
+    if (m.type() === "error") {
+      errors.push(m.text().slice(0, 200));
+    }
+  });
   page.on("pageerror", (e) => errors.push(String(e).slice(0, 200)));
 
   // Shift the clock rather than freeze it: Unity's loader needs time to pass.
@@ -115,7 +145,16 @@ async function scenario(browser, url, name, { key, day, expect }) {
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
-  const browser = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--mute-audio"] });
+
+  // A browser that won't start is setup, not a game that failed.
+  let browser;
+  try {
+    browser = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--mute-audio"] });
+  } catch (e) {
+    console.error("web-run: Chromium won't start: npx playwright@1.63.0 install chromium\n  " + String(e.message || e).split("\n")[0]);
+    server.close();
+    process.exit(2);
+  }
 
   let ok = await scenario(browser, url, "story", { key: "Space", expect: { mode: "story", place: "office" } });
   for (const place of PLACES) {

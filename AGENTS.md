@@ -8,7 +8,7 @@
 
 - `scripts/check.sh --fast`: typechecks every assembly. `scripts/check.sh` runs the Unity suites, which need a licence.
 - `scripts/acceptance.sh`: the pure rules' tests under .NET, with coverage and complexity.
-- `scripts/check-web.sh --build`: builds WebGL, boots it with shipwright's `web-check`, then starts the story and each place's daily in headless Chromium and fails on a wrong run or a console error. Captures land in `Build/captures`. Needs shipwright beside this repo, Node and Playwright.
+- `scripts/check-web.sh --build`: builds WebGL, boots it with shipwright's `web-check`, then starts the story and each place's daily in headless Chromium and fails on a wrong run or a console error. Captures land in `Build/captures`. Needs shipwright beside this repo with its tags (it runs the pinned tag), Node and Playwright 1.63.0.
 
 # Traps
 
