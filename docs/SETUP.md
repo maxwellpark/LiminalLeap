@@ -60,6 +60,17 @@ Unity Personal has no service accounts; a licence belongs to a Unity ID. So:
 - Create a Unity ID used only for automation, with its own email address, and accept
   Personal on it. It can then be revoked or have its password changed without touching
   anyone's own account. Check Unity's terms for your situation before relying on it.
+- It needs no link to anyone's own Unity ID. The project isn't attached to a Unity
+  organisation or cloud project (`organizationId` and `cloudProjectId` are empty in
+  `ProjectSettings.asset`, and cloud services are off), so any account with a licence can
+  open, test and build it. Don't add the account to an organisation unless the project
+  starts using Unity's cloud services.
+- Separate, but not throwaway: use an email address you control, such as an alias of your
+  own, and keep the password in the **unity** item. You'll need to sign in to it on the web.
+- Each new cloud container activates afresh, and a Personal licence can be active on only a
+  few machines at once (check the current limit). End a session with
+  `scripts/unity-activate.sh --return`; a container reclaimed before that leaves an
+  activation behind, which you free from the account's licence page.
 - **Two-factor:** the licensing client's command line takes a username and password and
   has no way to take a one-time code. Expect activation to fail on an account with
   two-factor turned on. **Unverified**; confirm on first activation.
