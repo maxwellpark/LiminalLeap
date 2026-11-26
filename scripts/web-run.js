@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -287,6 +287,30 @@ async function itchFrame(browser, parentUrl) {
   return failures.length === 0;
 }
 
+// On a screen at twice the pixels, the game renders at no more than 1.5 of its CSS size.
+async function hiDpi(browser, url) {
+  const context = await browser.newContext({ viewport: { width: size[0], height: size[1] }, deviceScaleFactor: 2 });
+  const page = await context.newPage();
+  const failures = [];
+  try {
+    await page.goto(url);
+    await page.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
+    await page.waitForTimeout(1000);
+    const ratio = await page.evaluate(() => {
+      const c = document.querySelector("#unity-canvas");
+      return c.width / c.clientWidth;
+    });
+    if (!(ratio > 0.99 && ratio <= 1.51)) {
+      failures.push(`the canvas renders at ${ratio.toFixed(2)}x its size on a 2x screen`);
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  await context.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} hidpi${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -317,6 +341,9 @@ async function itchFrame(browser, parentUrl) {
     const port = server.address().port;
     const parent = `http://localhost:${port}/__parent.html?frame=` + encodeURIComponent(`http://127.0.0.1:${port}/index.html`);
     ok = (await itchFrame(browser, parent)) && ok;
+  }
+  if (!only || only === "hidpi") {
+    ok = (await hiDpi(browser, url)) && ok;
   }
   if (!only || only === "no-webgl2") {
     ok = (await noWebGL2(browser, url)) && ok;

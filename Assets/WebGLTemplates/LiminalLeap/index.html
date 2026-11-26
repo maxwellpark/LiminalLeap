@@ -124,6 +124,9 @@
       companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
       productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
       productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+      // A high-DPI laptop would otherwise render every pixel of the screen, and the vignette
+      // and mirror on top; past 1.5 the fog and dim light hide the difference.
+      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
       showBanner: function (msg, type) {
         if (type === "error") {
           fail("The game stopped with an error. Reloading the page may help.", msg);
