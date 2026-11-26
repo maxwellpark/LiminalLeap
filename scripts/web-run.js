@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -115,7 +115,7 @@ function serve(dir) {
   });
 }
 
-async function scenario(browser, url, name, { key, day, expect }) {
+async function scenario(browser, url, name, { key, day, expect, click }) {
   const context = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
   const page = await context.newPage();
   const errors = [];
@@ -146,7 +146,14 @@ async function scenario(browser, url, name, { key, day, expect }) {
     await page.waitForTimeout(1500);
     await page.screenshot({ path: path.join(out, name + "-title.png") });
 
-    // No click first: the title takes a click as any key, which starts the story.
+    // The click a player makes to focus the game in a page must not start a run.
+    if (click) {
+      await page.click("canvas");
+      await page.waitForTimeout(2000);
+      if (await page.evaluate(() => document.documentElement.getAttribute("data-runs")) !== null) {
+        failures.push("a click on the title started a run");
+      }
+    }
     await page.focus("canvas");
     await page.keyboard.press(key);
     await page.waitForFunction(() => document.documentElement.getAttribute("data-runs") !== null, null, { timeout: 60000 });
@@ -192,6 +199,11 @@ async function scenario(browser, url, name, { key, day, expect }) {
       const day = dayFor(place);
       ok = (await scenario(browser, url, "daily-" + place, { key: "Enter", day, expect: { mode: "daily", place } })) && ok;
     }
+  }
+
+  if (!only || only === "title-click") {
+    const day = dayFor("office");
+    ok = (await scenario(browser, url, "title-click", { key: "Enter", day, click: true, expect: { mode: "daily", place: "office" } })) && ok;
   }
 
   await browser.close();
