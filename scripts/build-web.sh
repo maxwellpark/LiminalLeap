@@ -22,6 +22,13 @@ DEV=""
 
 mkdir -p "$PROJECT/Build"
 
+# The generator rewrites Build Settings to list only what it made, which with one scene differs
+# from the tracked list; put the tracked file back however the build ends.
+SETTINGS="$PROJECT/ProjectSettings/EditorBuildSettings.asset"
+SETTINGS_KEPT="$(mktemp)"
+cp "$SETTINGS" "$SETTINGS_KEPT"
+trap 'cp "$SETTINGS_KEPT" "$SETTINGS"; rm -f "$SETTINGS_KEPT"' EXIT
+
 # The generated scenes aren't committed, and the build lists them. One, since the title always
 # loads the first (TitleScreen's pickRandom is off); check.sh --full still makes three to test.
 echo "Generating scenes (log: $PROJECT/Build/scenes.log)"
