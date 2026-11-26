@@ -22,8 +22,8 @@ safer once the Unity licence is set up.
 
 Art pass, the office first (decided 2026-11-25), each its own PR:
 
-1. The office's textures and 3 to 5 props, generated and committed by following
-   `docs/ART.md`. On the owner's machine.
+1. The office's 3 to 5 props, generated and committed by following `docs/ART.md`. On the
+   owner's machine, since image-to-3D needs a GPU. Its textures are done.
 2. Walls that follow a turn: a wall is one straight 10 m section per piece, so a turning
    piece leaves a dark gap along its outside edge. Worth doing once real art shows it.
 3. The props as map landmarks, once the map is marked during runs.
@@ -53,6 +53,10 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-25: the office's carpet, wall and ceiling textures, generated on a CPU with Stable
+  Diffusion 1.5 (sources in `Assets/Art/Sources.md`) and finished by
+  `tools/art/tiles.py`. Textures repeat every 2 m, and a place with walls gets floor out to
+  them (`max/office-textures`).
 - 2026-11-25: the art pass's groundwork (`max/art-pass`): `docs/ART.md`; generated floors,
   walls, a ceiling and props load by path and fall back to the procedural look; the web build
   fails past 25 MB. Checked in a browser with placeholder art in the office, then removed.

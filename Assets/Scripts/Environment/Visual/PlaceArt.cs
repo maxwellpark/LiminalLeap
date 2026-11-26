@@ -7,6 +7,11 @@ public static class PlaceArt
     private static readonly Dictionary<string, Material> Materials = new();
     private static readonly Dictionary<string, GameObject[]> PropSets = new();
 
+    // Each texture covers 2 m; the surface sizes are in TrackPiece.Dress.
+    private static readonly Vector2 FloorTiling = new(4f, 5f);
+    private static readonly Vector2 WallTiling = new(5f, 4.75f);
+    private static readonly Vector2 CeilingTiling = new(8.6f, 5f);
+
     // Asked for every piece laid, so by index rather than a path string that would be garbage.
     private static readonly Material[] Floors = new Material[4];
     private static readonly bool[] FloorsLooked = new bool[4];
@@ -22,7 +27,7 @@ public static class PlaceArt
         if (!FloorsLooked[i] || (!ReferenceEquals(Floors[i], null) && Floors[i] == null))
         {
             FloorsLooked[i] = true;
-            Floors[i] = Load("Art/Floors/" + floor);
+            Floors[i] = Load("Art/Floors/" + floor, FloorTiling);
         }
 
         return Floors[i];
@@ -30,12 +35,12 @@ public static class PlaceArt
 
     public static Material Wall(Place place)
     {
-        return place != null ? Load("Art/Places/" + place.Id + "/Wall") : null;
+        return place != null ? Load("Art/Places/" + place.Id + "/Wall", WallTiling) : null;
     }
 
     public static Material Ceiling(Place place)
     {
-        return place != null ? Load("Art/Places/" + place.Id + "/Ceiling") : null;
+        return place != null ? Load("Art/Places/" + place.Id + "/Ceiling", CeilingTiling) : null;
     }
 
     public static GameObject[] Props(Place place)
@@ -56,7 +61,7 @@ public static class PlaceArt
     }
 
     // A missing file is remembered too, so it costs one lookup a run rather than one a piece.
-    private static Material Load(string path)
+    private static Material Load(string path, Vector2 tiling)
     {
         // ReferenceEquals for "no file"; Unity's == null would also be true for a destroyed one.
         if (Materials.TryGetValue(path, out var cached) && (ReferenceEquals(cached, null) || cached != null))
@@ -65,7 +70,7 @@ public static class PlaceArt
         }
 
         var texture = Resources.Load<Texture2D>(path);
-        var material = texture != null ? MaterialLibrary.FromTexture(path.Replace('/', '_'), texture) : null;
+        var material = texture != null ? MaterialLibrary.FromTexture(path.Replace('/', '_'), texture, tiling) : null;
         Materials[path] = material;
         return material;
     }

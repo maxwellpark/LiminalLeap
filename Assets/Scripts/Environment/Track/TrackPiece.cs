@@ -37,6 +37,9 @@ public class TrackPiece : MonoBehaviour
     private GameObject leftWall;
     private GameObject rightWall;
     private GameObject ceilingPart;
+    private GameObject leftFloor;
+    private GameObject rightFloor;
+    private static MaterialPropertyBlock sideTiling;
     private readonly Dictionary<GameObject, GameObject> propsStood = new();
     private const uint PropChance = 35;   // percent of pieces that stand a prop
 
@@ -104,6 +107,21 @@ public class TrackPiece : MonoBehaviour
         SetPart(ref leftWall, "WallLeft", new Vector3(-8.5f, 4.75f, 5f), new Vector3(0.2f, 9.5f, 10f), wall);
         SetPart(ref rightWall, "WallRight", new Vector3(8.5f, 4.75f, 5f), new Vector3(0.2f, 9.5f, 10f), wall);
         SetPart(ref ceilingPart, "Ceiling", new Vector3(0f, 9.5f, 5f), new Vector3(17.2f, 0.2f, 10f), ceiling);
+
+        // Floor out to the walls, under the pillars, or a dark trench runs along each side.
+        var under = wall != null && floorRenderer != null ? floorRenderer.sharedMaterial : null;
+        SetPart(ref leftFloor, "FloorLeft", new Vector3(-6.25f, -0.25f, 5f), new Vector3(4.5f, 0.5f, 10f), under);
+        SetPart(ref rightFloor, "FloorRight", new Vector3(6.25f, -0.25f, 5f), new Vector3(4.5f, 0.5f, 10f), under);
+        if (under != null)
+        {
+            // The slab's tiling is for 8 m; these are 4.5 m wide, so keep a tile its size.
+            sideTiling ??= new MaterialPropertyBlock();
+            var st = under.mainTextureScale;
+            sideTiling.SetVector("_MainTex_ST", new Vector4(st.x * 4.5f / 8f, st.y, 0f, 0f));
+            leftFloor.GetComponent<Renderer>().SetPropertyBlock(sideTiling);
+            rightFloor.GetComponent<Renderer>().SetPropertyBlock(sideTiling);
+        }
+
         StandProp(props, seed);
     }
 
