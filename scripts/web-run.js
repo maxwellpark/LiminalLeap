@@ -87,8 +87,15 @@ function serve(dir) {
     const base = path.resolve(dir);
     const server = http.createServer((req, res) => {
       // Stands in for itch's page: the game in an iframe from another origin, behind a button.
-      if (req.url.startsWith("/__parent.html")) {
-        const frame = new URL(req.url, "http://x").searchParams.get("frame");
+      const asked = new URL(req.url, "http://x");
+      if (asked.pathname === "/__parent.html") {
+        // Only ever the game on this server, and written so no value can close the script tag.
+        const frame = asked.searchParams.get("frame") || "";
+        if (!frame.startsWith(`http://127.0.0.1:${req.socket.localPort}/`)) {
+          res.writeHead(400);
+          res.end();
+          return;
+        }
         res.writeHead(200, { "Content-Type": "text/html" });
         res.end(`<!DOCTYPE html><html><body style="margin:0;height:4000px;background:#222">
 <button id="launch" style="margin:40px;font-size:20px">Run game</button>
@@ -96,7 +103,7 @@ function serve(dir) {
 <script>
 document.querySelector("#launch").addEventListener("click", function () {
   var f = document.createElement("iframe");
-  f.src = ${JSON.stringify(frame)};
+  f.src = ${JSON.stringify(frame).replace(/</g, "\\u003c")};
   f.width = 960; f.height = 600;
   f.setAttribute("allow", "autoplay; fullscreen *; gamepad");
   f.setAttribute("allowfullscreen", "");
@@ -259,6 +266,7 @@ async function itchFrame(browser, parentUrl) {
       errors.push(m.text().slice(0, 200));
     }
   });
+  page.on("pageerror", (e) => errors.push(String(e).slice(0, 200)));
   try {
     await page.goto(parentUrl);
     await page.click("#launch");
@@ -273,6 +281,11 @@ async function itchFrame(browser, parentUrl) {
     await page.screenshot({ path: path.join(out, "itch-frame.png") });
     if (!started) {
       failures.push("Space after the launch button didn't reach the game");
+    } else {
+      const run = await frame.evaluate(() => document.documentElement.getAttribute("data-run"));
+      if (run !== "story") {
+        failures.push(`Space started ${run}, expected the story`);
+      }
     }
     const scrolled = await page.evaluate(() => window.scrollY);
     if (scrolled !== 0) {
