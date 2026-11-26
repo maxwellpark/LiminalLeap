@@ -6,16 +6,13 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. The title's controls name restart (hold R), the other mirror key (Q) and the reduced flashing
-   option (P, then F), and say the lights flicker. Tested through `Controls.cs` under .NET and
-   seen in the title capture.
-2. A click on the title only focuses the game: on itch the click a player makes to focus the
+1. A click on the title only focuses the game: on itch the click a player makes to focus the
    frame starts the story and skips the title. A browser check clicks, sees no run start, then
    presses Enter for the daily.
-3. The page marks runs and laps apart: `data-runs` counts laps and deaths today, and the title
+2. The page marks runs and laps apart: `data-runs` counts laps and deaths today, and the title
    never marks itself. With the stale lines in DIRECTION.md (the C key, "no toasts") and
    PageReady's comment.
-4. An exit call says what it did: right, wrong and running past all fade the same, and the
+3. An exit call says what it did: right, wrong and running past all fade the same, and the
    target (2 in the office) is never shown, so a player who never takes an exit loops with
    nothing changing. Show the target with the count, and let a wrong call read as a reset.
    A pure line with tests under .NET, then a browser capture.
@@ -31,7 +28,7 @@ Map the space (#61), in slices, each its own PR:
    floors and landmarks along the lap. The record itself is built (`PlaceMap`, save v5); what
    remains is marking it during a run, which needs slices 1 and 2 to fix where things are.
 4. The map drawn between runs, on the run summary and the place's title card.
-5. The hidden door and second way out, once its content is designed (owner).
+4. The hidden door and second way out, once its content is designed (owner).
 
 Slices 1 and 2 change the generator in ways only the PlayMode suites can check, so they're
 safer once the Unity licence is set up.
@@ -74,6 +71,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the title names every run key (hold R, SHIFT or Q) and warns the lights flicker,
+  with P then F to turn it down; right Shift looks back too (`max/title-controls`).
 - 2026-11-26: footstep pace rises from a jog at the start speed to a sprint at full speed
   (`max/footstep-pace`).
 - 2026-11-26: the floor ahead reads at speed in every place (the speed vignette clears below the
