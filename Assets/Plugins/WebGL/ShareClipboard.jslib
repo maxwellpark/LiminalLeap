@@ -3,7 +3,7 @@ mergeInto(LibraryManager.library, {
   ShareClipboardArm: function (text) {
     var state = Module.shareClipboard;
     if (!state) {
-      state = Module.shareClipboard = { text: null, copied: 0, x: 0, y: 0, w: 0, h: 0 };
+      state = Module.shareClipboard = { text: null, copied: 0, x: 0, y: 0, w: 0, h: 0, armed: 0 };
 
       // A hidden textarea, for browsers without the async clipboard or that refuse it.
       var fallback = function (value) {
@@ -33,8 +33,11 @@ mergeInto(LibraryManager.library, {
         var y = (r.bottom - e.clientY) * canvas.height / r.height;
         if (x < state.x || y < state.y || x > state.x + state.w || y > state.y + state.h) { return; }
 
-        // Marked on the page too, so a browser check can tell the copy happened.
+        // Marked on the page too, so a browser check can tell the copy happened. A copy that
+        // lands after the next summary armed belongs to the last one, so it's dropped.
+        var armed = state.armed;
         var done = function () {
+          if (armed !== state.armed) { return; }
           state.copied = 1;
           document.documentElement.setAttribute("data-copied", "1");
         };
@@ -54,7 +57,9 @@ mergeInto(LibraryManager.library, {
     state.text = UTF8ToString(text);
     state.copied = 0;
     state.w = 0;
+    state.armed++;
     document.documentElement.removeAttribute("data-copied");
+    document.documentElement.removeAttribute("data-copy-target");
   },
 
   ShareClipboardTarget: function (x, y, w, h) {
@@ -71,6 +76,7 @@ mergeInto(LibraryManager.library, {
 
   ShareClipboardDisarm: function () {
     document.documentElement.removeAttribute("data-copy-target");
+    document.documentElement.removeAttribute("data-copied");
     if (Module.shareClipboard) {
       Module.shareClipboard.text = null;
       Module.shareClipboard.copied = 0;

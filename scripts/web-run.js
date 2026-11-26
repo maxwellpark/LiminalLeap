@@ -419,6 +419,7 @@ async function dailyCopy(browser, url) {
     const copied = await page
       .waitForFunction(() => document.documentElement.getAttribute("data-copied") === "1", null, { timeout: 5000 })
       .then(() => true, () => false);
+    await page.waitForTimeout(300); // a frame or two, for the button to say so
     await page.screenshot({ path: path.join(out, "daily-copy.png") });
     const text = await page.evaluate(() => navigator.clipboard.readText()).catch(() => "");
     if (!copied) {
