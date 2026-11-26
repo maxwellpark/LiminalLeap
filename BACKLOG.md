@@ -6,10 +6,7 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. The title sting and the start key's sound are lost in a browser, which starts audio only
-   after a gesture and plays what was queued from where it would be by then. Play the sting
-   once audio is running; a page mark (`data-audio`) lets the browser check see it.
-2. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
+1. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
    hazards; work it out from live hazards with a pure helper tested under .NET.
 
 Map the space (#61), in slices, each its own PR:
@@ -71,6 +68,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the title sting plays once the browser's audio runs (the first click), and the
+  start sound waits up to 0.6 s for the audio the starting key wakes (`max/title-audio`).
 - 2026-11-26: the web build generates one scene, the one the title loads; the attack prompt takes
   its key from Controls. Onboarding's proximity hint stays: it's the hint for runs with pursuer
   attacks off, a supported flag (`max/one-scene`).

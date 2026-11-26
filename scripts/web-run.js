@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -334,6 +334,56 @@ async function hiDpi(browser, url) {
   return failures.length === 0;
 }
 
+// With audio held for a gesture, as browsers do: the title waits, and a click wakes the audio
+// and plays the sting without starting a run. Headless Chromium runs audio regardless of its
+// autoplay flags, so the page's AudioContext is made to hold out until a click or a key.
+async function audioWaits(browser, url) {
+  const context = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    const Real = window.AudioContext;
+    let woken = false;
+    for (const kind of ["pointerdown", "keydown"]) {
+      window.addEventListener(kind, () => { woken = true; }, true);
+    }
+    window.AudioContext = class extends Real {
+      constructor(...a) {
+        super(...a);
+        super.suspend();
+      }
+
+      resume() {
+        return woken ? super.resume() : Promise.reject(new DOMException("no gesture yet", "NotAllowedError"));
+      }
+    };
+  });
+  const failures = [];
+  const attr = (name) => page.evaluate((n) => document.documentElement.getAttribute(n), name);
+  try {
+    await page.goto(url);
+    await page.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
+    await page.waitForTimeout(1500);
+    if (await attr("data-audio") !== "waiting" || await attr("data-sting") !== null) {
+      failures.push(`before a gesture: audio ${await attr("data-audio")}, sting ${await attr("data-sting")}`);
+    }
+    await page.click("canvas");
+    const sting = await page
+      .waitForFunction(() => document.documentElement.getAttribute("data-sting") === "1", null, { timeout: 5000 })
+      .then(() => true, () => false);
+    if (!sting) {
+      failures.push(`a click didn't play the sting; audio ${await attr("data-audio")}`);
+    }
+    if (await attr("data-runs") !== null) {
+      failures.push("the click started a run");
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  await context.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} audio${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -364,6 +414,9 @@ async function hiDpi(browser, url) {
     const port = server.address().port;
     const parent = `http://localhost:${port}/__parent.html?frame=` + encodeURIComponent(`http://127.0.0.1:${port}/index.html`);
     ok = (await itchFrame(browser, parent)) && ok;
+  }
+  if (!only || only === "audio") {
+    ok = (await audioWaits(browser, url)) && ok;
   }
   if (!only || only === "hidpi") {
     ok = (await hiDpi(browser, url)) && ok;
