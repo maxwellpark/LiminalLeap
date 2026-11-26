@@ -40,3 +40,22 @@ a licence, then tick the loops line; or a design for forks in the story.
 End of session. Ready is empty again: every unmet goal line waits on the owner (the Unity
 licence and 1Password, the itch page, players), and so do merging #91 and #93 and pushing
 3bcd2ab and ba64c0a. Next: run every suite once there's a licence, then tick lines.
+
+## 2026-11-25 and 26
+
+- Merged #94 to #107: the distance that lies, surfaces (four floors), the SpawnNext split, the
+  door tell, the map's design and its record in the save, workflow removal (Actions is off),
+  the art pass's groundwork, and generated textures for all three places.
+- WebGL builds run here without an activated licence; max-kit allows that for development
+  checks. Every build since has been loaded in headless Chromium: the title, a run, and each
+  place's daily with the page's clock shifted to that place's day.
+- Found by checking in a browser: the pursuer's capsule class was stripped from WebGL builds
+  (fixed with link.xml); the build needed its scenes generated first; walls left a wedge open
+  at bends (a review caught that the first fix was half the size needed).
+- Textures came from Stable Diffusion 1.5 on a CPU here, finished by `tools/art/tiles.py`;
+  sources are in `Assets/Art/Sources.md`.
+
+End of session. Defaults taken: the floors and their feel, the distance readout, the door tell,
+the map record's shape, every place's look (all in docs/DIRECTION.md). Blocked on the owner:
+the Unity licence and 1Password, the itch page, players, the office's props (GPU). Next: the
+Ready list above.
