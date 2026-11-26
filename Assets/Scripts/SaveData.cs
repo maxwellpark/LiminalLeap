@@ -120,12 +120,16 @@ public class SaveData
         return new SaveData { Version = CurrentVersion };
     }
 
+    // Written by a later build of the game. Left as it is, since this build would drop the fields
+    // it doesn't know.
+    public bool FromNewerVersion => Version > CurrentVersion;
+
     // Returns true if anything changed, so the caller knows to write it back.
     public bool Migrate()
     {
         EnsureFields();
 
-        if (Version == CurrentVersion)
+        if (Version >= CurrentVersion)
         {
             return false;
         }
@@ -166,7 +170,11 @@ public class SaveData
         return improved;
     }
 
-    public DailyRecord Daily(string day)
+    // Enough days for a streak to mean something, without a record kept for every day forever.
+    public const int DailiesKept = 60;
+
+    // Without adding one, so reading a day's best doesn't grow the save.
+    public DailyRecord PeekDaily(string day)
     {
         EnsureFields();
 
@@ -178,9 +186,42 @@ public class SaveData
             }
         }
 
+        return null;
+    }
+
+    public DailyRecord Daily(string day)
+    {
+        var found = PeekDaily(day);
+        if (found != null)
+        {
+            return found;
+        }
+
         var record = new DailyRecord { Day = day };
         Dailies.Add(record);
+        TrimDailies(record);
         return record;
+    }
+
+    // Keys are yyyy-MM-dd, so the oldest sort first. Never the one just asked for.
+    private void TrimDailies(DailyRecord keep)
+    {
+        if (Dailies.Count <= DailiesKept)
+        {
+            return;
+        }
+
+        Dailies.Sort((a, b) => string.CompareOrdinal(a.Day, b.Day));
+        for (var i = 0; i < Dailies.Count && Dailies.Count > DailiesKept;)
+        {
+            if (Dailies[i] == keep)
+            {
+                i++;
+                continue;
+            }
+
+            Dailies.RemoveAt(i);
+        }
     }
 
     public PlaceMap Map(string id)
