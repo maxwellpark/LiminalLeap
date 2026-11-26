@@ -6,8 +6,21 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. A lighting check per place: the art and the anomalies both read in each place's light. The
-   story's office run reads much darker than the office's daily.
+1. Footstep pace rises with speed: today the cap holds from the start speed, so it's about 4 a
+   second at every speed. A jog at the start, a sprint at full speed, with a test.
+2. The title's controls name restart (hold R), the other mirror key (Q) and the reduced flashing
+   option (P, then F), and say the lights flicker. Tested through `Controls.cs` under .NET and
+   seen in the title capture.
+3. A click on the title only focuses the game: on itch the click a player makes to focus the
+   frame starts the story and skips the title. A browser check clicks, sees no run start, then
+   presses Enter for the daily.
+4. The page marks runs and laps apart: `data-runs` counts laps and deaths today, and the title
+   never marks itself. With the stale lines in DIRECTION.md (the C key, "no toasts") and
+   PageReady's comment.
+5. An exit call says what it did: right, wrong and running past all fade the same, and the
+   target (2 in the office) is never shown, so a player who never takes an exit loops with
+   nothing changing. Show the target with the count, and let a wrong call read as a reset.
+   A pure line with tests under .NET, then a browser capture.
 
 Map the space (#61), in slices, each its own PR:
 
@@ -49,6 +62,9 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 - A blocked-terms file for this repo: max-kit's shared hooks refuse pushes without one, so each
   push from here so far has been made with the hooks taken off, on an explicit ask.
 
+- A story death says nothing about why (the summary is silent, the hint toast shows once a
+  session), but DIRECTION.md keeps the story quiet. Say what killed you, or keep it quiet?
+
 ## Ideas
 
 - A place's best counts only the last lap's score, since each lap resets it. Hidden in the
@@ -60,6 +76,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the floor ahead reads at speed in every place (the speed vignette clears below the
+  centre); the story's office is no darker than its daily over time (`max/place-lighting`).
 - 2026-11-26: footsteps on the running bob's low points, pitched and sized by the floor,
   capped at a sprint's cadence (`max/footsteps`).
 - 2026-11-26: stand-in props, four per place, built from primitives by
