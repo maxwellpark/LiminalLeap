@@ -124,6 +124,7 @@ public class PlayerTrackMovement : MonoBehaviour
     {
         PageReady.Mark();
         Places.Apply(Places.RulesForRun());
+        MarkRun();
 
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = true; // we drive the transform; keep triggers, drop the physics fight
@@ -599,6 +600,7 @@ public class PlayerTrackMovement : MonoBehaviour
     private void ResetRun()
     {
         Places.Apply(Places.RulesForRun());
+        MarkRun();
         trackManager.ResetRun();
         basePos = startingPosition;
         TrackCentre = basePos;
@@ -624,5 +626,12 @@ public class PlayerTrackMovement : MonoBehaviour
         Readout.Reset();
         CurrentSpeed = startingSpeed;
         transform.SetPositionAndRotation(startingPosition, Quaternion.identity);
+    }
+
+    private static void MarkRun()
+    {
+        var mode = RunMode.Story ? "story" : RunMode.Daily ? "daily" : "free";
+        var place = Places.ForRun();
+        PageReady.Run(mode, place != null ? place.Id : "none");
     }
 }
