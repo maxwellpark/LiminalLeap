@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using NUnit.Framework;
 
 public class FloorsTests
@@ -136,5 +137,75 @@ public class FloorsTests
         Assert.Less(FloorFeel.For(Floor.Carpet).LandVolume, 1f, "carpet should muffle a landing");
         Assert.Greater(FloorFeel.For(Floor.Boards).Bob, 1f, "boards should bob deeper");
         Assert.Less(FloorFeel.For(Floor.Boards).LandPitch, 1f, "boards should knock lower");
+    }
+
+    // As PlayerTrackMovement drives it: 3.4 radians of bob a metre, at 60 frames a second.
+    private static (int Steps, bool AllOnLowPoints) Run(Stride stride, float speed, float seconds)
+    {
+        const float dt = 1f / 60f;
+        var steps = 0;
+        var onLow = true;
+        var phase = 0f;
+        for (var t = 0f; t < seconds; t += dt)
+        {
+            var before = phase;
+            phase += speed * dt * 3.4f;
+            if (stride.Step(before, phase, t))
+            {
+                steps++;
+                onLow &= Stride.LowPoints(before, phase) > 0;
+            }
+        }
+
+        return (steps, onLow);
+    }
+
+    [Test]
+    public void LowPointsAreWhereTheBobIsDeepest()
+    {
+        // The bob is -|sin(phase)|.
+        for (var k = 0; k < 6; k++)
+        {
+            Assert.AreEqual(-1f, -Math.Abs(Math.Sin(Stride.LowPoint + k * Math.PI)), 1e-5, "low point " + k);
+        }
+
+        Assert.AreEqual(0, Stride.LowPoints(0.1f, Stride.LowPoint - 0.05f));
+        Assert.AreEqual(1, Stride.LowPoints(Stride.LowPoint - 0.05f, Stride.LowPoint + 0.05f));
+        Assert.AreEqual(12, Stride.LowPoints(0f, 12f * (float)Math.PI));
+    }
+
+    [Test]
+    public void StandingStillTakesNoSteps()
+    {
+        var stride = new Stride(4.5f);
+        Assert.IsFalse(stride.Step(3f, 3f, 10f));
+        Assert.IsFalse(stride.Step(3f, 2f, 10f));
+    }
+
+    [Test]
+    public void AtSpeedStepsKeepARunnersCadence()
+    {
+        foreach (var speed in new[] { 8f, 15f, 22f })
+        {
+            var (steps, onLow) = Run(new Stride(4.5f), speed, 10f);
+            Assert.That(steps / 10f, Is.InRange(3.4f, 4.5f), "speed " + speed);
+            Assert.IsTrue(onLow, "a step off a low point at speed " + speed);
+        }
+    }
+
+    [Test]
+    public void SlowEnoughEveryLowPointIsAStep()
+    {
+        var (steps, _) = Run(new Stride(4.5f), 1f, 10f);
+        Assert.AreEqual(Stride.LowPoints(0f, 34f), steps, 1);
+    }
+
+    [Test]
+    public void ALandingHoldsOffTheNextStep()
+    {
+        var stride = new Stride(4f);
+        stride.Landed(5f);
+        Assert.IsFalse(stride.Step(Stride.LowPoint - 0.1f, Stride.LowPoint + 0.1f, 5.1f));
+        Assert.IsTrue(stride.Step(Stride.LowPoint + (float)Math.PI - 0.1f, Stride.LowPoint + (float)Math.PI + 0.1f, 5.3f));
     }
 }

@@ -101,6 +101,9 @@ public class PlayerTrackMovement : MonoBehaviour
     // Linoleum until the first piece is read, so a run starts on the feel the game was tuned on.
     private FloorFeel footing = FloorFeel.For(Floor.Linoleum);
     private float bobPhase;
+    [SerializeField] private float stepsPerSecond = 4.5f; // a sprint's cadence, the most steps heard
+    private Stride stride;
+    private int footfalls;
     private float bobOffset;
     private float bobRoll;
     private float dip;
@@ -318,6 +321,7 @@ public class PlayerTrackMovement : MonoBehaviour
                 airborne = false;
                 dip = landingDip;
                 AudioManager.GetInstance().PlayLand(footing.LandPitch, footing.LandVolume);
+                Stride().Landed(Time.time);
             }
         }
     }
@@ -406,6 +410,11 @@ public class PlayerTrackMovement : MonoBehaviour
         tilt = Mathf.Lerp(tilt, lean * strafeTiltDegrees, 10f * dt);
     }
 
+    private Stride Stride()
+    {
+        return stride ??= new Stride(stepsPerSecond);
+    }
+
     // Driven off distance travelled, not time, so it stays in step with the speed.
     private void HandleBob(float dt)
     {
@@ -416,7 +425,13 @@ public class PlayerTrackMovement : MonoBehaviour
         }
         else
         {
+            var before = bobPhase;
             bobPhase += travelledThisFrame * bobStridesPerSecond;
+            if (Stride().Step(before, bobPhase, Time.time))
+            {
+                footfalls++;
+                AudioManager.GetInstance().PlayStep(footing.LandPitch, footing.LandVolume, (footfalls & 1) == 0);
+            }
             bobOffset = -Mathf.Abs(Mathf.Sin(bobPhase)) * bobHeight * footing.Bob * SpeedT;
             bobRoll = Mathf.Cos(bobPhase * 0.5f) * bobRollDegrees * footing.Bob * SpeedT;
         }

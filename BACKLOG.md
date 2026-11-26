@@ -6,8 +6,7 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. Footsteps that sound like each floor, timed to the running bob.
-2. A lighting check per place: the art and the anomalies both read in each place's light. The
+1. A lighting check per place: the art and the anomalies both read in each place's light. The
    story's office run reads much darker than the office's daily.
 
 Map the space (#61), in slices, each its own PR:
@@ -61,6 +60,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: footsteps on the running bob's low points, pitched and sized by the floor,
+  capped at a sprint's cadence (`max/footsteps`).
 - 2026-11-26: stand-in props, four per place, built from primitives by
   `Assets/Scripts/Editor/PropPrefabs.cs` into `Resources/Art/Places/*/Props` (`max/stand-in-props`).
 - 2026-11-26: the playtest kit, `docs/PLAYTEST.md`: what to send, what to watch for, the

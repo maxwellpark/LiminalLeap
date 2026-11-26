@@ -12,6 +12,8 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField, Range(0f, 1f)] private float windVolume = 0.14f;
     [SerializeField, Range(0f, 1f)] private float windFloor = 0.25f; // audible when stood still
     [SerializeField] private float windPitchAtSpeed = 0.35f;
+    [SerializeField, Range(0f, 1f)] private float stepVolume = 0.3f;    // relative to the landing thud
+    [SerializeField, Range(0f, 0.2f)] private float stepPitchSpread = 0.04f; // left foot lower
 
     [Header("Dread")]
     [SerializeField, Range(0f, 1f)] private float dreadVolume = 0.5f;
@@ -27,6 +29,7 @@ public class AudioManager : Singleton<AudioManager>
     private AudioSource sfx;
     private AudioSource pickup;   // its own source: PlayOneShot uses the source pitch
     private AudioSource landing;  // likewise, pitched by the floor
+    private AudioSource steps;    // and again: a step can land while a landing still rings
     private AudioSource wind;
     private AudioSource dread;
     private Pursuer pursuer;
@@ -48,6 +51,9 @@ public class AudioManager : Singleton<AudioManager>
 
         landing = gameObject.AddComponent<AudioSource>();
         landing.playOnAwake = false;
+
+        steps = gameObject.AddComponent<AudioSource>();
+        steps.playOnAwake = false;
 
         dread = gameObject.AddComponent<AudioSource>();
         dread.clip = library.Get(Sound.Dread);
@@ -76,6 +82,15 @@ public class AudioManager : Singleton<AudioManager>
         {
             landing.pitch = pitch;
             landing.PlayOneShot(library.Get(Sound.Land), sfxVolume * volume);
+        }
+    }
+
+    public void PlayStep(float pitch, float volume, bool leftFoot)
+    {
+        if (steps != null)
+        {
+            steps.pitch = pitch * (leftFoot ? 1f - stepPitchSpread : 1f + stepPitchSpread);
+            steps.PlayOneShot(library.Get(Sound.Step), sfxVolume * stepVolume * volume);
         }
     }
 
