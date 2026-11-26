@@ -29,7 +29,7 @@ public class TitleScreen : MonoBehaviour
     private void Start()
     {
         PageReady.Mark();
-        PageReady.Title();
+        PageReady.Title(SaveStore.Data.Daily(DailySeed.TodayKey()).Runs);
         MoodLighting.GetInstance();
         AudioManager.GetInstance();
         ScreenFade.GetInstance();

@@ -8,7 +8,7 @@ public static class PageReady
 #if UNITY_WEBGL && !UNITY_EDITOR
     [DllImport("__Internal")] private static extern void PageReadyMark();
     [DllImport("__Internal")] private static extern void PageRunMark(string mode, string place);
-    [DllImport("__Internal")] private static extern void PageTitleMark();
+    [DllImport("__Internal")] private static extern void PageTitleMark(int dailyRuns);
     [DllImport("__Internal")] private static extern void PageLapMark();
     [DllImport("__Internal")] private static extern int PageAudioRunning();
     [DllImport("__Internal")] private static extern void PageMarkSting();
@@ -38,11 +38,12 @@ public static class PageReady
 #endif
     }
 
-    // On the title, so a check can tell a run that ended there from one still going.
-    public static void Title()
+    // On the title, so a check can tell a run that ended there from one still going, and with
+    // today's daily runs as the save has them, so a check can see the save survive a reload.
+    public static void Title(int dailyRuns)
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
-        PageTitleMark();
+        PageTitleMark(dailyRuns);
 #endif
     }
 
