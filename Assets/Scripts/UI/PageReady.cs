@@ -27,8 +27,8 @@ public static class PageReady
 #endif
     }
 
-    // At the start of every run, and again after a death: "story", "daily" or "free", and the
-    // place's id or "none". A lap isn't a run.
+    // At the start of every run, and again after each death, restart or way out of a place:
+    // "story", "daily" or "free", and the place's id or "none". A lap isn't a run.
     public static void Run(string mode, string place)
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
