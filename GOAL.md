@@ -16,6 +16,7 @@ players of short horror, and the streamers who play it.
 - [ ] A place loops back on itself (#51): a junction returns to track already run, with a test.
   Built and compiled in db92197 (LoopTests); open until the test has run.
 - [ ] A WebGL build is on itch: `scripts/deploy-itch.sh` pushed, and a run starts in the browser.
+  The browser half holds: `scripts/check-web.sh --build` starts every run (2026-11-26).
 - [ ] At least 5 people outside the project have finished a story place.
 
 ## Numbers
@@ -23,7 +24,7 @@ players of short horror, and the streamers who play it.
 - Unity tests passing, from `scripts/check.sh`: not run yet, no licence on the machines
   used so far.
 - Run loop allocations over baseline, from `AllocationTests`: 577 B/frame.
-- WebGL build size, from `scripts/build-web.sh`: 10 MB.
+- WebGL build size, from `scripts/build-web.sh`: 11 MB of a 25 MB budget.
 
 ## Out of scope
 
@@ -34,4 +35,4 @@ players of short horror, and the streamers who play it.
 
 ## Last checked
 
-2026-11-24, at ba64c0a.
+2026-11-26, at 6b12265, with the WebGL build checked in a browser.
