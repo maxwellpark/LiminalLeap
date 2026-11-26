@@ -72,6 +72,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the save is checked to survive a reload in a browser: the title marks today's daily
+  runs, and `web-run.js`'s `save-reload` run plays a daily and reloads (`max/save-reload`).
 - 2026-11-26: the share copy is checked inside a frame that grants no clipboard permission, where
   the textarea fallback does it (`max/frame-copy`).
 - 2026-11-26: the daily's Copy button is checked in a browser: the page marks its target and the
