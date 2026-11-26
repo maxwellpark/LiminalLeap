@@ -3,10 +3,11 @@
 Usage: python3 tools/art/tiles.py <kind> <in.png> <out.png> [brightness]
 
 Kinds: carpet (tiles laid a quarter-turn apart, with seams), ceiling (a T-bar grid), blocks
-(concrete blocks in running bond), boards (planks along the corridor), plain (as is). Each is first brought to a mean brightness that reads in the game's dim light. Lines a
-model draws come out wavy, so the straight ones are drawn here. Every output is a 512 px RGB PNG
-saved fresh, so no generator metadata survives, and it still tiles: tiles and grid lines sit on
-the same lattice at each edge. Needs Pillow.
+(concrete blocks in running bond), boards (planks along the corridor), plain (as is). Each is
+first brought to a mean brightness that reads in the game's dim light. Lines a model draws come
+out wavy, so the straight ones are drawn here. Every output is a 512 px RGB PNG saved fresh, so
+no generator metadata survives, and it still tiles: tiles and grid lines sit on the same lattice
+at each edge. Needs Pillow.
 """
 import random
 import sys
@@ -88,7 +89,8 @@ def blocks(surface, seed=7):
         # Bold enough to read across the corridor at speed: 4 px is 16 mm at 2 m a texture.
         for joint in range(4):
             for x in range(shift + joint * wide - 2, shift + joint * wide + 2):
-                draw.line([(x % SIZE, row * high), (x % SIZE, (row + 1) * high - 1)], fill=(112, 108, 100))
+                draw.line([(x % SIZE, row * high), (x % SIZE, (row + 1) * high - 1)],
+                          fill=(112, 108, 100))
         for y in range(row * high - 2, row * high + 2):
             draw.line([(0, y % SIZE), (SIZE, y % SIZE)], fill=(112, 108, 100))
     return out
@@ -102,10 +104,12 @@ def boards(surface, seed=7):
     draw = ImageDraw.Draw(out)
     for plank in range(8):
         box = (plank * wide, 0, (plank + 1) * wide, SIZE)
-        out.paste(ImageEnhance.Brightness(out.crop(box)).enhance(1 + rng.uniform(-0.08, 0.08)), box[:2])
+        shade = 1 + rng.uniform(-0.08, 0.08)
+        out.paste(ImageEnhance.Brightness(out.crop(box)).enhance(shade), box[:2])
         joint = rng.randrange(SIZE)
         for y in (joint - 1, joint):
-            draw.line([(plank * wide, y % SIZE), ((plank + 1) * wide - 1, y % SIZE)], fill=(48, 34, 24))
+            draw.line([(plank * wide, y % SIZE), ((plank + 1) * wide - 1, y % SIZE)],
+                      fill=(48, 34, 24))
         for x in (plank * wide - 1, plank * wide):
             draw.line([(x % SIZE, 0), (x % SIZE, SIZE)], fill=(48, 34, 24))
     return out

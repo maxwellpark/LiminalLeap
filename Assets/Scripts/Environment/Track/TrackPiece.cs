@@ -42,7 +42,7 @@ public class TrackPiece : MonoBehaviour
     private static MaterialPropertyBlock sideTiling;
     private readonly Dictionary<GameObject, GameObject> propsStood = new();
     private const uint PropChance = 35;   // percent of pieces that stand a prop
-    private const float JointReach = 0.6f;    // 8.5 m x tan(3.5 degrees), about 0.52 m, rounded up
+    private const float JointReach = 1.1f;    // the next piece starts the full 7 degrees round: 8.6 m x tan 7 = 1.06 m
 
     // The slab under the player, and the linoleum the prefab was baked with.
     private Renderer floorRenderer;
@@ -105,8 +105,7 @@ public class TrackPiece : MonoBehaviour
     // A place's walls, ceiling and props, where it has art for them. Null hides that part.
     public void Dress(Material wall, Material ceiling, GameObject[] props, int seed)
     {
-        // A turning piece reaches past its end, across the wedge its turn opens at the walls.
-        // Only turns: overlapping straight sections would lie in one plane and flicker.
+        // Only turns reach past the end; overlapping straight walls would lie in one plane and flicker.
         var reach = TurnDegrees > 0.5f ? JointReach : 0f;
         var length = 10f + reach;
         var middle = 5f + reach * 0.5f;
