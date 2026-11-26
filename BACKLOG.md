@@ -9,8 +9,9 @@ Buildable now and checked in a browser build, top down (2026-11-26):
 1. Browser checks in the repo: shipwright's `web-check` for the boot, then a script that starts
    the story and each place's daily, fails on a console error and saves captures. Moves "a run
    starts in the browser" in the itch line.
-2. The itch page kit: the page's text, tags and controls, the AI disclosure itch asks for, and a
-   cover and screenshots from the captures, so the owner's page takes minutes. Readies the
+2. The itch page kit: the page's text, tags and controls, notes for the owner's answer to
+   itch's AI disclosure question, and a cover and screenshots from the captures, so the
+   owner's page takes minutes. Readies the
    itch line.
 3. A playtest kit: what testers are asked to do, what to watch for, and how they report back.
    Readies the "5 people" line.

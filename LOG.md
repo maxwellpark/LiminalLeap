@@ -43,9 +43,13 @@ licence and 1Password, the itch page, players), and so do merging #91 and #93 an
 
 ## 2026-11-25 and 26
 
-- Merged #94 to #107: the distance that lies, surfaces (four floors), the SpawnNext split, the
-  door tell, the map's design and its record in the save, workflow removal (Actions is off),
-  the art pass's groundwork, and generated textures for all three places.
+- Merged #94 to #107: anomalies on the exit rule, loops and the shareable result (#94); the
+  distance that lies; surfaces (four floors); the SpawnNext split; the door tell; pinned and
+  then removed workflows (Actions is off); the map's design and its record in the save; the
+  automation Unity ID in the setup guide; the art pass's groundwork; a smaller web build; and
+  generated textures for all three places.
+- Closed from the last entry: #91 merged under #94, #93 was replaced by #94, and 3bcd2ab and
+  ba64c0a are on master.
 - WebGL builds run here without an activated licence; max-kit allows that for development
   checks. Every build since has been loaded in headless Chromium: the title, a run, and each
   place's daily with the page's clock shifted to that place's day.
@@ -55,7 +59,7 @@ licence and 1Password, the itch page, players), and so do merging #91 and #93 an
 - Textures came from Stable Diffusion 1.5 on a CPU here, finished by `tools/art/tiles.py`;
   sources are in `Assets/Art/Sources.md`.
 
-End of session. Defaults taken: the floors and their feel, the distance readout, the door tell,
+End of session. Defaults taken: the floors' feel, the distance readout, the door tell,
 the map record's shape, every place's look (all in docs/DIRECTION.md). Blocked on the owner:
 the Unity licence and 1Password, the itch page, players, the office's props (GPU). Next: the
 Ready list above.
