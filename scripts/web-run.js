@@ -149,8 +149,11 @@ async function scenario(browser, url, name, { key, day, expect, click }) {
     // The click a player makes to focus the game in a page must not start a run.
     if (click) {
       await page.click("canvas");
-      await page.waitForTimeout(2000);
-      if (await page.evaluate(() => document.documentElement.getAttribute("data-runs")) !== null) {
+      // A run takes a fade and a scene load to mark the page, so wait out a slow one.
+      const started = await page
+        .waitForFunction(() => document.documentElement.getAttribute("data-runs") !== null, null, { timeout: 5000 })
+        .then(() => true, () => false);
+      if (started) {
         failures.push("a click on the title started a run");
       }
     }

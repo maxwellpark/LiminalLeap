@@ -121,6 +121,11 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-26 [needs-review]: a click on the title only focuses the game; a key starts
+  it. Why: on itch the click a player makes to focus the frame started the story and skipped
+  the title. A tap no longer starts anything either, which costs nothing while the page is
+  marked not mobile friendly (docs/ITCH.md). To change: `TitleScreen.Clicked`; a touch start
+  would need its own button.
 - Default 2026-11-26 [needs-review]: the speed vignette is squashed to 0.6 below the centre, so
   at speed the floor ahead stays readable (a median of 32 to 37 of 255 at the bottom centre in
   every place, from 20 to 27) while the sides and top still close in. The places' own light is
