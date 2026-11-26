@@ -22,16 +22,17 @@ DEV=""
 
 mkdir -p "$PROJECT/Build"
 
-# The generated scenes aren't committed, and the build lists them. Same seeds as check.sh --full.
+# The generated scenes aren't committed, and the build lists them. One, since the title always
+# loads the first (TitleScreen's pickRandom is off); check.sh --full still makes three to test.
 echo "Generating scenes (log: $PROJECT/Build/scenes.log)"
 rm -rf "$PROJECT/Assets/Scenes/Generated"
 "${UNITY_RUN[@]}" -batchmode -quit -projectPath "$PROJECT" \
-  -executeMethod TestSceneGenerator.GenerateFromCommandLine -seed 1700 -count 3 \
+  -executeMethod TestSceneGenerator.GenerateFromCommandLine -seed 1700 -count 1 \
   -logFile "$PROJECT/Build/scenes.log" -accept-apiupdate \
   || { echo "Scene generation failed, see Build/scenes.log"; exit 1; }
 # Unity can log a failed generation and still exit 0, so count the scenes it reports.
 SCENES=$(grep -c '^GENERATED ' "$PROJECT/Build/scenes.log" || true)
-[ "$SCENES" -eq 3 ] || { echo "Generated $SCENES of 3 scenes, see Build/scenes.log"; exit 1; }
+[ "$SCENES" -eq 1 ] || { echo "Generated $SCENES of 1 scene, see Build/scenes.log"; exit 1; }
 
 echo "Building WebGL to $OUT (log: $LOG)"
 

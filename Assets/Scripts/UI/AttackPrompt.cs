@@ -53,7 +53,7 @@ public class AttackPrompt : Singleton<AttackPrompt>
 
         headline.text = locked ? "INCOMING" : "BEHIND YOU";
         headline.color = colour;
-        hint.text = looking ? "read the lane" : "hold SHIFT to look";
+        hint.text = looking ? "read the lane" : $"hold {Controls.LookBack} to look";
 
         // Drains toward the moment it lands, so timing is readable without the audio.
         var lead = Mathf.Max(0.01f, pursuer.AttackConfig.LeadTime - pursuer.AttackConfig.FireDuration);

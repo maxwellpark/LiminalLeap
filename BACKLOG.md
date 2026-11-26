@@ -9,11 +9,7 @@ Buildable now and checked in a browser build, top down (2026-11-26):
 1. The title sting and the start key's sound are lost in a browser, which starts audio only
    after a gesture and plays what was queued from where it would be by then. Play the sting
    once audio is running; a page mark (`data-audio`) lets the browser check see it.
-2. Dead and stale hints: Onboarding's proximity hint never runs while pursuer attacks are on
-   (the default everywhere), and AttackPrompt hardcodes SHIFT.
-3. Generate one scene for the web build: the title always loads the first generated scene, so
-   the other two ship unused. The build log's scene list shows it.
-4. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
+2. The pursuer's lane scan runs physics queries every frame and its 32-slot buffer can drop
    hazards; work it out from live hazards with a pure helper tested under .NET.
 
 Map the space (#61), in slices, each its own PR:
@@ -75,6 +71,9 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: the web build generates one scene, the one the title loads; the attack prompt takes
+  its key from Controls. Onboarding's proximity hint stays: it's the hint for runs with pursuer
+  attacks off, a supported flag (`max/one-scene`).
 - 2026-11-26: the canvas renders at no more than 1.5 times its CSS size on a high-DPI screen
   (`max/pixel-ratio`).
 - 2026-11-26: `web-run.js` plays the game as itch embeds it: a cross-origin iframe behind a
