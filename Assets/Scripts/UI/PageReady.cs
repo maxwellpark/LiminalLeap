@@ -10,6 +10,8 @@ public static class PageReady
     [DllImport("__Internal")] private static extern void PageRunMark(string mode, string place);
     [DllImport("__Internal")] private static extern void PageTitleMark();
     [DllImport("__Internal")] private static extern void PageLapMark();
+    [DllImport("__Internal")] private static extern int PageAudioRunning();
+    [DllImport("__Internal")] private static extern void PageMarkSting();
 #endif
 
     public static bool Marked { get; private set; }
@@ -41,6 +43,26 @@ public static class PageReady
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
         PageTitleMark();
+#endif
+    }
+
+    // Whether a sound played now is heard from its start. Always, outside a browser.
+    public static bool AudioRunning
+    {
+        get
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return PageAudioRunning() != 0;
+#else
+            return true;
+#endif
+        }
+    }
+
+    public static void StingPlayed()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        PageMarkSting();
 #endif
     }
 

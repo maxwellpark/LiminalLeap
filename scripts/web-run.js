@@ -23,7 +23,7 @@ try {
   process.exit(2);
 }
 
-const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi"];
+const RUNS = ["story", "daily-office", "daily-school", "daily-house", "title-click", "no-webgl2", "itch-frame", "hidpi", "audio"];
 
 function usage(problem) {
   console.error(`web-run: ${problem}\n  usage: node scripts/web-run.js <build> <captures> [--size=WxH] [--only=<run>]`);
@@ -334,6 +334,44 @@ async function hiDpi(browser, url) {
   return failures.length === 0;
 }
 
+// With audio held for a gesture, as browsers do: the title waits, and a click wakes the audio
+// and plays the sting without starting a run.
+async function audioWaits(url) {
+  let own;
+  try {
+    own = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--autoplay-policy=user-gesture-required"] });
+  } catch (e) {
+    console.error("web-run: Chromium won't start for the audio run\n  " + String(e.message || e).split("\n")[0]);
+    return false;
+  }
+  const page = await (await own.newContext({ viewport: { width: size[0], height: size[1] } })).newPage();
+  const failures = [];
+  const attr = (name) => page.evaluate((n) => document.documentElement.getAttribute(n), name);
+  try {
+    await page.goto(url);
+    await page.waitForFunction(() => document.documentElement.getAttribute("data-ready") === "1", null, { timeout: 150000 });
+    await page.waitForTimeout(1500);
+    if (await attr("data-audio") !== "waiting" || await attr("data-sting") !== null) {
+      failures.push(`before a gesture: audio ${await attr("data-audio")}, sting ${await attr("data-sting")}`);
+    }
+    await page.click("canvas");
+    const sting = await page
+      .waitForFunction(() => document.documentElement.getAttribute("data-sting") === "1", null, { timeout: 5000 })
+      .then(() => true, () => false);
+    if (!sting) {
+      failures.push(`a click didn't play the sting; audio ${await attr("data-audio")}`);
+    }
+    if (await attr("data-runs") !== null) {
+      failures.push("the click started a run");
+    }
+  } catch (e) {
+    failures.push(String(e.message || e).split("\n")[0]);
+  }
+  await own.close();
+  console.log(`${failures.length ? "FAIL" : "ok  "} audio${failures.length ? "\n  " + failures.join("\n  ") : ""}`);
+  return failures.length === 0;
+}
+
 (async () => {
   const server = await serve(path.resolve(root));
   const url = `http://127.0.0.1:${server.address().port}/index.html`;
@@ -364,6 +402,9 @@ async function hiDpi(browser, url) {
     const port = server.address().port;
     const parent = `http://localhost:${port}/__parent.html?frame=` + encodeURIComponent(`http://127.0.0.1:${port}/index.html`);
     ok = (await itchFrame(browser, parent)) && ok;
+  }
+  if (!only || only === "audio") {
+    ok = (await audioWaits(url)) && ok;
   }
   if (!only || only === "hidpi") {
     ok = (await hiDpi(browser, url)) && ok;

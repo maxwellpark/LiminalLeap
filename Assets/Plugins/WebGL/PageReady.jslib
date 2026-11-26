@@ -20,6 +20,19 @@ mergeInto(LibraryManager.library, {
     root.setAttribute("data-place", "none");
   },
 
+  // Unity's web audio waits for a gesture in this frame; a sound queued before that starts as
+  // far in as the time already gone, so a short one is never heard.
+  PageAudioRunning: function () {
+    var running = typeof WEBAudio !== "undefined" && WEBAudio.audioContext !== null
+      && WEBAudio.audioContext.state === "running";
+    document.documentElement.setAttribute("data-audio", running ? "running" : "waiting");
+    return running ? 1 : 0;
+  },
+
+  PageMarkSting: function () {
+    document.documentElement.setAttribute("data-sting", "1");
+  },
+
   PageLapMark: function () {
     var root = document.documentElement;
     root.setAttribute("data-laps", String((parseInt(root.getAttribute("data-laps") || "0", 10)) + 1));

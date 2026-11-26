@@ -23,6 +23,8 @@ public class TitleScreen : MonoBehaviour
     private Transform driftCamera;
     private float elapsed;
     private bool starting;
+    private bool stingPlayed;
+    [SerializeField] private float audioWait = 0.6f; // the most a start waits for the browser's audio
 
     private void Start()
     {
@@ -35,13 +37,20 @@ public class TitleScreen : MonoBehaviour
         BuildUi();
 
         driftCamera = Camera.main != null ? Camera.main.transform : null;
-        AudioManager.GetInstance().Play(Sound.TitleSting);
         ScreenFade.GetInstance().To(0f, 1.2f);
     }
 
     private void Update()
     {
         elapsed += Time.unscaledDeltaTime;
+
+        // In a browser that's the first click on the title, which no longer starts the story.
+        if (!stingPlayed && !starting && PageReady.AudioRunning)
+        {
+            stingPlayed = true;
+            AudioManager.GetInstance().Play(Sound.TitleSting);
+            PageReady.StingPlayed();
+        }
 
         if (driftCamera != null)
         {
@@ -89,6 +98,20 @@ public class TitleScreen : MonoBehaviour
         }
 
         starting = true;
+        StartCoroutine(ConfirmThenLoad());
+    }
+
+    // The key that starts a run is often the browser's first gesture, so its sound waits for
+    // the audio that gesture wakes, a fraction of a second at most.
+    private System.Collections.IEnumerator ConfirmThenLoad()
+    {
+        var waited = 0f;
+        while (!PageReady.AudioRunning && waited < audioWait)
+        {
+            waited += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
         AudioManager.GetInstance().Play(Sound.Confirm);
         ScreenFade.GetInstance().To(1f, 0.45f);
         Invoke(nameof(LoadGame), 0.5f);
