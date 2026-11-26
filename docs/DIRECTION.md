@@ -122,8 +122,8 @@ None open. The ones taken are below.
 ## Decisions and defaults
 
 - Default 2026-11-26 [needs-review]: the speed vignette is squashed to 0.6 below the centre, so
-  at full speed the floor ahead stays readable (about 30 to 38 of 255 at the bottom centre in
-  every place, from 15 to 22) while the sides and top still close in. The places' own light is
+  at speed the floor ahead stays readable (a median of 32 to 37 of 255 at the bottom centre in
+  every place, from 20 to 27) while the sides and top still close in. The places' own light is
   unchanged: over 16 seconds the story's office and the office's daily track each other, and
   the earlier "much darker" was one frame of each. To change: `belowSquash` on SpeedVignette
   (1 is the old round vignette).
