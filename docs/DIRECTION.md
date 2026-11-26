@@ -121,6 +121,11 @@ None open. The ones taken are below.
 
 ## Decisions and defaults
 
+- Default 2026-11-26 [needs-review]: a clean lap paints the place's target as a third line under
+  the rules: "2 RIGHT IN A ROW    GET OUT" (3 and 4 in the school and the house). Why: the
+  count had nothing to count towards, so a player who never took an exit saw no reason to.
+  A wrong call still says nothing more than the count going back to 0 and the rules showing
+  again. To change: `LapRule.GoalLine`, or drop the line in `LapSign.Paint`.
 - Default 2026-11-26 [needs-review]: a click on the title only focuses the game; a key starts
   it. Why: on itch the click a player makes to focus the frame started the story and skipped
   the title. A tap no longer starts anything either, which costs nothing while the page is

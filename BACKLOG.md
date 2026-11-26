@@ -6,11 +6,6 @@ The queue for GOAL.md. Ready is worked top down; each item names the Done when l
 
 Buildable now and checked in a browser build, top down (2026-11-26):
 
-1. An exit call says what it did: right, wrong and running past all fade the same, and the
-   target (2 in the office) is never shown, so a player who never takes an exit loops with
-   nothing changing. Show the target with the count, and let a wrong call read as a reset.
-   A pure line with tests under .NET, then a browser capture.
-
 Map the space (#61), in slices, each its own PR:
 
 1. A place's laps are one fixed corridor: the same pieces, scenery, calm stretches and floor
@@ -65,6 +60,8 @@ Art pass, the office first (decided 2026-11-25), each its own PR:
 
 ## Done
 
+- 2026-11-26: a clean lap paints the target under the rules ("2 RIGHT IN A ROW    GET OUT")
+  (`max/goal-line`).
 - 2026-11-26: the page marks the title, each run and each lap apart (`data-run="title"`,
   `data-runs`, `data-laps`); stale lines in DIRECTION.md fixed (`max/page-marks`).
 - 2026-11-26: a click on the title only focuses the game; `web-run.js` checks it with a

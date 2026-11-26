@@ -89,6 +89,12 @@ public sealed class LapRule
         return KindFor(lap) == AnomalyKind.WrongCount ? expected + 2 : expected;
     }
 
+    // Painted under the rules, so the count on the floor has something to count towards.
+    public static string GoalLine(int required)
+    {
+        return required > 1 ? $"{required} RIGHT IN A ROW    GET OUT" : "RIGHT ONCE    GET OUT";
+    }
+
     // Dying doesn't call, so the same lap comes round again with the same answer.
     public LapCall Call(bool tookExit)
     {
